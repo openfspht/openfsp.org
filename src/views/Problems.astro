@@ -1,0 +1,131 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { localeOf, localized, translator } from "../i18n";
+import { problemCondition, problems } from "../lib/sources";
+
+const locale = localeOf(Astro.url);
+const t = translator(locale);
+const all = problems();
+const groups = [...new Set(all.map((problem) => problem.group))].map((group) => ({
+  group,
+  section: all.find((problem) => problem.group === group)!.section,
+  items: all.filter((problem) => problem.group === group),
+}));
+const conditions = new Map(await Promise.all(all.map(async (problem) => [problem.code, await problemCondition(problem, locale)] as const)));
+---
+
+<Layout title={t("problems.title")} section="problems">
+  <div class="page">
+    <header class="page-head">
+      <h1>{t("problems.title")}</h1>
+      <p class="lead">{t("problems.intro")}</p>
+      {t("spec.frenchOnly") && <p class="notice">{t("spec.frenchOnly")}</p>}
+    </header>
+    {groups.map(({ group, section, items }) => (
+      <section class="family">
+        <h2 lang="fr">
+          {group}
+          <a class="ref" href={localized(locale, `/spec/api-paiements/#${section}`)}>
+            API {section}
+          </a>
+        </h2>
+        <div class="table-wrap">
+          <table>
+            <colgroup>
+              <col class="c-code" />
+              <col class="c-status" />
+              <col class="c-flag" />
+              <col class="c-flag" />
+              <col />
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">{t("problems.code")}</th>
+                <th scope="col">{t("problems.status")}</th>
+                <th scope="col">retryable</th>
+                <th scope="col">effect</th>
+                <th scope="col">{t("problems.condition")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((problem) => (
+                <tr>
+                  <th scope="row">
+                    <a href={localized(locale, `/problems/${problem.code}/`)}>
+                      <code>{problem.code}</code>
+                    </a>
+                  </th>
+                  <td class="num">{problem.status}</td>
+                  <td>
+                    <code>{String(problem.retryable)}</code>
+                  </td>
+                  <td>
+                    <code>{problem.effect}</code>
+                  </td>
+                  <td lang="fr" set:html={conditions.get(problem.code)} />
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ))}
+  </div>
+</Layout>
+
+<style>
+  .family + .family {
+    margin-top: 48px;
+  }
+
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+
+  .ref {
+    font: 500 0.8125rem/1 var(--font-mono);
+    color: var(--text-muted);
+  }
+
+  .page-head .notice {
+    margin-top: 20px;
+    max-width: 62ch;
+  }
+
+  table {
+    table-layout: fixed;
+    min-width: 860px;
+  }
+
+  .c-code {
+    width: 300px;
+  }
+
+  .c-status {
+    width: 80px;
+  }
+
+  .c-flag {
+    width: 110px;
+  }
+
+  th[scope="row"] {
+    white-space: nowrap;
+  }
+
+  th[scope="row"] code {
+    background: transparent;
+    padding: 0;
+    font-size: 0.875rem;
+    color: var(--text);
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+  }
+</style>
