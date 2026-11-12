@@ -1,0 +1,12 @@
+---
+import Document from "../../views/Document.astro";
+import { specDocuments, type DocumentEntry } from "../../lib/sources";
+
+export function getStaticPaths() {
+  return specDocuments.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: DocumentEntry };
+---
+
+<Document entry={entry} kind="spec" />
