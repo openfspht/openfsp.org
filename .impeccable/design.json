@@ -1,0 +1,374 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-12T15:10:27+00:00",
+  "title": "Design System: openfsp.org",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Harbor Ink",
+        "tonalRamp": [
+          "#00100d",
+          "#002c28",
+          "#214a45",
+          "#466964",
+          "#6b8a85",
+          "#91aba7",
+          "#b9cecb",
+          "#e2f3f0"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Signal Amber",
+        "tonalRamp": [
+          "#1a0500",
+          "#3a1d00",
+          "#5e3800",
+          "#855600",
+          "#ad751d",
+          "#d79634",
+          "#fdbb61",
+          "#ffe395"
+        ]
+      },
+      "accent-deep": {
+        "role": "secondary",
+        "displayName": "Signal Amber Deep",
+        "tonalRamp": [
+          "#1a0500",
+          "#3c1c00",
+          "#603700",
+          "#885400",
+          "#b17312",
+          "#d59747",
+          "#f5bd7b",
+          "#ffe5ad"
+        ]
+      },
+      "chalk": {
+        "role": "neutral",
+        "displayName": "Chalk",
+        "tonalRamp": [
+          "#0c0b09",
+          "#262522",
+          "#43423e",
+          "#63615d",
+          "#84827d",
+          "#a7a59f",
+          "#ccc9c2",
+          "#f1eee6"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper White"
+      },
+      "surface-sunken": {
+        "role": "neutral",
+        "displayName": "Sunken Chalk"
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "tonalRamp": [
+          "#030e0c",
+          "#182926",
+          "#314743",
+          "#4e6762",
+          "#728883",
+          "#97aaa6",
+          "#becdca",
+          "#e6f1ef"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "tonalRamp": [
+          "#0d0b07",
+          "#27251f",
+          "#45423a",
+          "#656157",
+          "#878276",
+          "#aaa497",
+          "#cfc9b9",
+          "#f5eedf"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline"
+      },
+      "link-underline": {
+        "role": "neutral",
+        "displayName": "Faded Ink"
+      },
+      "selection": {
+        "role": "neutral",
+        "displayName": "Selection Amber"
+      },
+      "pass": {
+        "role": "semantic",
+        "displayName": "Pass Green",
+        "tonalRamp": [
+          "#001200",
+          "#002f0f",
+          "#085027",
+          "#297242",
+          "#589268",
+          "#83b28f",
+          "#afd4b7",
+          "#dcf7e2"
+        ]
+      },
+      "fail": {
+        "role": "semantic",
+        "displayName": "Fail Red",
+        "tonalRamp": [
+          "#250000",
+          "#4d0000",
+          "#79180c",
+          "#a63424",
+          "#c36151",
+          "#df8c7d",
+          "#f9b6a9",
+          "#ffe1d8"
+        ]
+      },
+      "ink-night": {
+        "role": "neutral",
+        "displayName": "Night Ground"
+      },
+      "surface-night": {
+        "role": "neutral",
+        "displayName": "Night Surface"
+      },
+      "surface-sunken-night": {
+        "role": "neutral",
+        "displayName": "Night Sunken"
+      },
+      "text-muted-night": {
+        "role": "neutral",
+        "displayName": "Night Muted Text"
+      },
+      "rule-night": {
+        "role": "neutral",
+        "displayName": "Night Hairline"
+      },
+      "rule-strong-night": {
+        "role": "neutral",
+        "displayName": "Night Strong Hairline"
+      },
+      "link-underline-night": {
+        "role": "neutral",
+        "displayName": "Night Faded Ink"
+      },
+      "selection-night": {
+        "role": "neutral",
+        "displayName": "Night Selection"
+      },
+      "pass-night": {
+        "role": "semantic",
+        "displayName": "Night Pass Green"
+      },
+      "fail-night": {
+        "role": "semantic",
+        "displayName": "Night Fail Red"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home headline only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "One page title per page."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, 72ch measure."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "One or two sentences under a page headline, muted."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Table headers, sidebar groups, pane labels, captions; sentence case."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Code, rule numbers, paths, counts, key and URL inputs."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "link-underline",
+        "value": "text-decoration-color 120ms ease-out",
+        "purpose": "Link underline shifts to the marker on hover."
+      },
+      {
+        "name": "control",
+        "value": "background-color 140ms ease-out, border-color 140ms ease-out",
+        "purpose": "Button hover."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity 120ms ease-out",
+        "purpose": "Rule deep-link button appearing on hover or focus."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0ms",
+        "purpose": "All transitions and animations are zeroed under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stack-status",
+        "value": "640px"
+      },
+      {
+        "name": "sidebar-collapse",
+        "value": "860px"
+      },
+      {
+        "name": "home-single-column",
+        "value": "960px"
+      },
+      {
+        "name": "nav-menu",
+        "value": "1060px"
+      },
+      {
+        "name": "toc-hide",
+        "value": "1180px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action in a group, ink fill.",
+      "html": "<a class=\"ds-btn ds-btn-primary\" href=\"#\">Lire la spécification</a>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--radius,6px);font:600 0.9375rem/1 var(--font-body,system-ui);text-decoration:none;border:1px solid var(--rule-strong,#b9b09c);color:var(--text,#0b3b36);background:transparent;cursor:pointer;transition:background-color 140ms ease-out,border-color 140ms ease-out}.ds-btn-primary{background:var(--text,#0b3b36);border-color:var(--text,#0b3b36);color:var(--bg,#f5f2ea)}.ds-btn-primary:hover{background:color-mix(in oklab,var(--text,#0b3b36) 86%,var(--bg,#f5f2ea))}.ds-btn:focus-visible{outline:2px solid var(--focus,#c07e1b);outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Alternate action beside a primary, hairline border.",
+      "html": "<a class=\"ds-btn-secondary\" href=\"#\">Démarrer</a>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:var(--radius,6px);font:600 0.9375rem/1 var(--font-body,system-ui);text-decoration:none;border:1px solid var(--rule-strong,#b9b09c);color:var(--text,#0b3b36);background:transparent;transition:border-color 140ms ease-out}.ds-btn-secondary:hover{border-color:var(--text,#0b3b36)}.ds-btn-secondary:focus-visible{outline:2px solid var(--focus,#c07e1b);outline-offset:2px}"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Section links with an amber underline on the current page.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#\" aria-current=\"page\">Spécification</a><a href=\"#\">Décisions</a><a href=\"#\">Problèmes</a><a href=\"#\">Registre</a></nav>",
+      "css": ".ds-nav{display:flex;gap:4px;border-bottom:1px solid var(--rule,#d6cfbf);padding:12px 0;background:var(--bg,#f5f2ea)}.ds-nav a{display:block;padding:8px 10px;border-radius:var(--radius,6px);font:500 0.9375rem/1.2 var(--font-body,system-ui);text-decoration:none;color:var(--text-muted,#46605b)}.ds-nav a:hover{color:var(--text,#0b3b36);background:var(--surface-sunken,#ece7db)}.ds-nav a[aria-current=page]{color:var(--text,#0b3b36);box-shadow:inset 0 -2px 0 var(--marker,#c07e1b);border-radius:var(--radius,6px) var(--radius,6px) 0 0}.ds-nav a:focus-visible{outline:2px solid var(--focus,#c07e1b);outline-offset:2px}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Mono field for keys, URLs and signed results.",
+      "html": "<input class=\"ds-input\" type=\"url\" placeholder=\"https://gateway.example/.well-known/openfsp\">",
+      "css": ".ds-input{width:100%;font:0.8125rem/1.5 var(--font-mono,ui-monospace,monospace);color:var(--text,#0b3b36);background:var(--surface,#fffdf8);border:1px solid var(--rule-strong,#b9b09c);border-radius:var(--radius,6px);padding:10px 12px}.ds-input::placeholder{color:var(--text-muted,#46605b)}.ds-input:focus-visible{outline:2px solid var(--focus,#c07e1b);outline-offset:2px}"
+    },
+    {
+      "name": "Notice",
+      "kind": "card",
+      "refersTo": "notice",
+      "description": "Draft status and informative caveats.",
+      "html": "<p class=\"ds-notice\">Brouillon 0.1.0 : les règles peuvent encore changer.</p>",
+      "css": ".ds-notice{margin:0;font-size:0.875rem;color:var(--text-muted,#46605b);border:1px solid var(--rule,#d6cfbf);border-radius:var(--radius,6px);padding:10px 14px;background:var(--surface,#fffdf8)}"
+    },
+    {
+      "name": "Annotated Exchange",
+      "kind": "custom",
+      "refersTo": "code-block",
+      "description": "A real request keyed field by field to the rules that govern it.",
+      "html": "<figure class=\"ds-ex\"><figcaption>Créer un paiement</figcaption><div class=\"ds-ex-label\">Requête</div><pre>POST /v1/payments HTTP/1.1\nIdempotency-Key: 8b0c7a4e</pre><ul class=\"ds-ex-keys\"><li><code>Idempotency-Key</code><a href=\"#\">idempotence 1.3</a></li><li><code>amount</code><a href=\"#\">modèle de données 3.2</a></li></ul></figure>",
+      "css": ".ds-ex{margin:0;border:1px solid var(--rule,#d6cfbf);border-radius:var(--radius,6px);background:var(--surface,#fffdf8);color:var(--text,#0b3b36)}.ds-ex figcaption{font:600 0.8125rem/1 var(--font-body,system-ui);padding:14px 16px;border-bottom:1px solid var(--rule,#d6cfbf)}.ds-ex-label{font-size:0.75rem;color:var(--text-muted,#46605b);padding:12px 16px 0}.ds-ex pre{margin:0;padding:8px 16px 14px;font:0.75rem/1.55 var(--font-mono,ui-monospace,monospace)}.ds-ex-keys{list-style:none;margin:0;padding:12px 16px 14px;border-top:1px solid var(--rule,#d6cfbf);display:grid;gap:6px;font-size:0.8125rem}.ds-ex-keys li{display:flex;justify-content:space-between;gap:12px}.ds-ex-keys code{font-family:var(--font-mono,ui-monospace,monospace);font-size:0.75rem;background:var(--surface-sunken,#ece7db);border-radius:4px;padding:0.1em 0.35em}.ds-ex-keys a{font:0.75rem var(--font-mono,ui-monospace,monospace);color:var(--link,#0b3b36);text-decoration-color:var(--link-underline,#8fa5a0);text-underline-offset:0.2em}.ds-ex-keys a:hover{text-decoration-color:var(--marker,#c07e1b)}"
+    },
+    {
+      "name": "Numbered Rule",
+      "kind": "custom",
+      "refersTo": "",
+      "description": "A spec rule with a mono number and a copyable deep link in the margin.",
+      "html": "<p class=\"ds-rule\"><button class=\"ds-rule-link\" aria-label=\"Copier le lien\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/></svg></button><strong>1.3</strong> La passerelle DOIT rejeter une clé réutilisée avec un corps différent.</p>",
+      "css": ".ds-rule{position:relative;margin:0 0 0 40px;font:400 1rem/1.6 var(--font-body,system-ui);color:var(--text,#0b3b36)}.ds-rule>strong{font-family:var(--font-mono,ui-monospace,monospace);font-size:0.875em;font-weight:600}.ds-rule-link{position:absolute;left:-34px;top:2px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:var(--radius,6px);background:transparent;color:var(--text-muted,#46605b);cursor:pointer;opacity:0;transition:opacity 120ms ease-out}.ds-rule:hover .ds-rule-link,.ds-rule-link:focus-visible{opacity:1}.ds-rule-link:hover{color:var(--text,#0b3b36);background:var(--surface-sunken,#ece7db)}.ds-rule-link:focus-visible{outline:2px solid var(--focus,#c07e1b);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Protocol Reference",
+    "overview": "The site reads like the category standard for an open protocol: a reference you consult, not a brochure you scroll. Chalk ground and ink text by day, deep ink ground and chalk text by night. Every surface is built from the same few materials: a thin rule, a flat panel one step lighter than the ground, and type. The proof is the content itself: real HTTP exchanges, real rule numbers, real conformance results, set in mono and keyed to the spec.\n\nDensity is that of good documentation. Pages carry a 1320px frame, prose holds a 72ch measure, and the spec reader uses a three-column grid (sidebar, prose, on-page table of contents) that follows the reading position. Hierarchy comes from Space Grotesk headings at weight 700 against neutral system body text, not from color or ornament. The brand accent appears only as a marker: the current item, the focused element, a targeted rule.\n\nThe build refuses the decorative hero, the stat strip and rows of icon cards. Status appears as one plain line of facts separated by thin vertical rules.",
+    "keyCharacteristics": [
+      "Two grounds only: chalk (light) and deep ink (dark), both following the system preference with a manual override.",
+      "Ink carries primary actions; amber marks only state.",
+      "Thin 1px rules for all structure; no shadows on content.",
+      "One corner radius for controls and panels (6px).",
+      "Space Grotesk headings, system sans body, system mono for code, rule numbers and counts."
+    ],
+    "rules": [
+      {
+        "name": "The One Marker Rule",
+        "body": "Amber marks state (current, focused, targeted, copied) and nothing else. It never fills a button, a panel or a heading.",
+        "section": "colors"
+      },
+      {
+        "name": "The Never Alone Rule",
+        "body": "Accent amber fails contrast on light grounds, so no meaning rests on it alone; on chalk the marker is always accent deep.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Grounds Rule",
+        "body": "Color tokens are defined by role and swap whole between light and dark; a component references the role, never a mode-specific value.",
+        "section": "colors"
+      },
+      {
+        "name": "The Copyable Is Mono Rule",
+        "body": "Anything a developer would paste (a header, a path, a rule number, a problem type) is set in mono.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Labels are sentence case at normal tracking; no uppercase, no letter-spaced small text.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Rule",
+        "body": "Separation is a 1px rule in `rule` or `rule-strong`. If a surface seems to need a shadow, it needs a border.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do reserve amber for state: current nav (2px underline), active table of contents bar, focus outline (2px, 2px offset), targeted rule, copied link.",
+      "Do use accent deep as the marker on chalk and accent on deep ink.",
+      "Do separate everything with 1px hairlines and step surfaces tonally (ground, surface, sunken).",
+      "Do keep every control and panel at the 6px radius.",
+      "Do set code, rule numbers, paths and counts in system mono with tabular numbers.",
+      "Do show real exchanges and real rule references as the proof on a page.",
+      "Do keep running text within 72ch and leads within 62ch."
+    ],
+    "donts": [
+      "Don't add shadows to content, panels or buttons.",
+      "Don't use amber as a fill, a heading color or the only carrier of meaning.",
+      "Don't build a decorative hero, a stat strip, or rows of icon cards.",
+      "Don't put uppercase tracked labels or eyebrows above headings.",
+      "Don't set body text in Space Grotesk; it is for headings and the wordmark.",
+      "Don't recolor the logo or color more than one of its arcs."
+    ]
+  }
+}
