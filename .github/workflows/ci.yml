@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: false
+      - run: uvx --from actionlint-py==1.7.12.25 actionlint
+
+  site:
+    runs-on: ubuntu-latest
+    env:
+      OPENFSP_ADRS_DIR: sources/adrs
+      OPENFSP_ORG_DIR: sources/openfsp
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: true
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun test
+      - run: bun run build
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: true
+      - name: build
+        run: docker build -t openfsp-site:ci .
+      - name: smoke test
+        run: |
+          docker run -d -p 8080:8080 openfsp-site:ci
+          for _ in $(seq 1 20); do
+            curl -sf http://localhost:8080/health && break
+            sleep 0.5
+          done
+          curl -sf http://localhost:8080/ > /dev/null
+          curl -sf http://localhost:8080/problems/provider-timeout/ > /dev/null
+          curl -sf http://localhost:8080/en/spec/api-paiements/ > /dev/null
