@@ -1,0 +1,160 @@
+---
+title: Data model
+description: The shared types of the API (Money, phone number, identifiers, timestamps, fees, metadata) and the JSON conventions every request and response follows.
+---
+
+The reasons behind these rules are in [Decisions](/docs/decisions#0002).
+
+## 1. Types
+
+| Type                | JSON form                     | Example                                                                 |
+| ------------------- | ----------------------------- | ----------------------------------------------------------------------- |
+| `Money`             | object                        | `{"amount": 125000, "currency": "HTG"}`                                 |
+| `Currency`          | string, single value `HTG`    | `"HTG"`                                                                 |
+| `PhoneNumber`       | string, E.164                 | `"+50934567890"`                                                        |
+| `ResourceId`        | opaque string                 | `"pay_01J9ZK3QF8XN2M7VYB4C6D8E0G"`                                      |
+| `Reference`         | string chosen by the merchant | `"INV-2026-00184"`                                                      |
+| `ProviderReference` | opaque string                 | `"MC-8837291"`                                                          |
+| `Timestamp`         | string, RFC 3339 UTC          | `"2026-08-17T14:32:07.412Z"`                                            |
+| `Date`              | string, RFC 3339 `full-date`  | `"2026-09-28"` ([lifecycle 10.1](/docs/spec/lifecycle#10.1))            |
+| `Fee`               | object                        | `{"amount": {"amount": 1250, "currency": "HTG"}, "bearer": "merchant"}` |
+| `Metadata`          | object of strings             | `{"order_id": "184"}`                                                   |
+
+## 2. JSON conventions
+
+**2.1.** Request and response bodies are JSON (RFC 8259), encoded in UTF-8.
+
+**2.2.** Field names are `lower_snake_case` and MUST NOT change within a major version.
+
+**2.3.** A client MUST ignore an unknown response field.
+
+**2.4.** A server MUST reject with `400` a request body containing an unknown field, naming the field.
+
+**2.5.** For an OPTIONAL field, absence and `null` are equivalent. Implementations SHOULD omit the field rather than send `null`. A REQUIRED field MUST NOT be `null`.
+
+**2.6.** Strings, except `Metadata` values (9.3), SHOULD be normalized to NFC before storage and comparison. Every length limit counts Unicode code points.
+
+**2.7.** Booleans and numbers are native JSON types, never strings.
+
+## 3. `Money`
+
+**3.1.** REQUIRED fields: `amount`, `currency`.
+
+**3.2.** `amount` is an integer in gourde cents: `125000` is 1,250.00 HTG.
+
+**3.3.** `amount` MUST be a JSON number with no fractional part and no exponent.
+
+**3.4.** `amount` MUST be between -(2⁵³ - 1) and 2⁵³ - 1 inclusive. Implementations MUST reject any value outside this range.
+
+**3.5.** An implementation MUST NOT represent an amount as a floating-point value, even transiently.
+
+**3.6.** Unless another specification says otherwise, a request amount MUST be strictly positive. A zero amount MUST be rejected.
+
+**3.7.** Two `Money` values are equal if their `amount` values are equal.
+
+**3.8.** An implementation MUST NOT round an amount.
+
+**3.9.** An amount received from the provider MUST be converted from its textual decimal form, without going through a float. If an amount is not exact to the cent, the gateway MUST treat the response as unusable (`provider-error`).
+
+## 4. Currency
+
+**4.1.** The only currency is the gourde: `currency` MUST be `"HTG"` (ISO 4217, exponent 2). Any other value MUST be rejected with `invalid-field`.
+
+**4.2.** Adding a currency requires a decision record.
+
+## 5. Phone number
+
+**5.1.** E.164 format, `^\+[1-9]\d{1,14}$`.
+
+**5.2.** Valid: `"+50934567890"`. Invalid: `"34567890"`, `"+509 34 56 78 90"`, `"+509-3456-7890"`, `"050934567890"`.
+
+**5.3.** A gateway MUST NOT infer a country code from a national number and MUST reject any value that does not conform to 5.1. An SDK MAY convert local input to E.164. A merchant interface MAY display a Haitian number as `+509 40 00 0000`; the exchanged value stays E.164 (`+50940000000`).
+
+**5.4.** A syntactically valid number MUST NOT be treated as verified.
+
+**5.5.** A number received from the provider MUST be converted to E.164 according to that provider's documented format (`50937007294` becomes `"+50937007294"`). A number whose conversion is not determined by that format MUST be omitted.
+
+## 6. Identifiers
+
+### 6.1. `ResourceId`
+
+**6.1.1.** 1 to 64 characters from `A-Za-z0-9_-`, assigned by the gateway at creation, immutable.
+
+**6.1.2.** Opaque: a client MUST NOT parse it, infer an order from it, or construct one.
+
+**6.1.3.** Implementations SHOULD generate it as a version 7 UUID (RFC 9562). Any generator that conforms to 6.1.1 and 6.1.4 is allowed.
+
+**6.1.4.** It MUST NOT be guessable. Sequential integers and counters are forbidden.
+
+**6.1.5.** A type prefix followed by an underscore (`pay_`, `rfd_`) is RECOMMENDED. It is part of the opaque value.
+
+### 6.2. `Reference`
+
+**6.2.1.** 1 to 128 characters from `A-Za-z0-9._:/-`, supplied by the merchant at creation, immutable.
+
+**6.2.2.** A `Reference` MUST be unique among resources of the same type on the same gateway, whichever principal created it. The gateway MUST reject a creation whose reference is already in use.
+
+**6.2.3.** The `Reference` is the primary correlation key, in particular to find a payment whose creation received no response.
+
+**6.2.4.** The gateway MUST NOT send the `Reference` to the provider; it sends the order identifier derived from it ([idempotency 7.2](/docs/spec/idempotency#7.2)). The `Reference` MUST NOT contain personal data or a secret identifier.
+
+**6.2.5.** How it relates to `Idempotency-Key` is in [idempotency 6](/docs/spec/idempotency#6).
+
+### 6.3. `ProviderReference`
+
+**6.3.1.** Opaque string of at most 255 characters, assigned by the provider.
+
+**6.3.2.** OPTIONAL: absent before the provider responds, or permanently if the provider never supplied one.
+
+**6.3.3.** A client MUST NOT use it as the primary correlation key nor assume it is unique across providers.
+
+### 6.4. `IdempotencyKey`
+
+**6.4.1.** 1 to 255 characters from `A-Za-z0-9_-`, carried by the `Idempotency-Key` header. Semantics: [idempotency](/docs/spec/idempotency).
+
+## 7. Timestamp
+
+**7.1.** RFC 3339 `date-time` format, in UTC, with an uppercase `Z`: `"2026-08-17T14:32:07.412Z"`.
+
+**7.2.** A numeric offset, a lowercase `z` or a date without a time MUST be rejected.
+
+**7.3.** Seconds are REQUIRED; fractions, down to the millisecond, are OPTIONAL. A client MUST accept them; a server MUST NOT require them.
+
+**7.4.** Timestamps MUST NOT serve as a total order between events. A client MUST NOT derive a sequence from them.
+
+**7.5.** A timestamp received from the provider without an offset MUST be interpreted in the time zone of the gateway's business day: `America/Port-au-Prince` by default, configurable by the operator. An ambiguous time (return to standard time) MUST be resolved to the later instant. A relative duration (`expiredAt: 300`) MUST run from receipt of the response.
+
+## 8. `Fee`
+
+**8.1.** Provider fees on a payment.
+
+| Field    | Type    | Presence | Notes                  |
+| -------- | ------- | -------- | ---------------------- |
+| `amount` | `Money` | REQUIRED | In HTG.                |
+| `bearer` | string  | REQUIRED | `merchant` or `payer`. |
+
+**8.2.** An absent `Fee` means "unknown"; zero fees are a zero amount. A client MUST NOT display absent fees as zero nor derive them by subtraction.
+
+**8.3.** `bearer` reports who bore the fees according to the provider. The gateway MUST NOT let a client set it.
+
+**8.4.** The gateway MUST NOT delay a terminal transition while waiting for the fees, nor guess them.
+
+**8.5.** A gateway whose provider never reports fees MUST NOT advertise `payments.fee`.
+
+## 9. `Metadata`
+
+**9.1.** OPTIONAL object of strings to strings, supplied by the merchant, returned wherever the resource is returned.
+
+**9.2.** At most 20 keys; keys of 1 to 40 characters from `A-Za-z0-9_.-`; values of at most 500 characters. Any value other than a string is invalid.
+
+**9.3.** The gateway MUST store and return metadata unaltered, and MUST NOT interpret it.
+
+**9.4.** The gateway MUST NOT send metadata to the provider, unless a specification explicitly requires it for a named operation.
+
+**9.5.** Merchants SHOULD NOT put personal data in it and MUST NOT put secret identifiers in it.
+
+## 10. Security
+
+**10.1.** Phone numbers MUST NOT appear in logs other than the audit log ([authentication 10](/docs/spec/authentication#10)), in error messages, or in telemetry.
+
+**10.2.** The gateway SHOULD document that metadata is not encrypted at rest, unless the operator encrypts it.

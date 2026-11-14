@@ -1,0 +1,331 @@
+---
+title: Conformance
+description: What a conformance claim states, which targets and levels the suite tests, what the suite and its report contain, and how the mock server stands in for providers.
+---
+
+The reasons behind these rules are in [Decisions](/docs/decisions#0015).
+
+## 1. Definition
+
+**1.1.** A conformance claim is a triple: target, level, protocol version. An incomplete claim is not recognized; the party publishing it MUST NOT present it as one.
+
+**1.2.** Conformance holds for one version of the specification; a result on one major version does not hold for another.
+
+**1.3.** Conformance is a property of a deployment configuration, not of source code.
+
+**1.4.** A result is dated and reproducible: the same implementation, the same suite version and the same configuration MUST give the same result (9.6).
+
+## 2. Targets
+
+**2.1.**
+
+| Target          | Tested                                   | Replaced by                      |
+| --------------- | ---------------------------------------- | -------------------------------- |
+| Client          | Application or SDK that calls a gateway. | A conforming reference gateway.  |
+| Gateway         | Server implementing the protocol.        | The mock server (9) as provider. |
+| Native provider | Provider implementing OpenFSP directly.  | Nothing.                         |
+
+**2.2.** Client conformance covers how responses are used: recovery by reference, return URL not taken as proof, reuse of the idempotency key, payment durably `pending`.
+
+**2.3.** Section 5 defines the tests of the gateway target.
+
+**2.4.** Tests of the native provider target: 5.7.
+
+**2.5.** A run targets a single target.
+
+## 3. Levels
+
+**3.1.** **Core**: the base capability ([API 2](/docs/spec/payments-api#2)) and everything required whatever the capability: data model, lifecycle, idempotency, errors, authentication, capability discovery, limits when declared, refusal tests of 5.4 except those of 5.4.1.
+
+**3.2.** An implementation that does not satisfy Core is not conforming.
+
+**3.3.** A profile carries the name of the capability tested. A profile MUST NOT be claimed for a capability that is not advertised.
+
+| Profile                    | Capability                       | Specification                                                                    |
+| -------------------------- | -------------------------------- | -------------------------------------------------------------------------------- |
+| `payments.lookup`          | Authoritative lookup             | [capabilities 5](/docs/spec/capabilities#5)                                      |
+| `payments.statement`       | Provider statement               | [lifecycle 6.7](/docs/spec/lifecycle#6.7), [statements](/docs/spec/lifecycle#10) |
+| `payments.fee`             | Fees reported by the provider    | [data model 8](/docs/spec/data-model#8)                                          |
+| `webhooks.verify`          | Callbacks signed by the provider | [lifecycle 6.5](/docs/spec/lifecycle#6.5) (a)                                    |
+| `webhooks.per_payment_url` | Payment-specific callback URL    | [lifecycle 6.6](/docs/spec/lifecycle#6.6)                                        |
+| `webhooks.emit`            | Signed events                    | [webhooks](/docs/spec/webhooks)                                                  |
+
+**3.4.** The specification of a capability MUST define the tests of its profile.
+
+**3.5.** A failed Core test fails Core. The suite MUST NOT report Core as passed when a Core test has failed, nor report a Core pass rate.
+
+**3.6.** Passing every profile is not an additional level.
+
+## 4. Execution
+
+**4.1.** Any party can run the suite, against the implementation of its choice; it produces the report of 7.
+
+**4.2.** For a gateway, the suite plays the client and the mock server plays the providers.
+
+**4.3.** The suite MUST NOT require any modification, instrumentation or test mode of the implementation.
+
+**4.4.** Only configuration is permitted: pointing the gateway at the mock server, supplying test credentials and the order identifier derivation key ([idempotency 7.2](/docs/spec/idempotency#7.2)), a key with scope `statements:read` for the tests of 5.11, and the provider's shared callback URL for the test "Unsigned callback, outside payment URL" of 5.4.
+
+**4.5.** The suite drives the control surface of the mock server directly (9.5).
+
+**4.6.** The suite MUST be runnable offline, in continuous integration, without an account.
+
+**4.7.** A test that requires an operator action (attestation, key revocation, declaration of limits, adapter pointed at a closed port) is marked assisted: the suite describes the action, an operator performs it through the gateway's administration or configuration, and the report flags the test as assisted. This is not a modification in the sense of 4.3.
+
+## 5. Content
+
+**5.1. Shape.** Media types ([API 1.4](/docs/spec/payments-api#1.4)), collection envelope ([API 1.12](/docs/spec/payments-api#1.12)), `Request-Id` ([API 1.8](/docs/spec/payments-api#1.8)), problem details ([API 10.1](/docs/spec/payments-api#10.1)), integer `Money` ([data model 3](/docs/spec/data-model#3)), UTC timestamps ([data model 7](/docs/spec/data-model#7)), strict requests and tolerant responses ([data model 2.3, 2.4](/docs/spec/data-model#2.4)).
+
+**5.2. Lifecycle.** Every transition of [lifecycle 2](/docs/spec/lifecycle#2) is reachable, except `pending` to `canceled`, which no simulated provider reports; no terminal state is left; a contradictory report from the mock server produces a conflict, not a transition ([lifecycle 2.2](/docs/spec/lifecycle#2.2)); `failure_reason` is present if and only if `status` is `failed`.
+
+**5.3. Idempotency.** Replay of the stored response ([idempotency 3.2](/docs/spec/idempotency#3.2)); same key with another body rejected ([idempotency 3.3](/docs/spec/idempotency#3.3)); concurrent duplicate never run in parallel, held or rejected with `idempotency-request-in-progress` and `Retry-After` ([idempotency 3.4](/docs/spec/idempotency#3.4)); scoping per principal ([idempotency 2.3](/docs/spec/idempotency#2.3)); duplicate `reference` rejected permanently.
+
+**5.4. Refusals.** Each test checks a refusal or an absence of effect:
+
+| Test                                                          | Expected                                                                                         | Rule                                                     | Mock server                                                     |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------- |
+| Synchronize without `payments.lookup`                         | `capability-not-supported`, no stored state presented as re-read                                 | [capabilities 5.3](/docs/spec/capabilities#5.3)          | statement-only test profile (9.3.5), `PENDING_FOREVER`          |
+| Synchronize a terminal payment without `payments.lookup`      | payment unchanged, `200`                                                                         | [capabilities 5.3.1](/docs/spec/capabilities#5.3.1)      | statement-only test profile (9.3.5), `SUCCESS`                  |
+| Operation of a capability not advertised                      | `capability-not-supported`                                                                       | [capabilities 4.4](/docs/spec/capabilities#4.4)          | no-source test profile (9.3.5), `SUCCESS`                       |
+| `POST` without `Idempotency-Key`                              | `idempotency-key-required`                                                                       | [idempotency 1.3](/docs/spec/idempotency#1.3)            | none                                                            |
+| Unknown outcome, provider with neither idempotency nor lookup | payment `pending`; no resend in the log (9.5.5) for at least 40 s, duration stated in the report | [idempotency 7.3](/docs/spec/idempotency#7.3)            | no-source test profile (9.3.5), `TIMEOUT`                       |
+| Unknown provider status                                       | payment `pending`                                                                                | [lifecycle 1.1](/docs/spec/lifecycle#1.1)                | `mock_openfsp`, `UNKNOWN_STATUS`                                |
+| Unsigned callback, outside payment URL, announcing a success  | no transition                                                                                    | [lifecycle 6.3](/docs/spec/lifecycle#6.3)                | `mock_openfsp`, `PENDING_FOREVER`, callback forged by the suite |
+| Callback on payment URL with wrong token                      | rejected without effect                                                                          | [lifecycle 6.6](/docs/spec/lifecycle#6.6)                | `mock_natcash`, `PENDING_FOREVER`, callback forged by the suite |
+| Statement without the payment, `expires_at` not elapsed       | payment `pending`, no `expired`                                                                  | [lifecycle 5.3, 6.7](/docs/spec/lifecycle#6.7)           | statement-only test profile (9.3.5), `PENDING_FOREVER`          |
+| API request trying to set the state of a payment              | state unchanged                                                                                  | [lifecycle 6.8](/docs/spec/lifecycle#6.8)                | `mock_moncash`, `PENDING_FOREVER`                               |
+| Provider returning credentials in an error                    | `[REDACTED]` in `provider_detail`                                                                | [authentication 9.5, 9.6](/docs/spec/authentication#9.6) | `mock_openfsp`, `CREDENTIAL_ECHO`                               |
+| Unknown, revoked, other-environment key                       | three indistinguishable `unauthenticated`                                                        | [authentication 4.7](/docs/spec/authentication#4.7)      | none; assisted (4.7)                                            |
+
+**5.4.1.** The test "Callback on payment URL with wrong token" belongs to the `webhooks.per_payment_url` profile; a gateway that does not advertise this capability is not subject to it.
+
+**5.5.** Each test that depends on a provider behaviour names its mock server scenario (9.4.3); every scenario has at least one test. The contradictory report of 5.2 uses `CONTRADICT`, the amount mismatch of [lifecycle 6.3.2](/docs/spec/lifecycle#6.3.2) uses `AMOUNT_MISMATCH`.
+
+**5.6.** Limitation: a gateway that advertises `webhooks.verify` without verifying passes every functional test. The suite MUST flag this (7.4).
+
+**5.7.** Native provider: gateway tests minus the rows of 5.4 about provider behaviour; refusals on its own capabilities apply. A test that requires an outcome chosen by the suite (refusal, expiry, transition) is assisted (4.7): the claimant produces the outcome, the suite checks the response. Since the suite's requests are those the provider receives, a single creation is checked by a lookup by reference, not in the log (9.5.5).
+
+**5.7.1.** Tests specific to the native provider:
+
+| Test                                        | Expected                                                  | Rule                                                |
+| ------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------- |
+| Advertised provider                         | a single provider, its own identifier                     | [capabilities 3.2.6](/docs/spec/capabilities#3.2.6) |
+| Published keys                              | `webhook_keys` of the configuration document, Ed25519 JWK | [webhooks 6.1.1](/docs/spec/webhooks#6.1.1)         |
+| Event delivered to `callback_url`           | `payment.succeeded` signed, verified with `webhook_keys`  | [API 5.1.8](/docs/spec/payments-api#5.1.8)          |
+| `callback_url` over `http` outside loopback | creation rejected                                         | [API 5.1.8](/docs/spec/payments-api#5.1.8)          |
+| Statement without `payments.statement`      | `capability-not-supported`                                | [capabilities 4.4](/docs/spec/capabilities#4.4)     |
+
+**5.8.** Client tests: key reuse ([idempotency 8.1](/docs/spec/idempotency#8.1)), no resend of a non-replayable `4xx` ([idempotency 8.2](/docs/spec/idempotency#8.2)), recovery by reference ([API 5.2.3](/docs/spec/payments-api#5.2.3)), return URL not taken as proof ([API 7.3](/docs/spec/payments-api#7.3)), tolerance of unknown members, payment durably `pending`, and for subscribers, verification before action ([webhooks 5.9](/docs/spec/webhooks#5.9)) with functional polling when every event is withheld ([webhooks 10.2](/docs/spec/webhooks#10.2)).
+
+**5.9.** The suite MUST cover each observable requirement with at least one test, and the report MUST make the test-to-requirement mapping explicit.
+
+**5.10. Provider failures.** Each test exercises a scenario of 9.4.3; the log is the one of 9.5.5:
+
+| Test                                                                               | Expected                                                                                                                                                                                | Rule                                                                                           | Mock server                                                                                  |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Provider refusal                                                                   | synchronization `200`, `failed`, `failure_reason` `declined`, `failure_detail` carrying the provider's code and message unaltered                                                       | [lifecycle 7.2, 7.4](/docs/spec/lifecycle#7.4), [API 10.2.2](/docs/spec/payments-api#10.2.2)   | `mock_openfsp`, `DECLINE`                                                                    |
+| Insufficient funds                                                                 | synchronization `200`, `failed`, `failure_reason` `insufficient_funds`                                                                                                                  | [lifecycle 7.2](/docs/spec/lifecycle#7.2)                                                      | `mock_openfsp`, `INSUFFICIENT`                                                               |
+| Creation without response, payment succeeded at the provider, resend with same key | `504 provider-timeout`, `effect` `unknown`; a single creation in the log; `succeeded` after synchronization                                                                             | [API 5.1.6](/docs/spec/payments-api#5.1.6), [idempotency 7.1, 7.2](/docs/spec/idempotency#7.2) | `mock_openfsp`, `TIMEOUT_THEN_SUCCESS`                                                       |
+| Creation without response, no payment at the provider, resend with same key        | `504 provider-timeout`, `effect` `unknown`; in the log, a lookup precedes any second creation; no terminal state without an authoritative source                                        | [idempotency 7.1](/docs/spec/idempotency#7.1), [lifecycle 3.2](/docs/spec/lifecycle#3.2)       | `mock_openfsp`, `TIMEOUT_THEN_NOTHING`                                                       |
+| Expiry reached at the provider                                                     | `expired` after synchronization, `completed_at` present                                                                                                                                 | [lifecycle 4, 5.3](/docs/spec/lifecycle#5.3) (a)                                               | `mock_openfsp`, `EXPIRE`, synchronization after the one-minute expiry                        |
+| Outcome without callback, provider with lookup                                     | state reported by the lookup, after synchronization                                                                                                                                     | [capabilities 5.2](/docs/spec/capabilities#5.2)                                                | `mock_openfsp`, `NO_CALLBACK`                                                                |
+| Outcome without callback, statement only                                           | terminal state matching the statement entry                                                                                                                                             | [lifecycle 6.5, 6.7](/docs/spec/lifecycle#6.7)                                                 | statement-only test profile (9.3.5), `NO_CALLBACK`                                           |
+| Late callback on a terminal payment                                                | payment unchanged; no event if `webhooks.emit` is advertised                                                                                                                            | [lifecycle 3.1](/docs/spec/lifecycle#3.1), [webhooks 11.1](/docs/spec/webhooks#11.1)           | `mock_openfsp`, `LATE_CALLBACK`, terminal by synchronization then callback delivered (9.5.1) |
+| Same signed callback received several times                                        | a single transition, `completed_at` unchanged; a single transition event if `webhooks.emit` is advertised                                                                               | [lifecycle 3.1, 4.3](/docs/spec/lifecycle#4.3), [webhooks 11.1](/docs/spec/webhooks#11.1)      | `mock_openfsp`, `DUPLICATE_CALLBACK`                                                         |
+| Provider error at creation                                                         | `502 provider-error`, `retryable` `true`, `effect` `unknown`; `provider_detail`, if present, equal to the provider's code and message; resend with same key without `Idempotent-Replay` | [API 10.6.5, 10.8.2, 10.9.6](/docs/spec/payments-api#10.9.6)                                   | `mock_openfsp`, `PROVIDER_ERROR`                                                             |
+| Connection refused at creation                                                     | `503 provider-unavailable`, `retryable` `true`, `effect` `none`                                                                                                                         | [API 10.9.6, 10.9.6.1](/docs/spec/payments-api#10.9.6.1)                                       | none; adapter pointed at a closed port, assisted (4.7)                                       |
+| Success reported for another amount                                                | payment `pending`, never `succeeded`; the report to the operator is not observable through the API                                                                                      | [lifecycle 6.3.2, 6.4](/docs/spec/lifecycle#6.4)                                               | `mock_openfsp`, `AMOUNT_MISMATCH`                                                            |
+
+**5.11. Statements.** Tests of [lifecycle 10.7.1](/docs/spec/lifecycle#10.7.1):
+
+| Test                                                                  | Expected                                                                                                                                                                             | Rule                                                    | Mock server                                                             |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Entry for a gateway payment                                           | `match` `matched`, `payment` equal to the payment `id`                                                                                                                               | [lifecycle 10.4.1, 10.4.2](/docs/spec/lifecycle#10.4.2) | `mock_openfsp`, `SUCCESS`                                               |
+| Entry with no matching payment                                        | `match` `unmatched`, entry listed by `GET /v1/statement_entries?match=unmatched`; the absence of a created payment and the report to the operator are not observable through the API | [lifecycle 10.4.3, 10.6.2](/docs/spec/lifecycle#10.6.2) | `mock_openfsp`                                                          |
+| `succeeded` payment missing from a closed statement                   | payment listed in `missing_payments`                                                                                                                                                 | [lifecycle 10.4.4](/docs/spec/lifecycle#10.4.4)         | `mock_openfsp`, `PENDING_FOREVER`, `succeeded` attested; assisted (4.7) |
+| Entry booked after midnight UTC and before midnight in Port-au-Prince | `business_date` equal to the date of `booked_at` in the time zone of the business day                                                                                                | [lifecycle 10.1.2, 10.1.3](/docs/spec/lifecycle#10.1.3) | `mock_openfsp`, `SUCCESS`                                               |
+
+**5.12. Capabilities and order identifier.**
+
+| Test                                                                                             | Expected                                                                                                                                                                                  | Rule                                                      | Mock server                                                |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------- |
+| Capabilities advertised for each simulated provider                                              | no reserved name; no capability outside those of 9.3.1                                                                                                                                    | [capabilities 1.3, 2.2, 7.2](/docs/spec/capabilities#7.2) | `mock_openfsp`, `mock_moncash`, `mock_natcash`             |
+| Amount equal to `min_amount`, then to `max_amount`                                               | payment created (`201`)                                                                                                                                                                   | [capabilities 6.7, 7.3](/docs/spec/capabilities#7.3)      | `mock_openfsp`, `SUCCESS`; limits declared, assisted (4.7) |
+| Amount one cent below `min_amount`, one cent above `max_amount`, not a multiple of `amount_step` | `amount-out-of-range` carrying the declared limits; no request in the log (9.5.5)                                                                                                         | [capabilities 6.7, 7.3](/docs/spec/capabilities#7.3)      | `mock_openfsp`, `SUCCESS`; limits declared, assisted (4.7) |
+| Order identifier                                                                                 | `provider_order_id` equal to the identifier computed by the suite with the derivation key and to the one received in the log (9.5.5); the scenario declared under this identifier applies | [idempotency 7.2](/docs/spec/idempotency#7.2)             | `mock_openfsp`, `DECLINE`                                  |
+
+**5.13. Authentication.**
+
+| Test                                                                 | Expected                                                                                                               | Rule                                                          | Mock server          |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------- |
+| Missing, malformed, unknown, revoked, expired, other-environment key | six `unauthenticated` with the same `title`, no distinguishing `detail`; `WWW-Authenticate: Bearer` on the missing key | [authentication 3.3, 4.7, 7.6](/docs/spec/authentication#7.6) | none; assisted (4.7) |
+
+**5.14.** The tests of 5.11 and the test "Outcome without callback, statement only" of 5.10 belong to the `payments.statement` profile; a gateway that does not advertise this capability is not subject to them.
+
+## 6. Versions
+
+**6.1.** The suite tests a single minor version of the protocol and MUST refuse a major version it does not know.
+
+**6.2.** A result names the suite version, the protocol version, the target, the level, the profiles, the date and the configuration.
+
+**6.3.** A result holds only for the configuration that produced it: obtained with the mock server, it does not hold for a real provider (9.8).
+
+**6.4.** A result becomes stale when the implementation or the protocol version changes. The party citing a result MUST cite the version of the implementation tested.
+
+**6.5.** A patch version MAY add tests; the suite release notes MUST say so.
+
+## 7. Report
+
+**7.1.** The report is machine-readable; only its content is specified.
+
+**7.2.** It carries the triple of 1.1, the suite version, the date, the configuration, one result per test and the matching requirement.
+
+**7.3.** A failed test states the expected and the observed.
+
+**7.4.** The report MUST mention the limitations of 5.6 on every run, even a passing one.
+
+**7.5.** The party publishing a report SHOULD publish the configuration that reproduces it.
+
+**7.6.** Claims based on a report fall under [governance 8](https://github.com/openfspht/openfsp/blob/main/GOVERNANCE.md#8-nom-et-marques-de-conformité).
+
+## 8. Security
+
+**8.1.** A conformance report is not a security audit (5.6, 7.4).
+
+**8.2.** The suite MUST NOT require a real provider secret; it runs against the mock server (9) with test credentials.
+
+## 9. Mock server
+
+The rules of 9 bind the mock server. The last sentence of 9.4.2, 9.7.3 and 9.7.6 also bind the gateway.
+
+### 9.1. Role
+
+**9.1.1.** The mock server replaces the providers. A gateway configured against it runs its adapters, its state machine and its handling of ordinary callbacks.
+
+**9.1.2.** It tests the gateway and the client (limitations: 9.8).
+
+**9.1.3.** It simulates only specified capabilities ([capabilities 2.2](/docs/spec/capabilities#2.2)).
+
+### 9.2. Guiding rule
+
+**9.2.1.** For each behaviour where the documented providers differ ([architecture 8](/docs/architecture#8)), `mock_openfsp` and the test profiles (9.3.5) reproduce the one that places the most constraints on the gateway. `mock_moncash` and `mock_natcash` reproduce the dialect of their provider, as the provider documents it and as observed in its sandbox.
+
+**9.2.2.** It invents no capability, and each optional capability is missing from at least one simulated provider, test profiles of 9.3.5 included.
+
+### 9.3. Simulated providers
+
+**9.3.1.**
+
+| Provider       | Capabilities                                                                                       | Case exercised                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `webhooks.verify`, `webhooks.per_payment_url` | Native provider (9.3.2): signed callbacks, lookup, payment URL, statement. |
+| `mock_moncash` | `payments`, `payments.lookup`                                                                      | MonCash dialect: fixed return URL, no callback.                            |
+| `mock_natcash` | `payments`, `payments.lookup`, `webhooks.verify`, `webhooks.per_payment_url`                       | NatCash dialect: signed callbacks, payment URL.                            |
+
+**9.3.2.** `mock_openfsp` is a native provider (2.4, 5.7): it exposes the OpenFSP API itself and signs its callbacks per [webhooks](/docs/spec/webhooks) (RFC 9421). Only the generic OpenFSP adapter serves it. `mock_moncash` and `mock_natcash` imitate the dialect of their provider (9.7.5).
+
+**9.3.3.** Over-the-counter payment is deferred: no simulated provider advertises its capabilities.
+
+**9.3.4.** Simulated provider identifiers use the `mock_` prefix, reserved by the [registry](https://github.com/openfspht/openfsp/blob/main/registries/providers.md). No real provider receives an identifier there.
+
+**9.3.5.** The mock server also accepts, in its configuration, provider profiles reserved for tests, defined by capability flags (lookup, callbacks, statements, idempotency by order identifier). The suite uses them for the cases the three providers of 9.3.1 do not isolate:
+
+| Profile        | Sources of [lifecycle 6.5](/docs/spec/lifecycle#6.5) | Case exercised                                                                                                                                       |
+| -------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No source      | (e) only, without idempotency                        | Each payment awaits an attestation ([lifecycle 6.8](/docs/spec/lifecycle#6.8)); no automatic resend ([idempotency 7.3](/docs/spec/idempotency#7.3)). |
+| Statement only | (d), (e)                                             | Synchronization without `payments.lookup`; with `NO_CALLBACK`, the gateway has only the statement.                                                   |
+
+**9.3.6.** `mock_openfsp` delivers to `callback_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)) only events for transitions to a terminal state, never `payment.created`. `sequence` increases per payment and counts the undelivered creation: the transition carries `2` ([webhooks 8.1](/docs/spec/webhooks#8.1)).
+
+**9.3.7.** Besides its active key, `mock_openfsp` publishes a revoked key, an expired key and the key of a second principal, so that the tests of 5.3 and 5.13 run without operator action against the native provider target.
+
+### 9.4. Failures
+
+**9.4.1.** Each scenario is chosen deterministically at payment creation; none occurs without being requested.
+
+**9.4.2.** Selector: before creation, the suite declares the scenario of a payment on the control surface (9.5), under the order identifier it computes with the derivation key supplied in configuration ([idempotency 7.2](/docs/spec/idempotency#7.2), 4.4). The gateway has no code path specific to the mock server.
+
+**9.4.3.** Scenarios:
+
+| Scenario               | Behaviour                                                     | Rule exercised                                      |
+| ---------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
+| `SUCCESS`              | Success with no added delay; default scenario (9.4.5).        | Nominal path.                                       |
+| `DECLINE`              | Failure, declined.                                            | [Lifecycle 7.2](/docs/spec/lifecycle#7.2)           |
+| `INSUFFICIENT`         | Failure, insufficient funds.                                  | [Lifecycle 7.2](/docs/spec/lifecycle#7.2)           |
+| `TIMEOUT`              | Request accepted, no response.                                | [Idempotency 5.2, 7.1](/docs/spec/idempotency#7.1)  |
+| `TIMEOUT_THEN_SUCCESS` | No response, payment succeeded at the provider.               | [Idempotency 7.1](/docs/spec/idempotency#7.1)       |
+| `TIMEOUT_THEN_NOTHING` | No response; no payment created at the provider.              | [Idempotency 7.1](/docs/spec/idempotency#7.1)       |
+| `PENDING_FOREVER`      | Stays pending until instructed (9.5).                         | [Lifecycle 1.1](/docs/spec/lifecycle#1.1)           |
+| `EXPIRE`               | Expires at the expiry time, set to one minute after creation. | [Lifecycle 5](/docs/spec/lifecycle#5)               |
+| `NO_CALLBACK`          | Outcome without callback.                                     | [Lifecycle 6.2, 6.5](/docs/spec/lifecycle#6.5)      |
+| `LATE_CALLBACK`        | Very late callback.                                           | Ordering, inattentive subscribers.                  |
+| `DUPLICATE_CALLBACK`   | Same callback several times.                                  | [Lifecycle 3.1](/docs/spec/lifecycle#3.1)           |
+| `UNKNOWN_STATUS`       | Never-seen status.                                            | [Lifecycle 1.1](/docs/spec/lifecycle#1.1)           |
+| `PROVIDER_ERROR`       | Provider-side error.                                          | [API 10.9.6](/docs/spec/payments-api#10.9.6)        |
+| `CREDENTIAL_ECHO`      | Returns the credentials it received in the error.             | [Authentication 9.5](/docs/spec/authentication#9.5) |
+| `CONTRADICT`           | Reports a success, then a failure on the next lookup.         | [Lifecycle 6.4](/docs/spec/lifecycle#6.4)           |
+| `AMOUNT_MISMATCH`      | Reports the success of a different amount.                    | [Lifecycle 6.3.2](/docs/spec/lifecycle#6.3.2)       |
+
+**9.4.4.** A scenario is added only if a specification defines a behaviour impossible to trigger otherwise.
+
+**9.4.5.** Outside automatic mode (9.4.9), a payment with no declared scenario behaves as `SUCCESS`.
+
+**9.4.6.** The mock server responds after a short fixed delay, never instantly.
+
+**9.4.7.** A simulated provider offers only the scenarios its real counterpart can produce:
+
+| Provider       | Scenarios                                                                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `mock_moncash` | `SUCCESS`, `PENDING_FOREVER`, `EXPIRE`, `TIMEOUT`, `TIMEOUT_THEN_SUCCESS`, `TIMEOUT_THEN_NOTHING`, `PROVIDER_ERROR` |
+| `mock_natcash` | those of `mock_moncash`, `DECLINE`, `NO_CALLBACK`, `DUPLICATE_CALLBACK`, `LATE_CALLBACK`                            |
+| `mock_openfsp` | all those of 9.4.3                                                                                                  |
+
+A test profile (9.3.5) offers the scenarios of 9.4.3 compatible with its flags.
+
+**9.4.8.** The control surface refuses with `422` a scenario the targeted provider does not offer.
+
+**9.4.9.** The control surface offers an automatic mode: each new order receives, in turn, the next scenario of its provider (9.4.7).
+
+**9.4.10.** The mock server does not refuse the connection for a single payment. Connection refused ([API 10.9.6.1](/docs/spec/payments-api#10.9.6.1)) is tested by pointing the adapter at a closed port, an assisted test (4.7).
+
+### 9.5. Control
+
+**9.5.1.** A control surface, separate from the interface the gateway sees, lets the caller declare the scenario of an upcoming payment, resolve a pending payment and deliver a withheld callback. It offers no clock control: expiry is exercised with `EXPIRE` (9.4.3).
+
+**9.5.2.** It is driven by the test suite, never by the gateway.
+
+**9.5.3.** Reserved.
+
+**9.5.4.** It is bound to the loopback interface or placed behind the authentication of the test environment.
+
+**9.5.5.** The control surface MUST expose to the suite the log of requests received from the gateway, per simulated provider: method, path and body as received. The suite checks there a call to the provider, or its absence, without instrumenting the gateway (4.3).
+
+### 9.6. Determinism
+
+**9.6.1.** The same sequence of requests on a freshly started mock server produces the same sequence of responses.
+
+**9.6.2.** State is specific to the instance and not kept across restarts.
+
+### 9.7. Separation from production
+
+**9.7.1.** Every simulated payment carries a `mock_` identifier (9.3.4).
+
+**9.7.2.** Reserved.
+
+**9.7.3.** A gateway configured against the mock server says so in its startup log.
+
+**9.7.4.** The mock server never reports the identifier of a real provider and produces no artefact that could pass for a settlement.
+
+**9.7.5.** A simulated provider MAY imitate the dialect of a real provider if its identifier carries the `mock_` prefix and its display name the mention "(mock)". It never presents itself as the real provider.
+
+**9.7.6.** A deployment pointed at the mock server is in the `test` environment; a `live` key is refused there ([authentication 2.3](/docs/spec/authentication#2.3)).
+
+### 9.8. Limitations
+
+**9.8.1.** The mock server does not prove that an adapter matches its provider.
+
+**9.8.2.** It does not prove that a provider behaves as its documentation says.
+
+**9.8.3.** It does not measure load handling.
+
+**9.8.4.** Its scenarios are derived from the rules of the specification. The dialects of `mock_moncash` and `mock_natcash` follow the provider's documentation and the observations of its sandbox, which prove nothing about production (9.8.1, 9.8.2).

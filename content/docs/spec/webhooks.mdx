@@ -1,0 +1,279 @@
+---
+title: Webhooks
+description: How the gateway signs and delivers events to a subscriber, and how the subscriber verifies, orders and deduplicates them.
+---
+
+The reasons behind these rules are in [Decisions](/docs/decisions#0008).
+
+## 1. Event
+
+**1.1.** An event is the notification that a resource reached a state at a point in time. A delivery is an HTTP request carrying an event. An event may be
+delivered several times.
+
+**1.2.** A verified signature (5) guarantees the sender and the integrity of the body.
+
+**1.3.** An event describes the resource at emission time. If it contradicts a read, the subscriber MUST treat the read as authoritative.
+
+**1.4.** The gateway MUST NOT emit an event for a state the resource has not reached.
+
+## 2. `event` object
+
+The body of a delivery is a single JSON object, never an array or a batch.
+
+```json
+{
+  "id": "evt_01J9ZK4T2A0YHQ8F3W6N5R7B1C",
+  "type": "payment.succeeded",
+  "created_at": "2026-08-17T14:36:11.208Z",
+  "sequence": 3,
+  "resource_type": "payment",
+  "resource_id": "pay_01J9ZK3QF8XN2M7VYB4C6D8E0G",
+  "reference": "INV-2026-00184",
+  "previous_status": "pending",
+  "data": { "id": "pay_01J9ZK3QF8XN2M7VYB4C6D8E0G", "status": "succeeded", "...": "..." }
+}
+```
+
+**2.1.** Fields:
+
+| Field             | Type         | Presence    | Notes                                                                   |
+| ----------------- | ------------ | ----------- | ----------------------------------------------------------------------- |
+| `id`              | `ResourceId` | REQUIRED    | Identifies the event (2.2).                                             |
+| `type`            | string       | REQUIRED    | Registry in 3.2.                                                        |
+| `created_at`      | `Timestamp`  | REQUIRED    | When the creation or transition was recorded, not the delivery attempt. |
+| `sequence`        | integer      | REQUIRED    | Per-resource ordinal (8).                                               |
+| `resource_type`   | string       | REQUIRED    | `payment`.                                                              |
+| `resource_id`     | `ResourceId` | REQUIRED    | Resource concerned.                                                     |
+| `reference`       | `Reference`  | REQUIRED    | Merchant reference.                                                     |
+| `previous_status` | string       | conditional | REQUIRED for a status change.                                           |
+| `data`            | object       | REQUIRED    | Full resource at `created_at` ([API 3](/docs/spec/payments-api#3)).     |
+
+**2.2.** `id` follows the `ResourceId` rules ([data model 6.1](/docs/spec/data-model#6.1)) and MUST be identical across all deliveries of the same event.
+
+**2.3.** `reference` is repeated at the top level in addition to `data`.
+
+**2.4.** `data` is a full snapshot, never a diff.
+
+**2.5.** A subscriber MUST tolerate unknown members in the object and in `data`. The gateway MUST NOT remove a member from the object without a decision record.
+
+**2.6.** A subscriber MUST NOT reject an event solely because `previous_status` differs from the state it holds. It SHOULD then read the resource again.
+
+## 3. Types
+
+**3.1.** `type` matches `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`: `resource_type`, then the event.
+
+**3.2.** Registry:
+
+| Type                | Emitted when                       | `previous_status` |
+| ------------------- | ---------------------------------- | ----------------- |
+| `payment.created`   | A payment is created in `pending`. | absent            |
+| `payment.succeeded` | A payment enters `succeeded`.      | REQUIRED          |
+| `payment.failed`    | A payment enters `failed`.         | REQUIRED          |
+| `payment.expired`   | A payment enters `expired`.        | REQUIRED          |
+| `payment.canceled`  | A payment enters `canceled`.       | REQUIRED          |
+
+**3.3.** A subscriber MUST ignore an unknown `type` and MUST still respond `2xx`.
+
+**3.4.** There is no `payment.updated`: a field change without a transition emits no event.
+
+**3.5.** Adding a type requires a decision record, without a new major version.
+
+**3.6.** The gateway MUST NOT send an endpoint a type it has not subscribed to (7.1).
+
+## 4. Delivery
+
+**4.1.** A delivery is a `POST` to the configured URL, with `Content-Type: application/json`, signed according to 5.
+
+**4.2.** Headers:
+
+| Header                     | Value                                                     |
+| -------------------------- | --------------------------------------------------------- |
+| `Content-Digest`           | SHA-256 of the body (RFC 9530). Covered by the signature. |
+| `OpenFSP-Event-Id`         | Event `id`. Covered by the signature.                     |
+| `OpenFSP-Event-Type`       | Event `type`. Covered by the signature.                   |
+| `OpenFSP-Delivery-Attempt` | Attempt number, starting at `1`. Not covered.             |
+
+A subscriber MUST NOT base a trust decision on an uncovered header. The authoritative values are in the body.
+
+**4.3.** A delivery succeeds on a `2xx` status received within the time limit of 4.5. The gateway MUST NOT parse the response body, act on it, or log it in
+full.
+
+**4.4.** Any other status, connection failure, TLS failure or timeout is a failure, retried according to 9. Exception: `410 Gone` is final. The gateway MUST
+stop retrying that event and SHOULD stop delivering to that endpoint, recording it (9.6).
+
+**4.5.** The gateway MUST put a time limit on connection and response. The total MUST NOT exceed 10 seconds.
+
+**4.6.** A `3xx` MUST be treated as a failure: redirects are not followed.
+
+**4.7.** The body MUST be byte-for-byte identical from one attempt to the next. Only the signature is recomputed.
+
+**4.8.** The gateway MAY deliver in parallel and out of order, and MUST NOT block the deliveries of one resource behind those of another.
+
+## 5. Signature
+
+**5.1.** Every delivery MUST carry an HTTP signature (RFC 9421) in `Signature-Input` and `Signature`, including in development mode.
+
+**5.2.** Covered components, exactly and in this order:
+
+```
+("@method" "@target-uri" "content-type" "content-digest" "openfsp-event-id"
+ "openfsp-event-type")
+```
+
+**5.3.** REQUIRED parameters: `keyid`, `created`, `expires`, `nonce`, `alg`. `tag` MUST be `openfsp-webhook`.
+
+```
+Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
+  "openfsp-event-id" "openfsp-event-type");created=1786977371;expires=1786977671;\
+  keyid="whk_06GWCT5DMSTMH111XG1Q28R4MW";nonce="Zk9tQ1p2WXhLbFEyNw";alg="ed25519";tag="openfsp-webhook"
+Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
+```
+
+**5.4.** The gateway MUST support `ed25519` and use it by default. It MAY offer `ecdsa-p256-sha256` and MUST NOT offer any other algorithm.
+
+**5.5.** `Content-Digest` is REQUIRED, with `sha-256`. The verifier MUST recompute the digest of the received body and compare it with the header.
+
+**5.6.** `created` MUST be the time of the attempt and `expires` at most `created` + 300 seconds. The verifier MUST reject a signature that has expired or whose
+`created` is more than 300 seconds in the future.
+
+**5.7.** `nonce` MUST contain at least 128 unpredictable bits, in base64url, fresh for each attempt. The verifier MUST keep accepted nonces for at least the
+window of 5.6 and MUST reject a repeated nonce.
+
+**5.8.** The nonce cache does not replace deduplication by `id` (8.4). A subscriber MUST apply both.
+
+**5.9.** A subscriber MUST verify before acting, in this order: resolve `keyid` and reject an unknown `keyid`, check `alg` against the key, freshness, nonce,
+digest, then the signature.
+
+**5.10.** The verifier MUST NOT choose the algorithm from `alg`: the key determines it, `alg` is only checked.
+
+**5.11.** Digest and signature comparisons MUST be constant-time.
+
+**5.12.** If verification fails, the subscriber MUST reject the delivery without acting, MUST NOT respond `2xx`, and SHOULD respond `400`.
+
+## 6. Keys
+
+**6.1.** The gateway MUST publish its verification keys as an array of JWKs (RFC 7517) in the `webhook_keys` member of the configuration document
+([capabilities 3.1](/docs/spec/capabilities#3.1)), and nowhere else.
+
+```json
+{
+  "webhook_keys": [
+    {
+      "kid": "whk_06GWCT5DMSTMH111XG1Q28R4MW",
+      "kty": "OKP",
+      "crv": "Ed25519",
+      "alg": "EdDSA",
+      "use": "sig",
+      "x": "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+      "openfsp_status": "active"
+    }
+  ]
+}
+```
+
+**6.1.1.** A native provider that announces `webhooks.verify` publishes its keys the same way, in the `webhook_keys` of its own configuration document.
+
+**6.2.** `kid` MUST equal the `keyid` of 5.3. The verifier MUST accept the pairing of the JOSE name `EdDSA` with the RFC 9421 name `ed25519`.
+
+**6.3.** `openfsp_status` is `active` (signing key) or `retired` (verification only). A decommissioned key (neither `active` nor `retired`) MUST NOT be
+published.
+
+**6.4.** Outside a compromise (12.3), a new key MUST be published at least 24 hours before it signs, and a key MUST stay published at least 24 hours after its
+last use.
+
+**6.5.** A subscriber SHOULD cache the key set and refresh it on an unknown `keyid`, with rate limiting. It MUST NOT refresh it on every delivery.
+
+**6.6.** A subscriber MUST fetch keys only from the configured base URL, and MUST NOT take a key, key URL or certificate from a delivery.
+
+**6.7.** The configuration document that carries the keys is unauthenticated. The gateway MAY rate-limit it.
+
+**6.8.** Private keys are held by the operator. The gateway MUST NOT log them or expose them through an endpoint.
+
+## 7. Subscriber endpoint
+
+**7.1.** The gateway MUST allow configuring, per endpoint: the URL, the event types, and whether it is enabled.
+
+**7.2.** The gateway MUST refuse a non-`https` URL, outside development mode.
+
+**7.3.** The gateway MUST validate the endpoint's TLS certificate and MUST NOT offer an option to disable this validation.
+
+**7.4.** A subscriber SHOULD verify, persist the event and respond `2xx`, then process asynchronously.
+
+**7.5.** A subscriber MUST NOT base an authorization solely on the fact that a request reaches its endpoint.
+
+**7.6.** A subscriber MUST accept any type in 3.2 at any time, including for a resource it does not know.
+
+## 8. Ordering and duplicates
+
+**8.1.** `sequence` starts at `1` for the first event of a resource and increases by one with each event of that resource. It does not order events across
+resources.
+
+**8.2.** The gateway MUST assign `sequence` when the event is recorded and MUST NOT reuse a value for a resource.
+
+**8.3.** A subscriber MUST ignore an event whose `sequence` is less than or equal to the highest already processed for that `resource_id`.
+
+**8.4.** `id` is the deduplication key: a subscriber MUST be able to process the same `id` twice without a second effect.
+
+**8.5.** A subscriber MUST NOT move a resource out of a terminal state on the strength of an event. It SHOULD read the resource again and raise an alert.
+
+**8.6.** On a gap in `sequence`, a subscriber SHOULD read the resource again and SHOULD NOT wait for the missing event.
+
+## 9. Retries
+
+**9.1.** A failed delivery MUST be retried with exponential backoff and jitter.
+
+**9.2.** Minimum schedule, each delay counted from the previous attempt (31 h 12 min 30 s in total, excluding jitter):
+
+| Attempt | Delay      |
+| ------- | ---------- |
+| 1       | immediate  |
+| 2       | 30 seconds |
+| 3       | 2 minutes  |
+| 4       | 10 minutes |
+| 5       | 1 hour     |
+| 6       | 6 hours    |
+| 7       | 24 hours   |
+
+**9.3.** Each delay MUST be extended by a positive random jitter of at least 20%. The gateway MAY space retries further and MUST NOT retry earlier.
+
+**9.4.** After the last attempt, the gateway MUST stop, MUST record the abandonment visibly for the operator, MUST NOT delete the event and MUST NOT modify the
+resource.
+
+**9.5.** The gateway MUST honour `Retry-After` on `429` and `503`, up to a cap it sets.
+
+**9.6.** The gateway MAY disable an endpoint under prolonged failure. It MUST then record the reason visibly for the operator.
+
+**9.7.** The gateway MUST cap its delivery queue at a size it sets and shed load by refusing new deliveries to the failing endpoint, without deleting any event.
+
+## 10. Polling
+
+**10.1.** Events do not replace polling.
+
+**10.2.** A client MUST have access to the current state that does not depend on events: read or sync ([API 5.2, 5.3](/docs/spec/payments-api#5.3)).
+
+**10.3.** A client SHOULD reconcile any payment still `pending` after a delay it sets.
+
+## 11. Conformance
+
+**11.1.** Conformant gateway: emits each type in 3.2 that falls under a capability it announces, signs according to 5, publishes keys according to 6, retries
+according to 9, and emits an event only for a creation or a transition (1.4, 3.4).
+
+**11.2.** Conformant subscriber: verifies according to 5.9, rejects according to 5.12, deduplicates according to 8.4, orders according to 8.3, complies with
+8.5 and has the access of 10.2.
+
+**11.3.** Emission is announced by `webhooks.emit`, distinct from `webhooks.verify`, which concerns the provider. A gateway that does not announce
+`webhooks.emit` MUST NOT emit events.
+
+## 12. Security
+
+**12.1.** The gateway MUST refuse an endpoint URL that resolves to a loopback, link-local, private or cloud metadata address, outside development mode, and MUST
+repeat this check on every delivery.
+
+**12.2.** Mutual TLS MAY be added to the signature and MUST NOT replace it.
+
+**12.3.** On suspected compromise, the gateway SHOULD be able to sign immediately with a new key, as an exception to 6.4, and remove the compromised key from
+the published set without delay.
+
+**12.4.** A subscriber SHOULD log `id`, `type` and `sequence`, and SHOULD NOT log the body. Signature values and nonces SHOULD NOT be logged.
+
+**12.5.** The resource is authoritative as the record of operations (1.3).

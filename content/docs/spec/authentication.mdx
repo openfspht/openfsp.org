@@ -1,0 +1,167 @@
+---
+title: Authentication
+description: How a client authenticates with an API key, how the gateway stores, scopes, rotates and audits keys, and how it protects provider secrets.
+---
+
+The reasons behind these rules are in [Decisions](/docs/decisions#0009).
+
+## 1. Scheme
+
+**1.1.** A client authenticates with a bearer API key. Every endpoint is authenticated, except the service descriptor ([capabilities 3.1](/docs/spec/capabilities#3.1)), which carries the webhook keys ([webhooks 6.1](/docs/spec/webhooks#6.1)), the health check (`/actuator/health`) and the endpoints called by the provider or the payer: callbacks ([lifecycle 6.6](/docs/spec/lifecycle#6.6)) and return ([API 7.4](/docs/spec/payments-api#7.4)).
+
+**1.2.** The gateway MUST NOT offer an unauthenticated mode for any other endpoint, including in development.
+
+**1.3.** A deployment MAY also require mutual TLS, an address allowlist or an upstream authorization server. These measures MUST NOT replace section 3.
+
+## 2. Key format
+
+**2.1.** Form `ofsp_<env>_<secret>`, where `<env>` is `live` or `test` and `<secret>` has at least 34 characters from `A-Za-z0-9`, so that the part not stored in clear (4.4) carries at least 128 bits:
+
+```
+ofsp_live_7Kq2NfPzR4wYb9LdHt3XvA6mSjE0uCgBp8
+```
+
+**2.2.** `<secret>` MUST come from a cryptographic generator and carry at least 128 bits of entropy. It MUST NOT be derived from predictable data.
+
+**2.3.** A gateway is configured for a single environment and MUST reject a key from another environment with `unauthenticated`.
+
+**2.4.** A key MUST NOT encode a principal, a scope or an expiry: it is opaque.
+
+**2.5.** A gateway MAY lengthen `<secret>` or add a checksum to it, within 2.1.
+
+## 3. Presentation
+
+**3.1.** A client MUST send the key in `Authorization`, scheme `Bearer` (RFC 9110):
+
+```
+Authorization: Bearer ofsp_live_7Kq2NfPzR4wYb9LdHt3XvA6mSjE0uCgBp8
+```
+
+**3.2.** The gateway MUST NOT accept a key in a query parameter, a body, a cookie or any other header.
+
+**3.3.** Missing `Authorization`, unreadable header or a scheme other than `Bearer`: the gateway MUST respond `unauthenticated` with `WWW-Authenticate: Bearer`.
+
+**3.4.** The scheme name is case-insensitive; the key is case-sensitive.
+
+**3.5.** The gateway MUST reject with `unauthenticated` a request carrying more than one key.
+
+## 4. Storage and comparison
+
+**4.1.** The gateway MUST NOT store a key in reversible form; it stores a digest of it.
+
+**4.2.** The digest MUST be SHA-256 or stronger, computed over the whole key.
+
+**4.3.** A slow password hash (Argon2id, scrypt, bcrypt) SHOULD NOT be used.
+
+**4.4.** The gateway MAY store in clear a lookup prefix, the first 12 characters of `<secret>`, and index it.
+
+**4.5.** The presented digest MUST be compared with the stored digest in constant time.
+
+**4.6.** An unknown key and a revoked key SHOULD take indistinguishable processing time. If the prefix matches no record, the gateway MUST still compute a digest and compare it in constant time with a dummy value. Processing of an unknown key and of a revoked key MUST NOT differ by a conditional operation, such as logging specific to only one of the two cases.
+
+**4.7.** Missing, malformed, unknown, revoked, expired or other-environment key: all these cases MUST produce `unauthenticated`, with the same `title` and no distinguishing `detail`.
+
+**4.8.** The gateway MUST NOT log a presented key beyond its lookup prefix, at any level. A failure is logged with the prefix and the `request_id`.
+
+## 5. Principal
+
+**5.1.** The principal is the identity resolved by a successful authentication, the _P_ of [idempotency 2.3](/docs/spec/idempotency#2.3).
+
+**5.2.** Each key belongs to a single principal; a principal MAY hold several keys.
+
+**5.3.** The keys of one principal share idempotency records and resources. The gateway MUST NOT partition per key what the specification partitions per principal.
+
+**5.4.** A principal has an opaque, stable identifier ([data model 6.1](/docs/spec/data-model#6.1)), present in logs and audit, never exposed by the API.
+
+**5.5.** All principals of a gateway see the same resources. Scopes restrict the permitted operations; they do not partition resources between principals.
+
+## 6. Scopes
+
+**6.1.** A key carries a set of scopes.
+
+**6.2.** Registry:
+
+| Scope               | Permits                                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `capabilities:read` | Capability discovery ([capabilities 3.2](/docs/spec/capabilities#3.2)).                                           |
+| `payments:read`     | Read a payment, look up by reference ([API 5.2](/docs/spec/payments-api#5.2)).                                    |
+| `payments:write`    | Create and synchronize a payment ([API 5.1, 5.3](/docs/spec/payments-api#5.3)).                                   |
+| `statements:read`   | Read statements and their entries, and the gateway statement ([lifecycle 10.6, 10.9](/docs/spec/lifecycle#10.9)). |
+
+**6.3.** No scope implies another.
+
+**6.4.** Without the required scope, the gateway MUST respond `forbidden`, never `unauthenticated` or `not-found`.
+
+**6.5.** Every key carries `capabilities:read`. The gateway adds it at issuance and MUST NOT allow its removal: a client always discovers what it can request before requesting it.
+
+**6.6.** Adding a scope requires a decision record, together with the operation it governs.
+
+**6.7.** A key that carries only `capabilities:read` permits discovery only; the gateway MUST NOT treat it as unrestricted.
+
+**6.8.** Issuance tooling SHOULD offer least privilege by default.
+
+## 7. Rotation, revocation, expiry
+
+**7.1.** The gateway MUST accept several valid keys at the same time for one principal.
+
+**7.2.** Rotation: issue a second key, deploy it, check its use, revoke the first. Issuing a key MUST NOT invalidate the principal's other keys.
+
+**7.3.** The gateway MUST NOT serve a revoked key nor cache an authentication decision more than 60 seconds after revocation; a cache MUST be invalidated on revocation.
+
+**7.4.** A revoked key MUST NOT be reinstated nor its secret reissued.
+
+**7.5.** The record of a revoked key MUST be kept, without the secret, for audit.
+
+**7.6.** A key MAY expire. An expired key MUST be rejected with `unauthenticated`; the operator SHOULD be warned before expiry.
+
+**7.7.** The secret MUST be displayed only once, at issuance, and never be displayable again.
+
+**7.8.** The gateway SHOULD record and display the last-used date of each key.
+
+## 8. Interplay
+
+**8.1.** The idempotency record survives the rotation of an API key (5.3). It is never visible to another principal ([idempotency 2.3](/docs/spec/idempotency#2.3)).
+
+**8.2.** Rate limiting applies per principal, not per key.
+
+**8.3.** `unauthenticated` and `forbidden` are defined in [API 10.9.2](/docs/spec/payments-api#10.9.2).
+
+**8.4.** Reserved.
+
+**8.5.** The gateway MUST NOT send an API key to a webhook endpoint, and a subscriber MUST NOT authenticate a delivery other than by its signature ([webhooks 5](/docs/spec/webhooks#5)).
+
+## 9. Provider secrets
+
+**9.1.** The gateway MUST be able to load provider secrets from environment variables or a secrets manager. It MUST NOT require a configuration file, and its documentation MUST NOT present the file as the primary method.
+
+**9.2.** The gateway MAY reload provider secrets without a restart.
+
+**9.3.** The gateway MUST NOT return any provider secret, even partially, through any endpoint. A health check MAY indicate that a provider is reachable.
+
+**9.4.** The gateway MUST NOT write any provider secret to a log, a trace, a metric, an error report or a memory dump. `Authorization` and any field carrying an API key or a provider secret MUST be redacted before the log line is built.
+
+**9.5.** The gateway MUST redact from `provider_detail` and `failure_detail` any value it holds as a provider secret, by comparison with the held values and not by patterns.
+
+**9.6.** A redacted value is replaced by the string `[REDACTED]`, not removed.
+
+## 10. Audit
+
+**10.1.** For each authenticated request, the gateway MUST record the principal, the lookup prefix, the operation, the `request_id` and the result.
+
+**10.2.** Authentication failures MUST be recorded with the same fields, without principal.
+
+**10.3.** Every key issuance and revocation MUST be recorded, with the time and the scopes.
+
+**10.4.** These records MUST NOT contain a key secret or a provider secret.
+
+## 11. Conformance
+
+**11.1.** Conforming gateway: presentation per 3, storage and comparison per 4, principal per 5, scopes per 6, rotation and revocation per 7, 9 for each provider.
+
+**11.2.** The suite tests 4.7 with an unknown key, a revoked key and a key from another environment (three indistinguishable responses), and 9.5 with a simulated provider that echoes the provider secrets it received (`[REDACTED]` expected in `provider_detail`).
+
+**11.3.** Authentication is not a capability and is not advertised.
+
+## 12. Security
+
+**12.1.** The gateway SHOULD rate-limit failed authentications per source.
