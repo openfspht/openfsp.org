@@ -22,14 +22,10 @@ jobs:
 
   site:
     runs-on: ubuntu-latest
-    env:
-      OPENFSP_ADRS_DIR: sources/adrs
-      OPENFSP_ORG_DIR: sources/openfsp
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          submodules: true
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
@@ -44,7 +40,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          submodules: true
       - name: build
         run: docker build -t openfsp-site:ci .
       - name: smoke test
@@ -55,5 +50,6 @@ jobs:
             sleep 0.5
           done
           curl -sf http://localhost:8080/ > /dev/null
-          curl -sf http://localhost:8080/problems/provider-timeout/ > /dev/null
-          curl -sf http://localhost:8080/en/spec/api-paiements/ > /dev/null
+          curl -sf http://localhost:8080/docs/spec/payments-api > /dev/null
+          curl -sf http://localhost:8080/fr/docs/spec/idempotency > /dev/null
+          curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/problems/provider-timeout | grep -q 301

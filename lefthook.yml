@@ -1,7 +1,7 @@
 pre-commit:
   commands:
     format:
-      glob: "*.{ts,astro,css,json,mjs,md,yml}"
+      glob: "*.{ts,tsx,css,json,mjs,md,mdx,yml}"
       run: bunx prettier --check {staged_files}
 pre-push:
   commands:
