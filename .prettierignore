@@ -4,3 +4,4 @@ dist
 .tanstack
 src/routeTree.gen.ts
 bun.lock
+.impeccable
