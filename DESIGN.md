@@ -132,6 +132,7 @@ Density is that of good documentation. Pages carry a 1320px frame, prose holds a
 The build refuses the decorative hero, the stat strip and rows of icon cards. Status appears as one plain line of facts separated by thin vertical rules.
 
 **Key Characteristics:**
+
 - Two grounds only: chalk (light) and deep ink (dark), both following the system preference with a manual override.
 - Ink carries primary actions; amber marks only state.
 - Thin 1px rules for all structure; no shadows on content.
@@ -143,13 +144,16 @@ The build refuses the decorative hero, the stat strip and rows of icon cards. St
 A two-ground, nearly monochrome teal-ink palette with a single amber marker, taken from the OpenFSP mark.
 
 ### Primary
+
 - **Harbor Ink** (`ink`): text in light mode, the primary button fill, the hub of the integration diagram, and the logo. In dark mode the same role flips: chalk becomes text and primary fill.
 
 ### Secondary
+
 - **Signal Amber Deep** (`accent-deep`): the light-mode marker. Current nav item underline, active table of contents bar, focus ring, targeted rule tint, link hover underline, the copied state of a rule link. Passes 3:1 on chalk.
 - **Signal Amber** (`accent`): the dark-mode marker in the same roles. It fails contrast on light grounds, so it never appears there as a marker.
 
 ### Neutral
+
 - **Chalk** (`chalk`): the light ground, and text and primary-button label in dark mode.
 - **Paper White** (`surface`): panels, code blocks, inputs and notices that sit one step above the ground.
 - **Sunken Chalk** (`surface-sunken`): hover fill for nav and sidebar links, inline code background, current sidebar page.
@@ -159,9 +163,11 @@ A two-ground, nearly monochrome teal-ink palette with a single amber marker, tak
 - **Night ground set** (`ink-night`, `surface-night`, `surface-sunken-night`, `text-muted-night`, `rule-night`, `rule-strong-night`, `link-underline-night`, `selection-night`): the dark-mode equivalents, applied by role, never mixed with the light set.
 
 ### Semantic
+
 - **Pass Green** (`pass`, `pass-night`) and **Fail Red** (`fail`, `fail-night`): conformance verdicts and form errors only, always paired with the word, never color alone.
 
 ### Named Rules
+
 **The One Marker Rule.** Amber marks state (current, focused, targeted, copied) and nothing else. It never fills a button, a panel or a heading.
 
 **The Never Alone Rule.** Accent amber fails contrast on light grounds, so no meaning rests on it alone; on chalk the marker is always accent deep.
@@ -177,6 +183,7 @@ A two-ground, nearly monochrome teal-ink palette with a single amber marker, tak
 **Character:** A geometric grotesque from the brand mark gives headings their voice; the body stays in the reader's own system face so long spec pages read as documentation. Mono carries anything an engineer might copy: code, rule numbers, problem types, counts.
 
 ### Hierarchy
+
 - **Display** (700, clamp(2rem, 1.3rem + 2vw, 3rem), 1.1, -0.025em, max 22ch): the home headline only.
 - **Headline** (700, clamp(2rem, 1.4rem + 2vw, 2.75rem) on page heads, clamp(1.875rem, 1.4rem + 1.6vw, 2.5rem) on spec documents, 1.2, -0.015em): one per page.
 - **Title** (700, 1.125rem to 1.625rem, 1.2): section headings; 1.5rem for spec h2, 1.1875rem for h3, 1.625rem on home sections.
@@ -186,6 +193,7 @@ A two-ground, nearly monochrome teal-ink palette with a single amber marker, tak
 - **Mono** (0.8125rem in blocks, 0.875em inline, tabular numbers): code, rule numbers, counts, form inputs for keys and URLs.
 
 ### Named Rules
+
 **The Copyable Is Mono Rule.** Anything a developer would paste (a header, a path, a rule number, a problem type) is set in mono.
 
 **The Sentence Case Rule.** Labels are sentence case at normal tracking; no uppercase, no letter-spaced small text.
@@ -203,6 +211,7 @@ Tables carry structure: rows divided by hairlines, no zebra fill, tabular number
 Flat. Depth comes only from tonal steps (ground, then surface one step lighter, then sunken one step darker for hover) and 1px rules. Nothing casts a shadow. The only box-shadow values in the build are drawing devices, not elevation: an inset 2px underline marking the current nav item, and a horizontal tint extension on a targeted rule.
 
 ### Named Rules
+
 **The Hairline Rule.** Separation is a 1px rule in `rule` or `rule-strong`. If a surface seems to need a shadow, it needs a border.
 
 ## Shapes
@@ -212,7 +221,9 @@ One radius for everything interactive or contained: 6px on buttons, nav links, t
 ## Components
 
 ### Buttons
+
 Quiet and solid; ink does the work.
+
 - **Shape:** gently rounded (6px), 44px minimum height, 18px side padding, 600 weight at 0.9375rem.
 - **Primary:** ink fill, chalk label (inverted in dark mode). Hover mixes the fill 14% toward the ground.
 - **Secondary:** transparent with a strong-hairline border and ink label; hover darkens the border to the text color.
@@ -220,37 +231,46 @@ Quiet and solid; ink does the work.
 - **Disabled:** 50% opacity.
 
 ### Navigation
+
 - **Top bar:** sticky, ground-colored, hairline below. Logo, five to six section links (0.9375rem, 500, muted), then the locale switch, theme toggle and GitHub as 40px tool buttons.
 - **States:** hover fills sunken and turns text to ink; current page turns text to ink with a 2px amber underline.
 - **Mobile:** below 1060px the links move into a disclosure list under the bar, 12px row padding.
 
 ### Spec sidebar and table of contents
+
 - **Sidebar:** muted links at 0.875rem, grouped under 600-weight labels; current page is ink, 600 weight, on sunken fill.
 - **Table of contents:** a 2px left bar per link, transparent at rest, amber on the section in view; level-three entries indent to 24px at 0.8125rem.
 
 ### Inputs / Fields
+
 - **Style:** paper-white fill, strong-hairline border, 6px radius, 10px by 12px padding, mono 0.8125rem.
 - **Focus:** the global 2px amber outline at 2px offset.
 - **Error:** fail-red text under the field, 0.9375rem.
 
 ### Notices
+
 A paper-white box with a hairline border, 6px radius, 10px by 14px padding, 0.875rem muted text. Used for draft status and informative caveats.
 
 ### Code blocks
+
 Paper-white, hairline border, 6px radius, 16px by 18px padding, mono 0.8125rem at 1.55. Syntax colors come from the GitHub light and dark highlighting themes, switched with the ground.
 
 ### Annotated exchange (signature)
+
 A bordered panel captioned in label type, holding a request pane and a response pane split by hairlines, then a key list pairing each field (inline code) with the rule that governs it (mono deep link, right-aligned). It is the home page's proof and the pattern for showing any real exchange.
 
 ### Numbered rule with deep link (signature)
+
 Each numbered rule leads with its number in mono 600. On hover or focus a 26px copy-link button appears in the left margin; copying turns it amber. Arriving at a rule tints it 12% amber, extended 12px on each side. The button hides below 860px.
 
 ### Status line
+
 One line of plain facts in 0.875rem muted text with tabular numbers, separated by 1px strong-hairline dividers; it stacks without dividers below 640px.
 
 ## Do's and Don'ts
 
 ### Do:
+
 - **Do** reserve amber for state: current nav (2px underline), active table of contents bar, focus outline (2px, 2px offset), targeted rule, copied link.
 - **Do** use accent deep as the marker on chalk and accent on deep ink.
 - **Do** separate everything with 1px hairlines and step surfaces tonally (ground, surface, sunken).
@@ -260,6 +280,7 @@ One line of plain facts in 0.875rem muted text with tabular numbers, separated b
 - **Do** keep running text within 72ch and leads within 62ch.
 
 ### Don't:
+
 - **Don't** add shadows to content, panels or buttons.
 - **Don't** use amber as a fill, a heading color or the only carrier of meaning.
 - **Don't** build a decorative hero, a stat strip, or rows of icon cards.

@@ -1,5 +1,6 @@
 dist
-.astro
-sources
-.impeccable
+.output
+.source
+.tanstack
+src/routeTree.gen.ts
 bun.lock

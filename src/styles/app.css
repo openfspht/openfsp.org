@@ -1,0 +1,125 @@
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+@import "@fontsource/space-grotesk/700.css";
+
+@source "../../content";
+
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --color-ink: #0b3b36;
+  --color-amber: #e8a33d;
+  --color-amber-deep: #b26f12;
+
+  --color-fd-background: #f7f5ef;
+  --color-fd-foreground: #0b2b28;
+  --color-fd-muted: #eeebe2;
+  --color-fd-muted-foreground: #52665f;
+  --color-fd-popover: #fbfaf6;
+  --color-fd-popover-foreground: #0b2b28;
+  --color-fd-card: #fbfaf6;
+  --color-fd-card-foreground: #0b2b28;
+  --color-fd-border: #dcd6c8;
+  --color-fd-primary: #0b3b36;
+  --color-fd-primary-foreground: #f7f5ef;
+  --color-fd-secondary: #eeebe2;
+  --color-fd-secondary-foreground: #0b2b28;
+  --color-fd-accent: #e9e4d6;
+  --color-fd-accent-foreground: #0b2b28;
+  --color-fd-ring: #b26f12;
+}
+
+.dark {
+  --color-fd-background: #071b19;
+  --color-fd-foreground: #eef1ec;
+  --color-fd-muted: #0d2724;
+  --color-fd-muted-foreground: #9fb3ae;
+  --color-fd-popover: #0b2321;
+  --color-fd-popover-foreground: #eef1ec;
+  --color-fd-card: #0b2321;
+  --color-fd-card-foreground: #eef1ec;
+  --color-fd-border: #1c3a36;
+  --color-fd-primary: #e8a33d;
+  --color-fd-primary-foreground: #071b19;
+  --color-fd-secondary: #0f2b28;
+  --color-fd-secondary-foreground: #eef1ec;
+  --color-fd-accent: #12312d;
+  --color-fd-accent-foreground: #eef1ec;
+  --color-fd-ring: #e8a33d;
+}
+
+.dark #nd-sidebar {
+  --color-fd-muted: #0d2724;
+  --color-fd-secondary: #0f2b28;
+  --color-fd-muted-foreground: #9fb3ae;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+[data-docs-title] {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+.prose p.rule {
+  scroll-margin-top: calc(var(--fd-nav-height, 56px) + 24px);
+  border-radius: 6px;
+}
+
+.prose p.rule:target {
+  background: color-mix(in oklab, var(--color-amber) 16%, transparent);
+  box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-amber) 16%, transparent);
+}
+
+.prose a.rule-number {
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose a.rule-number:hover strong {
+  color: var(--color-amber-deep);
+}
+
+.dark .prose a.rule-number:hover strong {
+  color: var(--color-amber);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 1px solid var(--color-fd-border);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out;
+}
+
+.btn:hover {
+  border-color: var(--color-fd-foreground);
+}
+
+.btn-primary {
+  background: var(--color-fd-primary);
+  border-color: var(--color-fd-primary);
+  color: var(--color-fd-primary-foreground);
+}
+
+.btn-primary:hover {
+  background: color-mix(in oklab, var(--color-fd-primary) 86%, var(--color-fd-background));
+  border-color: transparent;
+}

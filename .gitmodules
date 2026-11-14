@@ -1,6 +1,0 @@
-[submodule "sources/adrs"]
-	path = sources/adrs
-	url = https://github.com/openfspht/adrs.git
-[submodule "sources/openfsp"]
-	path = sources/openfsp
-	url = https://github.com/openfspht/openfsp.git
