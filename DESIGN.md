@@ -26,9 +26,9 @@ colors:
 typography:
   display:
     fontFamily: "Inter Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(2.5rem, 1.6rem + 3.6vw, 4.25rem)"
+    fontSize: "clamp(2.25rem, 1.5rem + 3vw, 3.5rem)"
     fontWeight: 700
-    lineHeight: 1.04
+    lineHeight: 1.06
     letterSpacing: "-0.03em"
   headline:
     fontFamily: "Inter Variable, ui-sans-serif, system-ui, sans-serif"
@@ -167,7 +167,7 @@ A restrained neutral system with one committed teal and one amber stroke color.
 
 - **Paper White** (background): the page ground in light mode, also the inset ground of fields and the toggle track.
 - **Stone Ink** (foreground): body text and headings in light mode; doubles as the dark mode ground.
-- **Card Mist** (card): one step off white for panels, the diagram figure, the API band (at 50%) and diagram nodes.
+- **Card Mist** (card): one step off white for the code tabs, the footer and diagram nodes.
 - **Muted Wash** (muted): Fumadocs hover and inline code grounds.
 - **Slate Note** (muted-foreground): secondary text, captions, lead paragraphs, footer links at rest, the 404 code.
 - **Hairline** (border): every divider and container edge.
@@ -196,7 +196,7 @@ A restrained neutral system with one committed teal and one amber stroke color.
 
 ### Hierarchy
 
-- **Display** (700, fluid 2.5rem to 4.25rem, line-height 1.04, -0.03em): the home page title only, balanced, held to about 48rem wide.
+- **Display** (700, fluid 2.25rem to 3.5rem, line-height 1.06, -0.03em): the home page title only, balanced, in the left column of the hero.
 - **Headline** (700, 1.875rem, -0.02em): home section titles and the 404 title. Docs headings and page titles take -0.02em tracking over Fumadocs' prose sizes.
 - **Title** (700, 1.125rem): item names in the parts grid.
 - **Lead** (400, 1.125rem rising to 1.25rem from 640px, line-height 1.625): the paragraph under the display title, in muted color, about 42rem wide.
@@ -212,7 +212,7 @@ A restrained neutral system with one committed teal and one amber stroke color.
 
 ## Layout
 
-A single centered column capped at 72rem with 16px side padding. Home sections stack vertically with 80px to 96px of vertical space; the first section opens at 80px (112px from 640px). The API section is a full-bleed band (card ground at 50%, hairline top and bottom) holding a 5:7 two-column grid from 1024px, text left and two code blocks right. The parts list is a two-column grid from 640px with hairline row dividers and a vertical divider between columns, not cards. The demo section is one rounded panel with a two-column grid from 1024px.
+A single column capped at 72rem with 16px side padding. Every home section shares one grid from 1024px, a 1 : 1.1 split with a 64px gap: the hero puts the title, lead, buttons and status left and the request and response code tabs right; the following sections put the headline left and its paragraph right, then their content full width below. Sections are separated by a full-bleed hairline, never by a tinted band, with 80px to 96px of vertical space. Order: hero, integration diagram, specification chapter list, local demo, footer. The home page is an entry point to the specification, not a marketing page: no taglines beyond the title, no feature cards, no metrics. The footer sits on the card ground with the mark and the project line on the left and three link columns (Docs, Reference, GitHub).
 
 The integration diagram swaps geometry at 640px: a wide left-to-right graph (720 by 300) above, a tall top-to-bottom graph (340 by 420) below, with smaller node labels.
 
@@ -230,7 +230,7 @@ Flat. Custom surfaces carry no shadow; depth is a tonal step (card over backgrou
 
 ## Shapes
 
-Gently rounded throughout, scaled to the container: 6px for small inner pieces (toggle options, the rule anchor highlight), 8px for buttons, fields, the toggle track and diagram nodes, 12px for form and result cards and the gateway node, 16px for the large diagram figure and the demo panel. Diagram edges are smooth cubic curves, 1.25px for the tangle and 1.75px for the routed lines. The logo is a ring with three gaps; nothing else on the site imitates it.
+Gently rounded throughout, scaled to the container: 6px for small inner pieces (toggle options, the rule anchor highlight), 8px for buttons, fields, the toggle track and diagram nodes, 12px for form and result cards and the gateway node, 12px for the code tabs. Diagram edges are smooth cubic curves, 1.25px for the tangle and 1.75px for the routed lines. The logo is a ring with three gaps; nothing else on the site imitates it.
 
 ## Components
 
@@ -251,11 +251,11 @@ Quiet, precise, and few. Every custom component is built from the same border, c
 
 ### Cards / Containers
 
-- **Corner Style:** 16px for the diagram figure and demo panel, 12px for verifier form and result cards.
-- **Background:** card ground (60% for the diagram figure, 50% for the API band); result cards stay on the page ground.
+- **Corner Style:** 12px for the code tabs and verifier form and result cards.
+- **Background:** card ground for the code tabs and the footer; result cards stay on the page ground.
 - **Shadow Strategy:** none (see Elevation & Depth).
 - **Border:** 1px hairline.
-- **Internal Padding:** 16px rising to 24px on the diagram figure, 20px on verifier cards, 48px by 24px rising to 48px on all sides on the demo panel.
+- **Internal Padding:** 20px on verifier cards; the code tabs leave padding to the code block.
 
 ### Inputs / Fields
 
@@ -270,15 +270,19 @@ Quiet, precise, and few. Every custom component is built from the same border, c
 
 ### Integration Diagram (signature)
 
-The one interactive figure. A two-option toggle switches between "without" (nine thin muted curves from every app to every provider) and "with" (a solid teal gateway node in the middle, teal curves from apps in, amber curves out to providers). Nodes are card-ground rectangles with a hairline stroke and 500 weight labels; the gateway carries a 700 name and an 80% opacity caption. Layers cross-fade on opacity over 420ms with an expo-out curve (cubic-bezier(0.16, 1, 0.3, 1)), and a mono count beside the toggle updates politely for screen readers. The SVG itself is hidden from assistive technology; the caption below carries the idea in text.
+The one interactive figure. A two-option toggle switches between "without" (nine thin muted curves from every app to every provider) and "with" (a solid teal gateway node in the middle, teal curves from apps in, amber curves out to providers). Nodes are card-ground rectangles with a hairline stroke and 500 weight labels; the gateway carries a 700 name and an 80% opacity caption. Layers cross-fade on opacity over 420ms with an expo-out curve (cubic-bezier(0.16, 1, 0.3, 1)), and a mono count under the centered toggle updates politely for screen readers. The SVG itself is hidden from assistive technology; the caption below carries the idea in text.
 
 ### Rule Anchors
 
 Every numbered rule paragraph and every problem catalogue row is an anchor. Rule numbers are undecorated links with tabular figures that turn teal on hover. When targeted, the paragraph or row takes a soft primary tint (14% primary mixed into transparent) with a matching 6px halo and 6px corners, and scrolls to sit 24px below the nav.
 
-### Parts List
+### Code Tabs
 
-A two-column list of linked items separated by hairlines. Each title gains a 16px arrow on hover that slides in 4px and fades from 0 to full opacity over 200ms ease-out.
+A 12px rounded card with a row of text tabs over one code block. The selected tab carries a 2px primary underline and foreground text; the others are muted and darken on hover. The code block inside loses its own border and ground.
+
+### Chapter List
+
+The eight specification chapters in a two-column list from 768px, separated by hairlines: name at 600, one muted line, and the rule count right aligned in mono. The total in the section paragraph is the sum of the chapter counts. Each name turns primary and gains a 16px arrow on hover that slides in 4px and fades from 0 to full opacity over 200ms ease-out.
 
 ## Do's and Don'ts
 
