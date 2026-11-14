@@ -35,7 +35,7 @@ Set aside: revisable terminal states, `unknown`, `processing`, provider-shaped s
 
 Governs: [Lifecycle](/docs/spec/lifecycle).
 
-## 0006. Payments API
+## 0004. Payments API
 
 The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed catalogue of 19 problem types. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations; the provider gets an order identifier derived by HMAC from the `reference`.
 
@@ -45,7 +45,7 @@ Set aside: routing by the gateway, `GET ?synchronize=true`, `404` for an unknown
 
 Governs: [Payments API](/docs/spec/payments-api) and [Idempotency](/docs/spec/idempotency).
 
-## 0007. Capability discovery
+## 0005. Capability discovery
 
 A capability is announced only when the provider supports it, and an operation not announced is refused. Discovery has two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per provider. Provider-specific behaviour and the merchant account limits (`limits`) are machine-readable fields.
 
@@ -55,7 +55,7 @@ Set aside: fixed capabilities per version, HTTP `OPTIONS`, try and handle the er
 
 Governs: [Capabilities](/docs/spec/capabilities).
 
-## 0008. Webhooks and event delivery
+## 0006. Webhooks and event delivery
 
 Delivery is at least once and unordered, with a per-resource `sequence` and an `id` for deduplication. Each event is signed with RFC 9421 HTTP Message Signatures over Ed25519, with a 300 second freshness window and a nonce. The body is a full snapshot of the resource, there are five event types, and retries span seven attempts over 31 hours. Polling stays the recovery path.
 
@@ -65,7 +65,7 @@ Set aside: shared-secret HMAC, a custom signature header, mutual TLS alone, exac
 
 Governs: [Webhooks](/docs/spec/webhooks).
 
-## 0009. Authentication and credentials
+## 0007. Authentication and credentials
 
 Clients use a bearer key `ofsp_<env>_<secret>` with 128 bits of entropy, sent only in `Authorization: Bearer`. The gateway stores a SHA-256 digest, compares in constant time and returns a single `unauthenticated` error for every failure. Four scopes without implication; several keys per principal, revocation effective within 60 seconds. Provider secrets are never returned or logged, and are redacted from relayed fields.
 
@@ -75,7 +75,7 @@ Set aside: OAuth 2.0 client credentials, self-issued JWT, HMAC request signing, 
 
 Governs: [Authentication](/docs/spec/authentication).
 
-## 0015. Conformance
+## 0008. Conformance
 
 Conformance is a triple: target (client, gateway, native provider), level and protocol version. Core is mandatory, then one profile per announced capability, with no partial pass and no ranking. Anyone can run the suite offline without modifying the implementation; the mock server plays three providers, `mock_openfsp`, `mock_moncash` and `mock_natcash`, through declared failure scenarios. The report is machine-readable and states its limits.
 
