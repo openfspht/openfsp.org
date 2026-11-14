@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Astro, static build served by a Docker image deployed on the author's infrastructure (Coolify), like cdn.openfsp.org. Separate repository `openfspht/openfsp.org`. Site chrome and editorial pages in French and English through translation files; source strings and keys in English.
+Fumadocs on TanStack Start (React, Tailwind 4, MDX), prerendered to static files and served by nginx in a Docker image deployed on the author's infrastructure (Coolify). Separate repository `openfspht/openfsp.org`. English at `/`, French at `/fr`.
 
 ## Users
 
@@ -25,15 +25,15 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 
 ## Operating Context
 
-- Spec source: `~/workspace/oss/openfsp/adrs` (`spec/` normative rules, `text/` ADRs), French only, numbered rules with DOIT / NE DOIT PAS / DEVRAIT / PEUT. Rules are referenced by document and number (`api-paiements.md` 5.1.8), never with the section sign.
-- Provider registry: `~/workspace/oss/openfsp/openfsp/registries/providers.md`.
+- Spec source: this repository, `content/docs/` (English `page.mdx`, French `page.fr.mdx`). The former `adrs` repository is archived. Numbered rules with MUST / MUST NOT / SHOULD / MAY (DOIT / NE DOIT PAS / DEVRAIT / PEUT in French), each number an anchor (`/docs/spec/payments-api#5.1.8`), never the section sign.
+- Provider registry: `content/docs/registry.mdx`.
 - Code: `openfspht/stack` (gateway, simulator, validator, console, demo shop). Public validator planned at `validate.openfsp.org`, issuing signed attestations (JWS EdDSA, keys at `/.well-known/openfsp-validator`); until it is deployed, `make validate` runs locally.
 - Assets: `cdn.openfsp.org` (logo, favicon).
 
 ## Capabilities and Constraints
 
-- Spec and problem pages are generated at build time from the adrs markdown: one source, deep links to each rule.
-- Content derived from the spec stays in French on both locales; the English locale says so.
+- The spec is the MDX pages themselves: one source, deep links to each rule. `/problems/<code>` redirects to the catalogue row in the payments API page.
+- English is primary; every page has a French version. Rule numbers never change between languages.
 - Status: draft specification, protocol version 0.1.0, academic project first, opened to contribution later.
 - HTG only.
 - Undecided: the public validator's deployment date.
@@ -44,7 +44,7 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 - Voice: first person of the author, proposals rather than verdicts ("je propose", never "accepté" or "validé"); short, dry, technical; no pedagogy; French written as French, not translated English.
 - Licence Apache-2.0, carried by Karako Systems; the commercial product built on top is never named.
 - No em dash and no typographic minus anywhere.
-- Standing visual preference (2026-11-12): the category standard for open protocol sites, executed straight. Quality bar: Stripe Docs, the OpenAPI Initiative site and spec.openapis.org, and the IETF Datatracker RFC rendering.
+- Standing visual preference (2026-11-14): simple, clean and interesting like coolify.io and its docs. Colours and type come from the console design system (`stack/frontend/packages/ui/src/styles/globals.css`): neutral grounds, teal primary, amber accent, Inter; no earth or green grounds in dark mode.
 
 ## Evidence on Hand
 
