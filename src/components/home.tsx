@@ -5,7 +5,7 @@ import { Architecture } from "@/components/architecture";
 import { IntegrationDiagram } from "@/components/integration-diagram";
 import { PaymentFlow } from "@/components/payment-flow";
 import { localePath, type Locale } from "@/lib/i18n";
-import { GITHUB_URL, STACK_REPO, baseOptions } from "@/lib/layout.shared";
+import { GITHUB_URL, CODE_REPO, baseOptions } from "@/lib/layout.shared";
 import { homeCopy } from "@/lib/home-copy";
 
 const sectionTitle = "text-3xl leading-tight font-bold tracking-[-0.02em] text-balance";
@@ -40,7 +40,7 @@ export function Home({ locale }: { locale: Locale }) {
                 {t.readDocs}
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
-              <a href={STACK_REPO} className="btn">
+              <a href={CODE_REPO} className="btn">
                 {t.runDemo}
               </a>
             </div>
@@ -80,7 +80,7 @@ export function Home({ locale }: { locale: Locale }) {
             <h2 className={sectionTitle}>{t.closing.title}</h2>
             <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-fd-muted-foreground">{t.closing.body}</p>
             <div className="mt-9 flex flex-wrap justify-center gap-3">
-              <a href={STACK_REPO} className="btn btn-primary">
+              <a href={CODE_REPO} className="btn btn-primary">
                 {t.runDemo}
                 <ArrowRight className="size-4" aria-hidden />
               </a>
@@ -125,7 +125,7 @@ export function Home({ locale }: { locale: Locale }) {
                 </a>
               </li>
               <li>
-                <a href={STACK_REPO} className="text-fd-muted-foreground hover:text-fd-foreground">
+                <a href={CODE_REPO} className="text-fd-muted-foreground hover:text-fd-foreground">
                   {t.runDemo}
                 </a>
               </li>

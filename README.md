@@ -23,7 +23,7 @@ docker build -t openfsp-site . && docker run -p 8080:8080 openfsp-site
 ## Changing the specification
 
 Edit the English page and its French version in the same pull request. Never renumber a rule: the conformance suite in
-[`openfspht/stack`](https://github.com/openfspht/stack) refers to rules by number.
+[`openfspht/openfsp`](https://github.com/openfspht/openfsp) refers to rules by number.
 
 ## Attestations
 

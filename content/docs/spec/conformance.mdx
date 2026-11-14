@@ -186,7 +186,7 @@ The reasons behind these rules are in [Decisions](/docs/decisions#0015).
 
 **7.5.** The party publishing a report SHOULD publish the configuration that reproduces it.
 
-**7.6.** Claims based on a report fall under [governance 8](https://github.com/openfspht/openfsp/blob/main/GOVERNANCE.md#8-nom-et-marques-de-conformité).
+**7.6.** Claims based on a report fall under [governance 8](https://github.com/openfspht/governance/blob/main/GOVERNANCE.md#8-nom-et-marques-de-conformité).
 
 ## 8. Security
 
@@ -226,7 +226,7 @@ The rules of 9 bind the mock server. The last sentence of 9.4.2, 9.7.3 and 9.7.6
 
 **9.3.3.** Over-the-counter payment is deferred: no simulated provider advertises its capabilities.
 
-**9.3.4.** Simulated provider identifiers use the `mock_` prefix, reserved by the [registry](https://github.com/openfspht/openfsp/blob/main/registries/providers.md). No real provider receives an identifier there.
+**9.3.4.** Simulated provider identifiers use the `mock_` prefix, reserved by the [registry](/docs/registry). No real provider receives an identifier there.
 
 **9.3.5.** The mock server also accepts, in its configuration, provider profiles reserved for tests, defined by capability flags (lookup, callbacks, statements, idempotency by order identifier). The suite uses them for the cases the three providers of 9.3.1 do not isolate:
 

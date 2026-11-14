@@ -2,7 +2,7 @@ import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
 import { localePath, type Locale } from "@/lib/i18n";
 
 export const GITHUB_URL = "https://github.com/openfspht";
-export const STACK_REPO = "https://github.com/openfspht/stack";
+export const CODE_REPO = "https://github.com/openfspht/openfsp";
 
 const labels = {
   en: { docs: "Docs", spec: "Specification", conformance: "Conformance" },
