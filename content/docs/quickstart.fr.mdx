@@ -1,0 +1,95 @@
+---
+title: Démarrage rapide
+description: Lancer la passerelle de référence, son serveur simulé et la suite de conformité depuis le dépôt stack.
+---
+
+Toutes les commandes se lancent à la racine du dépôt [`stack`](https://github.com/openfspht/stack), qui réunit la passerelle de référence, le serveur simulé, la
+console d'administration, une boutique de démonstration et la suite de conformité. `make` seul liste les cibles.
+
+## 1. Démonstration avec Docker
+
+```bash
+make demo
+```
+
+La cible lance `docker compose --profile demo up --build` et démarre :
+
+| Service                 | Adresse                 |
+| ----------------------- | ----------------------- |
+| Passerelle              | `http://localhost:8080` |
+| Console                 | `http://localhost:5173` |
+| Interface du simulé     | `http://localhost:5175` |
+| Interface du validateur | `http://localhost:5176` |
+| Boutique                | `http://localhost:3000` |
+
+PostgreSQL, le serveur simulé et le service de validation tournent aussi, sans port fixe sur l'hôte. La console demande le jeton d'administration :
+`demo-admin-token`. Les clients découvrent les points d'accès sur `/.well-known/openfsp-configuration`.
+
+## 2. Développement
+
+Il faut le JDK 25, Bun et un PostgreSQL sur `127.0.0.1:5432`, avec un rôle `openfsp` propriétaire d'une base `openfsp`. `DB_NAME`, `DB_USER` et `DB_PASSWORD`
+les modifient.
+
+```bash
+make install
+make dev
+```
+
+`make dev` ouvre un terminal à onglets, un processus par onglet, connecte la console avec `demo-admin-token` et fournit à la boutique la clé d'API de
+démonstration.
+
+| Processus               | Port                |
+| ----------------------- | ------------------- |
+| Passerelle              | 8080                |
+| Serveur simulé          | 8090                |
+| Validateur              | 8095                |
+| Console                 | 5173                |
+| Boutique                | 5174 (API sur 3000) |
+| Interface du simulé     | 5175                |
+| Interface du validateur | 5176                |
+
+`make check` compile, analyse, vérifie les types et teste le backend et le frontend.
+
+## 3. Bacs à sable des opérateurs
+
+`make dev-sandbox` démarre les mêmes processus, sans le validateur, avec une passerelle branchée sur les bacs à sable de MonCash et NatCash. Les identifiants
+viennent de `.env.sandbox` à la racine du dépôt (ignoré par git), un `NOM=valeur` par ligne, ou du shell :
+
+```bash
+MONCASH_CLIENT_ID=
+MONCASH_CLIENT_SECRET=
+NATCASH_USERNAME=
+NATCASH_PASSWORD=
+NATCASH_PARTNER_CODE=
+NATCASH_PRIVATE_KEY=
+NATCASH_FUNCTION_CODE=
+```
+
+La passerelle refuse de démarrer si l'une de ces variables est vide. Mener un paiement à terme demande un portefeuille de bac à sable, et les rappels des
+opérateurs exigent une passerelle joignable depuis Internet.
+
+## 4. Conformité d'une passerelle
+
+On démarre le serveur simulé, puis la passerelle avec son profil `conformance`, qui ajoute les opérateurs de test `mock_no_source`, `mock_statement_only` et
+`mock_unreachable`, avant de lancer la suite :
+
+```bash
+make simulator             # terminal 1, port 8090
+make gateway-conformance   # terminal 2, port 8080
+make validate              # terminal 3
+```
+
+`make validate` émet par l'API d'administration les clés dont les scénarios ont besoin et enregistre un récepteur de webhooks sur le port 8099 le temps de
+l'exécution, puis les révoque et le retire. Le rapport est écrit dans `backend/validator/build/conformance-report.json`. Contre une passerelle lancée par
+`make gateway`, la cible signale l'absence des opérateurs de test et leurs scénarios ne sont pas couverts.
+
+## 5. Conformité d'un opérateur natif
+
+```bash
+make simulator         # terminal 1
+make validate-native   # terminal 2
+```
+
+`make validate-native` exécute la suite avec la cible `native-operator` contre `mock_openfsp`, l'opérateur natif du serveur simulé, sur
+`http://127.0.0.1:8090/mock_openfsp` (`VALIDATE_NATIVE_BASE_URL`), avec les clés qu'il publie. Le rapport est écrit dans
+`backend/validator/build/conformance-report-native.json`.

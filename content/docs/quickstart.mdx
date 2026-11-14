@@ -1,0 +1,92 @@
+---
+title: Quickstart
+description: How to run the reference gateway, its simulator and the conformance suite from the stack repository.
+---
+
+Every command runs at the root of the [`stack`](https://github.com/openfspht/stack) repository, which holds the reference gateway, the simulator, the admin
+console, a demo shop and the conformance suite. `make` alone lists the targets.
+
+## 1. Demo with Docker
+
+```bash
+make demo
+```
+
+This runs `docker compose --profile demo up --build` and starts:
+
+| Service      | Address                 |
+| ------------ | ----------------------- |
+| Gateway      | `http://localhost:8080` |
+| Console      | `http://localhost:5173` |
+| Simulator UI | `http://localhost:5175` |
+| Validator UI | `http://localhost:5176` |
+| Demo shop    | `http://localhost:3000` |
+
+PostgreSQL, the simulator and the validator service also run, without a fixed host port. The console asks for the admin token: `demo-admin-token`. Clients
+discover the endpoints at `/.well-known/openfsp-configuration`.
+
+## 2. Development
+
+Requires JDK 25, Bun and PostgreSQL on `127.0.0.1:5432` with an `openfsp` role owning an `openfsp` database. `DB_NAME`, `DB_USER` and `DB_PASSWORD` change them.
+
+```bash
+make install
+make dev
+```
+
+`make dev` opens a tabbed terminal with one process per tab, signs the console in with `demo-admin-token` and gives the shop the demo API key.
+
+| Process      | Port               |
+| ------------ | ------------------ |
+| Gateway      | 8080               |
+| Simulator    | 8090               |
+| Validator    | 8095               |
+| Console      | 5173               |
+| Shop         | 5174 (API on 3000) |
+| Simulator UI | 5175               |
+| Validator UI | 5176               |
+
+`make check` builds, lints, typechecks and tests the backend and the frontend.
+
+## 3. Provider sandboxes
+
+`make dev-sandbox` starts the same processes, without the validator, with the gateway on the MonCash and NatCash sandboxes. It reads the credentials from
+`.env.sandbox` at the repository root (ignored by git), one `NAME=value` per line, or from the shell:
+
+```bash
+MONCASH_CLIENT_ID=
+MONCASH_CLIENT_SECRET=
+NATCASH_USERNAME=
+NATCASH_PASSWORD=
+NATCASH_PARTNER_CODE=
+NATCASH_PRIVATE_KEY=
+NATCASH_FUNCTION_CODE=
+```
+
+The gateway refuses to start when one of them is empty. Completing a payment needs a sandbox wallet, and provider callbacks need a gateway reachable from the
+Internet.
+
+## 4. Conformance of a gateway
+
+Start the simulator and the gateway with its `conformance` profile, which adds the test-only providers `mock_no_source`, `mock_statement_only` and
+`mock_unreachable`, then run the suite:
+
+```bash
+make simulator             # terminal 1, port 8090
+make gateway-conformance   # terminal 2, port 8080
+make validate              # terminal 3
+```
+
+`make validate` issues the keys the scenarios need through the admin API, registers a webhook receiver on port 8099 for the run, then revokes and removes them.
+The report is written to `backend/validator/build/conformance-report.json`. Against a gateway started with `make gateway`, it warns that the test-only providers
+are missing and skips their scenarios.
+
+## 5. Conformance of a native provider
+
+```bash
+make simulator         # terminal 1
+make validate-native   # terminal 2
+```
+
+`make validate-native` runs the suite with the `native-operator` target against the simulator's `mock_openfsp` at `http://127.0.0.1:8090/mock_openfsp`
+(`VALIDATE_NATIVE_BASE_URL`), with the keys it publishes. The report is written to `backend/validator/build/conformance-report-native.json`.
