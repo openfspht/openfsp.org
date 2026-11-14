@@ -1,0 +1,31 @@
+---
+title: Provider registry
+description: The registered `provider` identifiers that every gateway uses for the same payment service.
+---
+
+This registry assigns the `provider` identifiers used by [API 3.2](/docs/spec/payments-api#3.2) and announced by [capabilities 3.2](/docs/spec/capabilities#3.2).
+
+A gateway MUST use the registered identifier for every provider listed here. A local spelling makes clients non-portable from one deployment to another.
+
+## Registered identifiers
+
+| Identifier | Service | Company | Country | Replaced by |
+| ---------- | ------- | ------- | ------- | ----------- |
+| `moncash`  | MonCash | Digicel | Haiti   |             |
+| `natcash`  | NatCash | Natcom  | Haiti   |             |
+
+## Reserved
+
+| Identifier                   | Reason                                                                                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `openfsp`                    | Reserved for the project.                                                                                                                 |
+| `mock_*`                     | Prefix reserved for simulated providers, see [conformance 9.3.4](/docs/spec/conformance#9.3.4). No real provider gets an identifier here. |
+| `test`, `example`, `invalid` | Reserved for documentation and examples. No real deployment may claim them.                                                               |
+
+## Register an identifier
+
+Open a pull request on [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx) that adds a row. I review it without a decision record: an identifier is a label with no normative behaviour of its own ([capabilities 2.7](/docs/spec/capabilities#2.7)).
+
+An identifier MUST match `^[a-z0-9_]{1,32}$`, MUST name the payment service as its users know it rather than the company that runs it, and MUST NOT be a trademark claim. Listing a provider here implies no relationship with it and no endorsement either way.
+
+Identifiers are permanent. A provider that changes name gets a new identifier, and the old row stays with the new identifier under _Replaced by_, because deployments and stored records keep carrying the old value.
