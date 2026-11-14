@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Mode = "without" | "with";
 type Point = { x: number; y: number };
@@ -65,6 +65,8 @@ function gatewayEdge(g: Geometry, side: "in" | "out"): Point {
     : { x: g.gateway.x + (sign * g.gatewaySize.width) / 2, y: g.gateway.y };
 }
 
+const UNTANGLE_DELAY_MS = 1400;
+
 const fade = (visible: boolean) => ({ opacity: visible ? 1 : 0, transition: "opacity 420ms cubic-bezier(0.16, 1, 0.3, 1)" });
 
 function Diagram({ g, mode, copy, className }: { g: Geometry; mode: Mode; copy: DiagramCopy; className: string }) {
@@ -114,7 +116,13 @@ function Diagram({ g, mode, copy, className }: { g: Geometry; mode: Mode; copy: 
 }
 
 export function IntegrationDiagram({ copy }: { copy: DiagramCopy }) {
-  const [mode, setMode] = useState<Mode>("with");
+  const [mode, setMode] = useState<Mode>("without");
+  const timer = useRef<number>(undefined);
+
+  useEffect(() => {
+    timer.current = window.setTimeout(() => setMode("with"), UNTANGLE_DELAY_MS);
+    return () => window.clearTimeout(timer.current);
+  }, []);
   const count = mode === "with" ? copy.countWith : copy.countWithout;
 
   return (
@@ -127,7 +135,10 @@ export function IntegrationDiagram({ copy }: { copy: DiagramCopy }) {
               type="button"
               role="radio"
               aria-checked={mode === value}
-              onClick={() => setMode(value)}
+              onClick={() => {
+                window.clearTimeout(timer.current);
+                setMode(value);
+              }}
               className={`rounded-md px-3 py-1.5 font-medium transition-colors ${
                 mode === value ? "bg-fd-primary text-fd-primary-foreground" : "text-fd-muted-foreground hover:text-fd-foreground"
               }`}
