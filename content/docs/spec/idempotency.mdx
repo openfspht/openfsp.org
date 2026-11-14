@@ -1,0 +1,135 @@
+---
+title: Idempotency
+description: How a client retries a write safely, and what the gateway stores to make the retry harmless.
+---
+
+The reasons behind these rules are in [Decisions](/docs/decisions#0006).
+
+## 1. Covered operations
+
+**1.1.** Every `POST`, `PATCH` or `DELETE` on the client API is subject to idempotency, unless exempted (1.4). Endpoints called by the provider or the payer
+(callbacks, return URL) are not covered.
+
+**1.2.** `GET` and `HEAD` are not covered. A client MAY resend them freely.
+
+**1.3.** A client MUST send `Idempotency-Key` on every covered operation. The gateway MUST reject such a request without the header, without executing it,
+with `idempotency-key-required`.
+
+**1.4.** A decision record MAY exempt a named operation when both hold: running it twice has no effect, and a stored response served in its place would report a
+state older than the execution. For an exempted operation, the gateway MUST NOT require the key, MUST NOT store a response, and MUST ignore the header if present.
+
+## 2. Key
+
+**2.1.** The value is an `IdempotencyKey`: 1 to 255 characters from `A-Za-z0-9_-`. The gateway MUST reject a request with a malformed key, without executing
+it, with `invalid-field` ([API 10.9.1](/docs/spec/payments-api#10.9.1)) and no `errors`: `field` only points into the body
+([API 10.7.1](/docs/spec/payments-api#10.7.1)).
+
+**2.2.** A client SHOULD generate the key as a UUID (RFC 9562) or from at least 128 bits of cryptographic randomness, and SHOULD NOT derive it from business data.
+Exception: a gateway that creates a payment at a native provider MUST derive the key from the order identifier (7.2), as `create-<order identifier>`, so that
+the resend in 7.2 reuses the same key.
+
+**2.3.** A record is identified by the triple (principal, operation, key). The gateway MUST NOT serve a stored response to a principal other than the one that
+created it.
+
+## 3. Processing
+
+_P_ is the principal, _O_ the operation, _K_ the key and _F_ the fingerprint from 4.
+
+**3.1. First request.** With no record for (_P_, _O_, _K_), the gateway runs the operation, then, once the outcome is settled (5), stores _F_, the status and
+the response body.
+
+**3.2. Replay.** If the record exists with the same fingerprint, the gateway MUST NOT run the operation. It MUST return the stored status and body, byte for
+byte, with `Idempotent-Replay: true`.
+
+**3.3. Conflict.** If the fingerprint differs, the gateway MUST reject the request without running it, with `idempotency-key-reused` (`422`).
+
+**3.4. In progress.** If the first request has no settled outcome yet, the gateway MUST NOT run the second one in parallel. It MUST either hold it or reject it
+with `idempotency-request-in-progress` (`409`) and `Retry-After`.
+
+**3.5.** Creating the record and running the operation MUST be mutually exclusive (conditional insert, lock or equivalent). A read-then-write check MUST NOT be
+used.
+
+## 4. Fingerprint
+
+**4.1.** _F_ is the SHA-256 digest of the parsed JSON body with object members sorted. Amounts are integers: a floating-point number is rejected before the
+fingerprint is computed. An empty body has the fingerprint of `{}`.
+
+**4.2.** Only the body goes into the fingerprint. Path, query parameters and headers are excluded.
+
+## 5. Storage
+
+**5.1.** The gateway MUST store the response only once the outcome is settled:
+
+- a success, including a `failed` payment;
+- an error caused by the request itself: validation, unknown field, `reference-conflict`.
+
+**5.2.** The gateway MUST NOT store:
+
+- an internal error whose effect is unknown;
+- a timeout or transport failure towards the provider;
+- a stop before the outcome is persisted;
+- an `idempotency-request-in-progress` response.
+
+**5.3.** The gateway MUST NOT modify a stored response.
+
+## 6. Retention and reference
+
+**6.1.** The gateway MUST keep records for at least 24 hours, SHOULD keep them for 7 days, and MUST publish its retention period.
+
+**6.2.** After that period, the same key is treated as a first request. The gateway MUST enforce `reference` uniqueness independently of idempotency records.
+
+**6.3.** Payment creation:
+
+| Key               | Body      | Reference | Result                         |
+| ----------------- | --------- | --------- | ------------------------------ |
+| same, not expired | same      | same      | replay (3.2)                   |
+| same              | different | any       | `idempotency-key-reused` (3.3) |
+| expired           | same      | same      | `reference-conflict`           |
+| different         | any       | same      | `reference-conflict`           |
+| different         | any       | different | new payment                    |
+
+## 7. Provider
+
+**7.1.** Before resending to the provider an operation whose outcome is unknown, the gateway MUST try to settle it from an authoritative source
+([lifecycle 6.5](/docs/spec/lifecycle#6.5)).
+
+**7.2.** The gateway MUST send the provider an order identifier that is:
+
+- derived from the `reference` by HMAC-SHA256, under a derivation key specific to the gateway;
+- encoded as 26 lowercase base32 characters, so at least 128 bits;
+- stored and indexed with the payment ([API 7.4](/docs/spec/payments-api#7.4), [lifecycle 10.4.1](/docs/spec/lifecycle#10.4.1));
+- still valid after the derivation key changes, the new key serving new payments only;
+- derived the same way for `mock_*` providers.
+
+If the provider caps the identifier below 128 bits, the adapter MUST document it as a known loss. If the provider offers idempotency or lookup by order
+identifier, the gateway MUST use it to settle the outcome (7.1).
+
+**7.2.1.** A per-call request identifier the provider requires (`requestId`) is distinct from the order identifier: a provider that rejects a duplicate
+`requestId` does not offer idempotency in the sense of 7.2.
+
+**7.3.** If the provider offers neither idempotency nor lookup by order identifier, the gateway MUST NOT resend an unknown operation automatically. The payment
+stays `pending` and the gateway MUST report the unknown operation to the operator.
+
+**7.4.** The gateway MUST document, per adapter, whether 7.2 or 7.3 applies.
+
+## 8. Client
+
+**8.1.** A client MUST use one key per logical operation and the same key for every resend of that operation.
+
+**8.2.** A client MUST NOT resend a request that received a `4xx`, except `idempotency-request-in-progress` and `rate-limited`.
+
+**8.3.** After resends, a client MUST read the resource to learn the outcome, and MUST NOT infer it from the last response received.
+
+**8.4.** A client MUST space its resends and honour `Retry-After`. It SHOULD use exponential backoff with jitter.
+
+**8.5.** A client SHOULD persist the key before sending the request.
+
+## 9. Security
+
+**9.1.** The key alone MUST NOT be used as a lookup identifier: records are scoped per principal (2.3). The key is not a secret and MUST NOT grant any
+authorization.
+
+**9.2.** The gateway MUST rate-limit creation per principal and SHOULD cap the number of records per principal, rejecting excess requests rather than deleting
+records.
+
+**9.3.** Stored responses MAY contain personal data and MUST be protected like the resources they come from.

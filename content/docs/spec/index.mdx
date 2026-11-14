@@ -1,0 +1,36 @@
+---
+title: Conventions
+description: Keywords, vocabulary and the documents that make up the specification.
+---
+
+## Keywords
+
+MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED and OPTIONAL are read as in RFC 2119 and RFC 8174 when written in capitals.
+
+Each rule has a number. Link to it with its anchor, for example [`/docs/spec/idempotency#3.2`](/docs/spec/idempotency#3.2).
+
+## Vocabulary
+
+| Term       | Meaning                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------ |
+| provider   | Payment service the gateway translates to (MonCash, NatCash). Called FSP in BRH circulars.                   |
+| gateway    | Implementation of OpenFSP that receives client requests. It serves one merchant, who owns all its resources. |
+| operator   | Whoever deploys and runs a gateway.                                                                          |
+| client     | Application that calls the gateway.                                                                          |
+| subscriber | Endpoint that receives a gateway's webhooks.                                                                 |
+| verifier   | Party that checks an event signature: subscriber, auditor or library.                                        |
+| principal  | Authenticated identity of a client.                                                                          |
+
+## Documents
+
+| Document                                    | Status      |
+| ------------------------------------------- | ----------- |
+| [Data model](/docs/spec/data-model)         | Normative   |
+| [Payment lifecycle](/docs/spec/lifecycle)   | Normative   |
+| [Idempotency](/docs/spec/idempotency)       | Normative   |
+| [Payments API](/docs/spec/payments-api)     | Normative   |
+| [Capabilities](/docs/spec/capabilities)     | Normative   |
+| [Webhooks](/docs/spec/webhooks)             | Normative   |
+| [Authentication](/docs/spec/authentication) | Normative   |
+| [Conformance](/docs/spec/conformance)       | Normative   |
+| [Architecture](/docs/architecture)          | Informative |
