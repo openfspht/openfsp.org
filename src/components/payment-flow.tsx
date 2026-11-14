@@ -131,7 +131,7 @@ export function PaymentFlow({ copy }: { copy: FlowCopy }) {
               textAnchor="middle"
               fontSize={10.5}
               fontWeight={600}
-              className={`font-mono ${succeeded ? "fill-fd-primary-foreground" : "fill-fd-muted-foreground"}`}
+              className={`${succeeded ? "fill-fd-primary-foreground" : "fill-fd-muted-foreground"}`}
             >
               {succeeded ? copy.succeeded : copy.pending}
             </text>

@@ -25,9 +25,9 @@ function Wire({ label, marker, active, accent }: { label: string; marker?: numbe
   return (
     <div className="relative flex items-center justify-center py-2 lg:px-2 lg:py-0">
       <div className={`h-12 w-px lg:h-px lg:w-full ${line}`} />
-      <div className="absolute flex items-center gap-2 lg:-top-1 lg:-translate-y-full">
+      <div className="absolute flex items-center gap-2 lg:inset-x-2 lg:top-1/2 lg:mt-3 lg:flex-col lg:gap-1.5">
         {marker !== undefined && <Marker n={marker} active={active === marker} />}
-        <span className="bg-fd-background px-1 text-xs whitespace-nowrap text-fd-muted-foreground lg:bg-transparent">{label}</span>
+        <span className="bg-fd-background px-1 text-xs text-fd-muted-foreground lg:bg-transparent lg:text-center lg:leading-snug">{label}</span>
       </div>
     </div>
   );
