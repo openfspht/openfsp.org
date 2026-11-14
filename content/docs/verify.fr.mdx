@@ -1,0 +1,12 @@
+---
+title: Vérifier une attestation
+description: Vérifier dans le navigateur la signature d'une attestation de conformité et, si vous le fournissez, l'empreinte de son rapport.
+---
+
+Une exécution de la suite signe une attestation : un JWS compact (EdDSA) dont la charge utile consigne la cible, la version de la suite et les verdicts. La signature est vérifiée ici, dans votre navigateur, avec la clé que le validateur publie à `/.well-known/openfsp-validator`. Le rapport est facultatif : s'il est fourni, son empreinte SHA-256 (JSON canonique RFC 8785) est comparée à celle de l'attestation.
+
+Le validateur public n'est pas encore en ligne. Pour une attestation produite en local, indiquez l'URL de votre `validator-web` (`http://localhost:8095` par défaut) ; il doit autoriser les requêtes de ce site.
+
+<AttestationVerifier locale="fr" />
+
+Une attestation consigne une exécution, échecs compris. Elle ne certifie pas une implémentation ([conformité 7.6](/fr/docs/spec/conformance#7.6)).
