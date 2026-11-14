@@ -7,7 +7,7 @@ The reasons behind these rules are in [Decisions](/docs/decisions#0007).
 
 ## 1. Scheme
 
-**1.1.** A client authenticates with a bearer API key. Every endpoint is authenticated, except the service descriptor ([capabilities 3.1](/docs/spec/capabilities#3.1)), which carries the webhook keys ([webhooks 6.1](/docs/spec/webhooks#6.1)), the health check (`/actuator/health`) and the endpoints called by the provider or the payer: callbacks ([lifecycle 6.6](/docs/spec/lifecycle#6.6)) and return ([API 7.4](/docs/spec/payments-api#7.4)).
+**1.1.** A client authenticates with a bearer API key. Every endpoint is authenticated, except the configuration document ([capabilities 3.1](/docs/spec/capabilities#3.1)), which carries the webhook keys ([webhooks 6.1](/docs/spec/webhooks#6.1)), the health check (`/actuator/health`) and the endpoints called by the provider or the payer: callbacks ([lifecycle 6.6](/docs/spec/lifecycle#6.6)) and return ([API 7.4](/docs/spec/payments-api#7.4)).
 
 **1.2.** The gateway MUST NOT offer an unauthenticated mode for any other endpoint, including in development.
 

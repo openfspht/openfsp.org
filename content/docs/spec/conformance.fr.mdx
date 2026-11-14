@@ -1,10 +1,9 @@
 ---
 title: Conformité
-description: Les niveaux de conformité, la suite de tests, le serveur simulé et l'attestation signée.
+description: Ce qu'énonce une affirmation de conformité, les cibles et niveaux testés par la suite, le contenu de la suite et de son rapport, et la façon dont le serveur simulé remplace les opérateurs.
 ---
 
-Je justifie ces choix dans les [décisions](/fr/docs/decisions#0008) et rattache
-chaque règle à son test dans la matrice de conformité.
+Je justifie ces choix dans les [décisions](/fr/docs/decisions#0008).
 
 ## 1. Définition
 
@@ -35,7 +34,7 @@ même configuration DOIVENT donner le même résultat (9.6).
 URL de retour non probante, réutilisation de la clé d'idempotence, paiement durablement
 `pending`.
 
-**2.3.** Le 5 définit les tests de la cible passerelle.
+**2.3.** La section 5 définit les tests de la cible passerelle.
 
 **2.4.** Tests de la cible opérateur natif : 5.7.
 
@@ -71,7 +70,7 @@ rapporter Core comme réussi lorsqu'un test Core a échoué, ni rapporter un tau
 
 ## 4. Exécution
 
-**4.1.** La suite est exécutable par toute partie, contre l'implémentation de son choix ; elle
+**4.1.** Toute partie peut exécuter la suite, contre l'implémentation de son choix ; elle
 produit le rapport du 7.
 
 **4.2.** Pour une passerelle, la suite joue le client et le serveur simulé joue les opérateurs.
@@ -90,9 +89,9 @@ et l'URL de rappel partagée de l'opérateur pour le test « Rappel non signé, 
 **4.6.** La suite DOIT être exécutable hors ligne, en intégration continue, sans compte.
 
 **4.7.** Un test qui exige une action d'exploitant (attestation, révocation de clé, déclaration
-de bornes, adaptateur pointé vers un port fermé) est marqué assisté : la suite décrit l'action, un exploitant l'exécute par
-l'administration ou la configuration de la passerelle, le rapport signale le test comme
-assisté. Ce n'est pas une modification au sens du 4.3.
+de bornes, adaptateur pointé vers un port fermé) est marqué assisté : la suite décrit l'action,
+un exploitant l'exécute par l'administration ou la configuration de la passerelle, et le rapport
+signale le test comme assisté. Ce n'est pas une modification au sens du 4.3.
 
 ## 5. Contenu
 
@@ -116,20 +115,20 @@ exécuté en parallèle, mis en attente ou rejeté en `idempotency-request-in-pr
 
 **5.4. Refus.** Chaque test vérifie un refus ou une absence d'effet :
 
-| Test                                                            | Attendu                                                                                             | Règle                                                         | Serveur simulé                                               |
-| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
-| Synchroniser sans `payments.lookup`                             | `capability-not-supported`, pas d'état stocké présenté comme relu                                   | [capacités 5.3](/fr/docs/spec/capabilities#5.3)               | profil de test à relevé seul (9.3.5), `PENDING_FOREVER`      |
-| Synchroniser un paiement terminal sans `payments.lookup`        | paiement inchangé, `200`                                                                            | [capacités 5.3.1](/fr/docs/spec/capabilities#5.3.1)           | profil de test à relevé seul (9.3.5), `SUCCESS`              |
-| Opération d'une capacité non annoncée                           | `capability-not-supported`                                                                          | [capacités 4.4](/fr/docs/spec/capabilities#4.4)               | profil de test sans source (9.3.5), `SUCCESS`                |
-| `POST` sans `Idempotency-Key`                                   | `idempotency-key-required`                                                                          | [idempotence 1.3](/fr/docs/spec/idempotency#1.3)              | aucun                                                        |
-| Dénouement indéterminé, opérateur sans idempotence ni recherche | paiement `pending` ; aucun renvoi au journal (9.5.5) pendant au moins 40 s, durée portée au rapport | [idempotence 7.3](/fr/docs/spec/idempotency#7.3)              | profil de test sans source (9.3.5), `TIMEOUT`                |
-| Statut d'opérateur inconnu                                      | paiement `pending`                                                                                  | [cycle de vie 1.1](/fr/docs/spec/lifecycle#1.1)               | `mock_openfsp`, `UNKNOWN_STATUS`                             |
-| Rappel non signé, hors URL propre, annonçant un succès          | aucune transition                                                                                   | [cycle de vie 6.3](/fr/docs/spec/lifecycle#6.3)               | `mock_openfsp`, `PENDING_FOREVER`, rappel forgé par la suite |
-| Rappel sur URL propre avec jeton erroné                         | rejet sans effet                                                                                    | [cycle de vie 6.6](/fr/docs/spec/lifecycle#6.6)               | `mock_natcash`, `PENDING_FOREVER`, rappel forgé par la suite |
-| Relevé sans le paiement, `expires_at` non écoulé                | paiement `pending`, pas d'`expired`                                                                 | [cycle de vie 5.3, 6.7](/fr/docs/spec/lifecycle#6.7)          | profil de test à relevé seul (9.3.5), `PENDING_FOREVER`      |
-| Requête de l'API tentant de fixer l'état d'un paiement          | état inchangé                                                                                       | [cycle de vie 6.8](/fr/docs/spec/lifecycle#6.8)               | `mock_moncash`, `PENDING_FOREVER`                            |
-| Opérateur renvoyant des identifiants dans une erreur            | `[REDACTED]` dans `provider_detail`                                                                 | [authentification 9.5, 9.6](/fr/docs/spec/authentication#9.6) | `mock_openfsp`, `CREDENTIAL_ECHO`                            |
-| Clé inconnue, révoquée, d'un autre environnement                | trois `unauthenticated` indiscernables                                                              | [authentification 4.7](/fr/docs/spec/authentication#4.7)      | aucun ; assisté (4.7)                                        |
+| Test                                                               | Attendu                                                                                             | Règle                                                         | Serveur simulé                                               |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
+| Synchroniser sans `payments.lookup`                                | `capability-not-supported`, pas d'état stocké présenté comme relu                                   | [capacités 5.3](/fr/docs/spec/capabilities#5.3)               | profil de test à relevé seul (9.3.5), `PENDING_FOREVER`      |
+| Synchroniser un paiement terminal sans `payments.lookup`           | paiement inchangé, `200`                                                                            | [capacités 5.3.1](/fr/docs/spec/capabilities#5.3.1)           | profil de test à relevé seul (9.3.5), `SUCCESS`              |
+| Opération d'une capacité non annoncée                              | `capability-not-supported`                                                                          | [capacités 4.4](/fr/docs/spec/capabilities#4.4)               | profil de test sans source (9.3.5), `SUCCESS`                |
+| `POST` sans `Idempotency-Key`                                      | `idempotency-key-required`                                                                          | [idempotence 1.3](/fr/docs/spec/idempotency#1.3)              | aucun                                                        |
+| Dénouement indéterminé, opérateur sans idempotence ni consultation | paiement `pending` ; aucun renvoi au journal (9.5.5) pendant au moins 40 s, durée portée au rapport | [idempotence 7.3](/fr/docs/spec/idempotency#7.3)              | profil de test sans source (9.3.5), `TIMEOUT`                |
+| Statut d'opérateur inconnu                                         | paiement `pending`                                                                                  | [cycle de vie 1.1](/fr/docs/spec/lifecycle#1.1)               | `mock_openfsp`, `UNKNOWN_STATUS`                             |
+| Rappel non signé, hors URL propre, annonçant un succès             | aucune transition                                                                                   | [cycle de vie 6.3](/fr/docs/spec/lifecycle#6.3)               | `mock_openfsp`, `PENDING_FOREVER`, rappel forgé par la suite |
+| Rappel sur URL propre avec jeton erroné                            | rejet sans effet                                                                                    | [cycle de vie 6.6](/fr/docs/spec/lifecycle#6.6)               | `mock_natcash`, `PENDING_FOREVER`, rappel forgé par la suite |
+| Relevé sans le paiement, `expires_at` non écoulé                   | paiement `pending`, pas d'`expired`                                                                 | [cycle de vie 5.3, 6.7](/fr/docs/spec/lifecycle#6.7)          | profil de test à relevé seul (9.3.5), `PENDING_FOREVER`      |
+| Requête de l'API tentant de fixer l'état d'un paiement             | état inchangé                                                                                       | [cycle de vie 6.8](/fr/docs/spec/lifecycle#6.8)               | `mock_moncash`, `PENDING_FOREVER`                            |
+| Opérateur renvoyant des identifiants dans une erreur               | `[REDACTED]` dans `provider_detail`                                                                 | [authentification 9.5, 9.6](/fr/docs/spec/authentication#9.6) | `mock_openfsp`, `CREDENTIAL_ECHO`                            |
+| Clé inconnue, révoquée, d'un autre environnement                   | trois `unauthenticated` indiscernables                                                              | [authentification 4.7](/fr/docs/spec/authentication#4.7)      | aucun ; assisté (4.7)                                        |
 
 **5.4.1.** Le test « Rappel sur URL propre avec jeton erroné » relève du profil
 `webhooks.per_payment_url` ; une passerelle qui n'annonce pas cette capacité n'y est pas soumise.
@@ -297,13 +296,11 @@ générique le sert. `mock_moncash` et `mock_natcash` imitent le dialecte de leu
 capacités.
 
 **9.3.4.** Les identifiants des opérateurs simulés utilisent le préfixe `mock_`, réservé par le
-[registre](/fr/docs/registry). Aucun
-opérateur réel n'y reçoit d'identifiant.
+[registre](/fr/docs/registry). Aucun opérateur réel n'y reçoit d'identifiant.
 
 **9.3.5.** Le serveur simulé accepte aussi, dans sa configuration, des profils d'opérateur
 réservés aux tests, définis par des indicateurs de capacité (consultation, rappels, relevés,
-idempotence par identifiant de commande). La
-suite s'en sert pour les cas que les trois opérateurs du 9.3.1 n'isolent pas :
+idempotence par identifiant de commande). La suite s'en sert pour les cas que les trois opérateurs du 9.3.1 n'isolent pas :
 
 | Profil      | Sources du [cycle de vie 6.5](/fr/docs/spec/lifecycle#6.5) | Cas exercé                                                                                                                                                              |
 | ----------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -334,7 +331,7 @@ dérivation fournie en configuration ([idempotence 7.2](/fr/docs/spec/idempotenc
 | Scénario               | Comportement                                                  | Règle exercée                                            |
 | ---------------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
 | `SUCCESS`              | Succès sans délai ajouté ; scénario par défaut (9.4.5).       | Chemin nominal.                                          |
-| `DECLINE`              | Échec, motif de refus.                                        | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)          |
+| `DECLINE`              | Échec, refusé.                                                | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)          |
 | `INSUFFICIENT`         | Échec, fonds insuffisants.                                    | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)          |
 | `TIMEOUT`              | Requête acceptée, aucune réponse.                             | [Idempotence 5.2, 7.1](/fr/docs/spec/idempotency#7.1)    |
 | `TIMEOUT_THEN_SUCCESS` | Aucune réponse, paiement réussi chez l'opérateur.             | [Idempotence 7.1](/fr/docs/spec/idempotency#7.1)         |

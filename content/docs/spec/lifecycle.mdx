@@ -157,7 +157,7 @@ A gateway that has only source (e) for a provider MAY advertise `payments` for t
 
 **9.1.** A client or gateway that displays `failure_detail` MUST treat its content as untrusted.
 
-**9.2.** The gateway SHOULD rate-limit payment creation, against account enumeration through `payer_unreachable`.
+**9.2.** The gateway SHOULD rate-limit payment creation to counter account enumeration through `payer_unreachable`.
 
 **9.3.** Client documentation SHOULD recommend not showing `failure_reason` to the payer as is.
 
@@ -294,7 +294,7 @@ The `match` parameter accepts the values `unmatched` and `conflict`. The respons
 
 ### 10.9. Gateway statement
 
-Importing a provider portal export is not supported: the gateway builds its own statement from the payments it relayed. It serves the merchant's accounting at every provider; only the provider statement (10.2) reveals what the gateway did not see.
+The gateway does not import provider portal exports. It builds its own statement from the payments it relayed, which serves the merchant's accounting at every provider; only the provider statement (10.2) reveals what the gateway did not see.
 
 **10.9.1.** The gateway MUST build, for every provider and every business day, its statement: the payments of that provider that entered a terminal state during the day, by the date of `completed_at` in the time zone of 10.1.2.
 

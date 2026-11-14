@@ -24,8 +24,8 @@ Une passerelle DOIT utiliser l'identifiant enregistré pour tout opérateur list
 
 ## Enregistrer un identifiant
 
-Ouvrez une pull request sur [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.fr.mdx) qui ajoute une ligne ; je la relis sans ADR, car un identifiant est une étiquette sans comportement normatif propre ([découverte de capacités 2.7](/fr/docs/spec/capabilities#2.7)).
+Ouvrez une pull request sur [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.fr.mdx) qui ajoute une ligne. Je la relis sans ajouter de décision, car un identifiant est une étiquette sans comportement normatif propre ([découverte de capacités 2.7](/fr/docs/spec/capabilities#2.7)).
 
-Un identifiant DOIT correspondre à `^[a-z0-9_]{1,32}$`, DOIT nommer le service de paiement tel que ses utilisateurs le connaissent plutôt que sa société exploitante, et NE DOIT PAS constituer une revendication de marque. Lister un opérateur ici n'implique aucune relation avec cet opérateur, ni aucun soutien dans un sens ou dans l'autre.
+Un identifiant DOIT correspondre à `^[a-z0-9_]{1,32}$`, DOIT nommer le service de paiement tel que ses utilisateurs le connaissent plutôt que la société qui l'exploite, et NE DOIT PAS constituer une revendication de marque. Lister un opérateur ici n'implique aucune relation avec lui, ni aucun soutien dans un sens ou dans l'autre.
 
 Les identifiants sont permanents. Un opérateur qui change de nom reçoit un nouvel identifiant, et l'ancienne ligne est conservée avec le nouvel identifiant dans la colonne _Remplacé par_, parce que les déploiements et les enregistrements stockés continuent de porter l'ancienne valeur.

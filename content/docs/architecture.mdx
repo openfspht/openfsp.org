@@ -7,10 +7,10 @@ Informative. The reasons behind this scope are in [Decisions](/docs/decisions#00
 
 ## Out of scope
 
-Lifting any of these limits requires a decision record.
+Lifting any of these limits requires a new decision.
 
-- OpenFSP does not hold, move or keep funds. The gateway instructs providers and is never a party to a transaction.
-- OpenFSP runs no hosted service. A hosted offer built on OpenFSP belongs to its operator and to that operator's own regulatory obligations.
+- OpenFSP does not hold, move or keep funds. A gateway instructs providers and is never a party to a transaction.
+- OpenFSP runs no hosted service. A hosted offer built on OpenFSP is the responsibility of its operator, under that operator's own regulatory obligations.
 - OpenFSP is not a licensed payment institution and replaces no license and no contract with a provider.
 - OpenFSP is not a switch, a clearing house or a settlement system.
 - OpenFSP does not certify providers.
@@ -18,13 +18,13 @@ Lifting any of these limits requires a decision record.
 
 ## Components
 
-| Component         | Role                                                                                                     | Technology                                                            |
-| ----------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Specification     | Normative rules: data model, lifecycle, capabilities, errors, idempotency, webhooks.                     | Markdown; OpenAPI description to be published with the implementation |
-| Gateway           | Self-hosted server: the OpenFSP protocol on one side, the provider APIs on the other.                    | Kotlin, Spring Boot                                                   |
-| Simulator         | Imitates the providers, failures included.                                                               | Kotlin, Spring Boot                                                   |
-| Client libraries  | Thin protocol clients.                                                                                   | TypeScript, PHP, Python                                               |
-| Conformance suite | Executable tests against an implementation, reproducible report ([conformance](/docs/spec/conformance)). | Not settled                                                           |
+| Component         | Role                                                                                                                                                                                                            | Technology                                                            |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Specification     | Normative rules: data model, lifecycle, capabilities, errors, idempotency, webhooks.                                                                                                                            | Markdown; OpenAPI description to be published with the implementation |
+| Gateway           | Self-hosted reference implementation. It speaks the OpenFSP protocol to the application and each provider's own API to that provider, so a merchant can use MonCash and NatCash before they adopt the standard. | Kotlin, Spring Boot                                                   |
+| Mock server       | Imitates the providers, failures included.                                                                                                                                                                      | Kotlin, Spring Boot                                                   |
+| Client libraries  | Thin protocol clients.                                                                                                                                                                                          | TypeScript, PHP, Python                                               |
+| Conformance suite | Executable tests against an implementation, reproducible report ([conformance](/docs/spec/conformance)).                                                                                                        | Not settled                                                           |
 
 ## Request path
 
@@ -42,20 +42,19 @@ flowchart TD
     AD2 -- "provider API" --> P2
 ```
 
-The application calls the gateway with the OpenFSP protocol and names the provider: the gateway never picks one. The gateway holds the payment record, the
+The application calls the gateway with the OpenFSP protocol and names the provider itself; the gateway never picks one. The gateway holds the payment record, the
 idempotency store, the state transitions and the audit, and hands each provider call to that provider's adapter. Callbacks, lookups and statements come back
-through the same adapter. In development and in continuous integration, the [simulator](/docs/spec/conformance#9) replaces the providers.
+through the same adapter. In development and in continuous integration, the [mock server](/docs/spec/conformance#9) replaces the providers.
 
 A native provider exposes the OpenFSP API itself and needs no adapter. A gateway that creates a payment there derives the idempotency key from the order
 identifier ([idempotency 2.2](/docs/spec/idempotency#2.2)).
 
 ## Deployment and trust
 
-- The operator (the merchant or its agent) deploys the gateway and holds its provider secrets. The project never holds them.
-- The relationship between the merchant and its provider is unchanged. The merchant has an account with each accepted provider: no value moves between
-  providers and no clearing is needed.
-- No multi-tenant service. A compromised gateway exposes a single merchant.
-- The gateway ships as a single binary with its database, safe defaults and a hardening guide.
+The operator (the merchant or its agent) deploys the gateway and holds its provider secrets; the project never holds them. The relationship between the
+merchant and its provider is unchanged. The merchant has an account with each accepted provider, so no value moves between providers and no clearing is
+needed. Each deployment serves a single merchant, so a compromised gateway exposes only that merchant. The gateway ships as a single binary with its database,
+safe defaults and a hardening guide.
 
 ## Design principles
 
@@ -74,25 +73,25 @@ identifier ([idempotency 2.2](/docs/spec/idempotency#2.2)).
 
 RFC 2119 and RFC 8174 (keywords), RFC 9457 (errors), RFC 3339 in UTC (timestamps), ISO 4217 (HTG), ITU-T E.164 (phone numbers), RFC 9562 UUID version 7
 (identifiers), RFC 9421 (webhook signatures), the IETF `Idempotency-Key` draft, OpenAPI 3.1, the `Bearer` scheme of RFC 9110
-([authentication 3](/docs/spec/authentication#3)), RFC 8615 (discovery). Mojaloop and the national processor PRONAP work at the switch layer and are
-complementary: only a switch lets a payer at provider A pay a merchant that accepts only B.
+([authentication 3](/docs/spec/authentication#3)), RFC 8615 (discovery). Mojaloop and the national processor PRONAP work at the switch layer and complement
+OpenFSP, since only a switch lets a payer at provider A pay a merchant that accepts only B.
 
 ## Conformance
 
 | Target          | Verification                                                         |
 | --------------- | -------------------------------------------------------------------- |
 | Client          | The suite plays the gateway.                                         |
-| Gateway         | The suite plays the client, the simulator plays the providers.       |
+| Gateway         | The suite plays the client, the mock server plays the providers.     |
 | Native provider | The provider exposes the OpenFSP API; no adapter is required for it. |
 
 Levels: Core and one profile per capability. Rules: [conformance](/docs/spec/conformance).
 
 ## Regulation
 
-Under the 2012 law, a financial institution receives funds from the public with an obligation to return them. OpenFSP receives no funds, and neither its
-publisher nor a merchant that deploys it is covered by BRH circular 121. This holds under current law and is not settled: the BRH can extend the law to similar
-activities. The `Payment` resource and the statements ([lifecycle 10](/docs/spec/lifecycle#10)) carry the data BRH circulars 121, 126 and 131 ask for, which
-does not attest that a deployment satisfies them.
+Under the 2012 law, a financial institution receives funds from the public with an obligation to return them. A gateway receives no funds, and neither the
+OpenFSP publisher nor a merchant that deploys a gateway is covered by BRH circular 121. This reading holds under current law but is not settled, since the BRH
+can extend the law to similar activities. The `Payment` resource and the statements ([lifecycle 10](/docs/spec/lifecycle#10)) carry the data BRH circulars 121, 126 and 131 ask for;
+carrying that data does not attest that a deployment satisfies them.
 
 ## Versions
 

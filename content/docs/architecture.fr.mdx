@@ -7,9 +7,9 @@ Informatif. Je justifie ce cadrage dans les [décisions](/fr/docs/decisions#0001
 
 ## Hors périmètre
 
-Lever l'une de ces limites exige une ADR.
+Lever l'une de ces limites exige une nouvelle décision.
 
-- OpenFSP ne détient, ne déplace ni ne conserve de fonds. La passerelle instruit les opérateurs et n'est jamais partie à une transaction.
+- OpenFSP ne détient, ne déplace ni ne conserve de fonds. Une passerelle transmet des ordres aux opérateurs et n'est jamais partie à une transaction.
 - OpenFSP n'exploite aucun service hébergé. Une offre hébergée fondée sur OpenFSP relève de son exploitant et de ses propres obligations réglementaires.
 - OpenFSP n'est pas un établissement de paiement agréé et ne remplace aucun agrément ni aucun contrat avec un opérateur.
 - OpenFSP n'est ni un commutateur, ni une chambre de compensation, ni un système de règlement.
@@ -18,13 +18,13 @@ Lever l'une de ces limites exige une ADR.
 
 ## Composants
 
-| Composant              | Rôle                                                                                                          | Technologie                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Spécification          | Règles normatives : modèle de données, cycle de vie, capacités, erreurs, idempotence, webhooks.               | Markdown ; description OpenAPI à publier avec l'implémentation |
-| Passerelle             | Serveur auto-hébergé : protocole OpenFSP d'un côté, API des opérateurs de l'autre.                            | Kotlin, Spring Boot                                            |
-| Serveur simulé         | Imite les opérateurs, défaillances comprises.                                                                 | Kotlin, Spring Boot                                            |
-| Bibliothèques clientes | Clients légers du protocole.                                                                                  | TypeScript, PHP, Python                                        |
-| Suite de conformité    | Tests exécutables contre une implémentation, rapport reproductible ([conformité](/fr/docs/spec/conformance)). | Non arrêtée                                                    |
+| Composant              | Rôle                                                                                                                                                                                                                                     | Technologie                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Spécification          | Règles normatives : modèle de données, cycle de vie, capacités, erreurs, idempotence, webhooks.                                                                                                                                          | Markdown ; description OpenAPI à publier avec l'implémentation |
+| Passerelle             | Implémentation de référence auto-hébergée. Elle parle le protocole OpenFSP à l'application et l'API propre à chaque opérateur à cet opérateur, ce qui permet au marchand d'utiliser MonCash et NatCash avant qu'ils n'adoptent la norme. | Kotlin, Spring Boot                                            |
+| Serveur simulé         | Imite les opérateurs, défaillances comprises.                                                                                                                                                                                            | Kotlin, Spring Boot                                            |
+| Bibliothèques clientes | Clients légers du protocole.                                                                                                                                                                                                             | TypeScript, PHP, Python                                        |
+| Suite de conformité    | Tests exécutables contre une implémentation, rapport reproductible ([conformité](/fr/docs/spec/conformance)).                                                                                                                            | Non arrêtée                                                    |
 
 ## Trajet d'une requête
 
@@ -42,8 +42,8 @@ flowchart TD
     AD2 -- "API de l'opérateur" --> P2
 ```
 
-L'application appelle la passerelle en protocole OpenFSP et désigne l'opérateur : la passerelle n'en choisit jamais un. Elle tient l'enregistrement de paiement,
-le magasin d'idempotence, les transitions d'état et l'audit, et confie chaque appel à l'adaptateur de l'opérateur visé. Rappels, consultations et relevés
+L'application appelle la passerelle selon le protocole OpenFSP et désigne elle-même l'opérateur ; la passerelle n'en choisit jamais. La passerelle tient l'enregistrement de paiement,
+les enregistrements d'idempotence, les transitions d'état et l'audit, et confie chaque appel à l'adaptateur de l'opérateur visé. Rappels, consultations et relevés
 reviennent par ce même adaptateur. En développement et en intégration continue, le [serveur simulé](/fr/docs/spec/conformance#9) remplace les opérateurs.
 
 Un opérateur natif expose lui-même l'API OpenFSP et se passe d'adaptateur. Une passerelle qui crée un paiement chez lui dérive la clé d'idempotence de
@@ -51,11 +51,10 @@ l'identifiant de commande ([idempotence 2.2](/fr/docs/spec/idempotency#2.2)).
 
 ## Déploiement et confiance
 
-- L'exploitant, le marchand ou son mandataire, déploie la passerelle et détient ses secrets d'opérateur ; le projet ne les détient jamais.
-- La relation entre le marchand et son opérateur est inchangée. Le marchand a un compte chez chaque opérateur accepté : aucune valeur ne circule entre
-  opérateurs, aucune compensation n'est requise.
-- Aucun service multi-locataire. Une passerelle compromise n'expose qu'un seul marchand.
-- La passerelle est distribuée en un binaire unique accompagné de sa base de données, avec des réglages par défaut sûrs et un guide de durcissement.
+L'exploitant (le marchand ou son mandataire) déploie la passerelle et détient ses secrets d'opérateur ; le projet ne les détient jamais. La relation entre le
+marchand et son opérateur ne change pas. Le marchand a un compte chez chaque opérateur accepté, si bien qu'aucune valeur ne circule entre opérateurs et
+qu'aucune compensation n'est nécessaire. Chaque déploiement sert un seul marchand : une passerelle compromise n'expose que lui. La passerelle est distribuée en
+un binaire unique avec sa base de données, des réglages par défaut sûrs et un guide de durcissement.
 
 ## Principes de conception
 
@@ -73,26 +72,26 @@ l'identifiant de commande ([idempotence 2.2](/fr/docs/spec/idempotency#2.2)).
 ## Normes
 
 RFC 2119 et RFC 8174 (mots-clés), RFC 9457 (erreurs), RFC 3339 en UTC (horodatages), ISO 4217 (HTG), UIT-T E.164 (téléphone), RFC 9562 UUID version 7
-(identifiants), RFC 9421 (signature des webhooks), brouillon IETF `Idempotency-Key`, OpenAPI 3.1, schéma `Bearer` de la RFC 9110
-([authentification 3](/fr/docs/spec/authentication#3)), RFC 8615 (découverte). Mojaloop et le processeur national PRONAP relèvent de la couche du commutateur,
-complémentaire : seul un commutateur permet à un payeur chez A de payer un marchand qui n'accepte que B.
+(identifiants), RFC 9421 (signature des webhooks), projet IETF `Idempotency-Key`, OpenAPI 3.1, schéma `Bearer` de la RFC 9110
+([authentification 3](/fr/docs/spec/authentication#3)), RFC 8615 (découverte). Mojaloop et le processeur national PRONAP travaillent au niveau du commutateur et
+complètent OpenFSP, car seul un commutateur permet à un payeur chez A de payer un marchand qui n'accepte que B.
 
 ## Conformité
 
 | Cible           | Vérification                                                               |
 | --------------- | -------------------------------------------------------------------------- |
-| Client          | Suite jouant la passerelle.                                                |
-| Passerelle      | Suite jouant le client, serveur simulé jouant les opérateurs.              |
+| Client          | La suite joue la passerelle.                                               |
+| Passerelle      | La suite joue le client, le serveur simulé joue les opérateurs.            |
 | Opérateur natif | L'opérateur expose l'API OpenFSP ; aucun adaptateur n'est requis pour lui. |
 
 Niveaux : Core et profils par capacité. Règles : [conformité](/fr/docs/spec/conformance).
 
 ## Cadre réglementaire
 
-La loi de 2012 définit l'institution financière par la réception de fonds du public avec obligation de restitution. OpenFSP ne reçoit aucun fonds, et ni
-l'éditeur ni le marchand qui déploie ne relèvent de la circulaire BRH-121. Cette position vaut en l'état du droit sans être acquise : la BRH peut étendre la loi
-aux activités assimilables. La ressource `Payment` et les relevés ([cycle de vie 10](/fr/docs/spec/lifecycle#10)) portent les données qu'exigent les
-circulaires BRH-121, 126 et 131, ce qui n'atteste pas qu'un déploiement les satisfait.
+La loi de 2012 définit l'institution financière par la réception de fonds du public avec obligation de restitution. Une passerelle ne reçoit aucun fonds, et ni
+l'éditeur d'OpenFSP ni le marchand qui déploie une passerelle ne relèvent de la circulaire BRH-121. Cette lecture vaut en l'état du droit mais n'est pas
+acquise, car la BRH peut étendre la loi aux activités assimilables. La ressource `Payment` et les relevés ([cycle de vie 10](/fr/docs/spec/lifecycle#10)) portent les données qu'exigent les
+circulaires BRH-121, 126 et 131 ; porter ces données n'atteste pas qu'un déploiement les respecte.
 
 ## Versions
 
@@ -111,8 +110,8 @@ compatibilité.
 
 ### 1. Rôle
 
-**1.1.** Un adaptateur traduit une opération OpenFSP vers l'API d'un opérateur et retraduit la réponse. Il ne détient ni l'enregistrement de paiement, ni le
-magasin d'idempotence, ni les transitions d'état, ni l'audit.
+**1.1.** Un adaptateur traduit une opération OpenFSP vers l'API d'un opérateur et retraduit la réponse. Il ne détient ni l'enregistrement de paiement, ni les
+enregistrements d'idempotence, ni les transitions d'état, ni l'audit.
 
 **1.2.** Un adaptateur rapporte la réponse de l'opérateur, ou l'absence de réponse exploitable.
 
@@ -127,7 +126,7 @@ magasin d'idempotence, ni les transitions d'état, ni l'audit.
 | Ingérer un rappel                 | [cycle de vie 6.3](/fr/docs/spec/lifecycle#6.3), [cycle de vie 6.6](/fr/docs/spec/lifecycle#6.6) | non         |
 | Lire un relevé                    | [cycle de vie 6.7](/fr/docs/spec/lifecycle#6.7), `payments.statement`                            | non         |
 
-**2.1.** Lire un paiement dans le magasin de la passerelle n'est pas une opération d'adaptateur.
+**2.1.** Lire un paiement dans la base de la passerelle n'est pas une opération d'adaptateur.
 
 **2.2.** Une opération que l'opérateur ne sait pas faire n'est ni implémentée ni déclarée ; pas d'implémentation partielle qui renvoie une erreur.
 

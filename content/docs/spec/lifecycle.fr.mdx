@@ -1,6 +1,6 @@
 ---
 title: Cycle de vie du paiement
-description: Les états d'un paiement, leurs transitions, l'expiration, le rapprochement et les relevés.
+description: Les états d'un paiement et leurs transitions, les sources qui font foi pour le clore, les motifs d'échec, et les relevés de l'opérateur et de la passerelle pour le rapprochement.
 ---
 
 Je justifie ces choix dans les [décisions](/fr/docs/decisions#0003).
@@ -51,7 +51,7 @@ statut d'opérateur impliquant une transition interdite est un conflit (6.4).
 **3.1.** Un paiement terminal NE DOIT transiter vers aucun autre état, y compris sur un rapport
 ultérieur contradictoire de l'opérateur.
 
-**3.2.** La passerelle NE DOIT PAS entrer dans un état terminal par inférence ou par
+**3.2.** La passerelle NE DOIT PAS entrer dans un état terminal par déduction ou par le seul
 écoulement du temps. Seule une source du 6.5 fonde une transition terminale ;
 pour `expired`, le 5 s'applique en plus.
 
@@ -108,15 +108,15 @@ immuables. Les autres champs PEUVENT encore être complétés.
 6.5, et DOIT annoncer par la [découverte de capacités](/fr/docs/spec/capabilities) les sources dont elle
 dispose pour chaque opérateur.
 
-**6.2.** La passerelle DEVRAIT relire périodiquement les paiements non terminaux sans
-sollicitation.
+**6.2.** La passerelle DEVRAIT relire périodiquement les paiements non terminaux de sa propre
+initiative.
 
 **6.3.** Un rappel d'opérateur ne fonde une transition que s'il relève du 6.5 (a) ou (c). Une signature
-présente DOIT être vérifiée. Dans les autres cas, la passerelle NE DOIT PAS transiter sur le
+présente DOIT être vérifiée. Dans les autres cas, la passerelle NE DOIT PAS faire transiter le paiement d'après le
 contenu du rappel ; elle PEUT le traiter comme un signal pour consulter une autre source.
 
 **6.3.1.** Un rappel signé ne relève du 6.5 (a) que si la signature couvre au moins
-l'identifiant du paiement et son dénouement. Sinon, c'est un signal : la passerelle DEVRAIT
+l'identifiant du paiement et son issue. Sinon, c'est un signal : la passerelle DEVRAIT
 consulter aussitôt une autre source.
 
 **6.3.2.** Si une source faisant foi rapporte un montant différent de celui du paiement, la
@@ -186,7 +186,7 @@ correspondance n'est pas certaine. La passerelle NE DOIT PAS deviner un motif pl
 **7.4.** `failure_detail` DOIT porter au minimum le code et le message d'erreur de
 l'opérateur, inaltérés.
 
-**7.5.** L'énumération est fermée ; l'étendre requiert une ADR. Un client DOIT traiter une
+**7.5.** L'énumération est fermée ; l'étendre exige une décision écrite. Un client DOIT traiter une
 valeur inconnue comme `unspecified`.
 
 ## 8. Extension par capacité
@@ -210,7 +210,7 @@ sortant d'un état terminal, ni affaiblir le 3.
 **9.1.** Un client ou une passerelle qui affiche `failure_detail` DOIT en traiter le contenu
 comme non fiable.
 
-**9.2.** La passerelle DEVRAIT limiter le débit de création de paiements, contre
+**9.2.** La passerelle DEVRAIT limiter le débit de création de paiements pour contrer
 l'énumération de comptes par `payer_unreachable`.
 
 **9.3.** La documentation client DEVRAIT recommander de ne pas afficher `failure_reason` tel
@@ -285,15 +285,15 @@ nouvelles lignes ; un relevé clos NE DOIT PAS en recevoir par la source `provid
 | `provider_reference` | `ProviderReference` | OBLIGATOIRE  |                                                               |
 | `type`               | chaîne              | OBLIGATOIRE  | 10.3.2.                                                       |
 | `amount`             | `Money`             | OBLIGATOIRE  | Brut, signé : positif au crédit du marchand.                  |
-| `fee_amount`         | `Money`             | FACULTATIF   | Tel que rapporté. Absent signifie non connu.                  |
-| `net_amount`         | `Money`             | FACULTATIF   | Tel que rapporté. Absent signifie non connu.                  |
+| `fee_amount`         | `Money`             | FACULTATIF   | Tel que rapporté. Absent signifie inconnu.                    |
+| `net_amount`         | `Money`             | FACULTATIF   | Tel que rapporté. Absent signifie inconnu.                    |
 | `booked_at`          | `Timestamp`         | OBLIGATOIRE  | Heure de comptabilisation chez l'opérateur.                   |
 | `provider_order_id`  | chaîne              | FACULTATIF   | Identifiant de commande, si l'opérateur le rapporte (10.4.1). |
 | `payment`            | `ResourceId`        | conditionnel | Présent si `match` vaut `matched` ou `conflict`.              |
 | `match`              | chaîne              | OBLIGATOIRE  | 10.4.                                                         |
 
 **10.3.2.** `type` prend l'une des valeurs `payment`, `reversal`, `fee`, `adjustment`.
-L'énumération est fermée ; l'étendre requiert une ADR. Un client DOIT traiter une valeur
+L'énumération est fermée ; l'étendre exige une décision écrite. Un client DOIT traiter une valeur
 inconnue comme `adjustment`.
 
 **10.3.3.** Par exception au [modèle de données 3.6](/fr/docs/spec/data-model#3.6), `amount`, `fee_amount` et
@@ -375,8 +375,8 @@ une journée comptable à cheval sur le changement d'heure.
 
 ### 10.9. Relevé de la passerelle
 
-Je ne retiens pas l'import d'un export de portail : la passerelle établit son propre relevé à
-partir des paiements qu'elle a relayés. Il sert à la comptabilité du marchand chez tout
+La passerelle n'importe pas les exports de portail des opérateurs. Elle établit son propre relevé à
+partir des paiements qu'elle a relayés, et ce relevé sert à la comptabilité du marchand chez tout
 opérateur ; seul le relevé de l'opérateur (10.2) révèle ce que la passerelle n'a pas vu.
 
 **10.9.1.** La passerelle DOIT établir, pour tout opérateur et toute journée comptable, son relevé :

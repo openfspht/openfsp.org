@@ -240,9 +240,9 @@ limits, a client that submits the creation again MUST use a new `Idempotency-Key
 
 ## 8. Security
 
-**8.1.** The public descriptor SHOULD be rate-limited.
+**8.1.** The configuration document SHOULD be rate-limited.
 
 **8.2.** Announcing a capability grants no authorization: the gateway MUST check the key's scope independently
 ([authentication 6](/docs/spec/authentication#6)).
 
-**8.3.** Limits are served only by the authenticated endpoint of 3.2, never by the public descriptor (3.1.1).
+**8.3.** Limits are served only by the authenticated endpoint of 3.2, never by the configuration document (3.1.1).

@@ -1,6 +1,6 @@
 ---
 title: API des paiements
-description: Les points d'accès de la passerelle, leurs requêtes, leurs réponses et le catalogue des erreurs.
+description: Les conventions HTTP, la ressource Payment, les points d'accès de création, de lecture et de synchronisation, le format et le catalogue des erreurs de la passerelle.
 ---
 
 Je justifie ces choix dans les [décisions](/fr/docs/decisions#0004).
@@ -33,7 +33,7 @@ passerelle NE DOIT PAS étendre l'exemption.
 **1.8.** Toute réponse, succès ou erreur, porte l'en-tête `Request-Id` égal au `request_id`
 (10.1.6).
 
-**1.9.** Champs inconnus : rejet en requête, tolérance en réponse ([modèle de données 2.3, 2.4](/fr/docs/spec/data-model#2.4)).
+**1.9.** Champs inconnus : rejet en requête, tolérance en réponse ([modèle de données 2.3](/fr/docs/spec/data-model#2.3), [2.4](/fr/docs/spec/data-model#2.4)).
 
 **1.10.** Les chemins sont canoniques sans barre oblique finale ; `/v1/payments/` DOIT être
 traité comme `/v1/payments`.
@@ -47,7 +47,7 @@ un tableau nu : `{ "data": [] }`.
 
 **2.1.** Les trois opérations du 5 forment la capacité `payments`. Une passerelle conforme DOIT
 les implémenter pour chaque opérateur qu'elle prend en charge ; sans `payments.lookup`, la
-synchronisation suit le [capacités 5.3](/fr/docs/spec/capabilities#5.3).
+synchronisation suit la règle [capacités 5.3](/fr/docs/spec/capabilities#5.3).
 
 **2.2.** La passerelle NE DOIT PAS subordonner ces opérations à une interrogation préalable de
 la découverte de capacités.
@@ -142,7 +142,7 @@ passerelle PEUT ne pas présenter le paiement.
 `expires_at` d'un `redirect` est FACULTATIF lorsque l'opérateur annonce `expiry_guaranteed` à
 `false` ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)).
 
-**4.3.** La passerelle DOIT rapporter le type exigé par l'opérateur. Si ce type ne
+**4.3.** La passerelle DOIT indiquer le type exigé par l'opérateur. Si ce type ne
 peut pas être déterminé, la création échoue avec une erreur ; `none` NE DOIT PAS servir de
 valeur par défaut.
 
@@ -192,7 +192,7 @@ POST /v1/payments
 **5.1.1.** La passerelle NE DOIT PAS choisir l'opérateur à la place du client.
 
 **5.1.2.** La passerelle DOIT documenter, par adaptateur, si `payer` est exigé : le membre
-`payer_required` de `/v1/capabilities` ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)) tient lieu de cette
+`payer_required` de `/v1/capabilities` ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)) constitue cette
 documentation. Elle DOIT rejeter avec `missing-field` une requête privée d'un champ exigé par
 l'opérateur.
 
@@ -278,7 +278,7 @@ paiement reste `pending`.
 **6.1.** Un client apprend un changement d'état par lecture (5.2), synchronisation (5.3) ou
 [webhook](/fr/docs/spec/webhooks).
 
-**6.2.** Un client DEVRAIT sonder à intervalles croissants et DEVRAIT s'arrêter dès que le paiement est
+**6.2.** Un client DEVRAIT interroger à intervalles croissants et DEVRAIT s'arrêter dès que le paiement est
 terminal.
 
 **6.3.** Voir [webhooks 10](/fr/docs/spec/webhooks#10).
@@ -390,13 +390,13 @@ changer ou être localisés.
 
 ### 10.2. Requête échouée et paiement échoué
 
-**10.2.1.** Une réponse d'erreur rapporte l'échec de la requête ; le dénouement du paiement est
+**10.2.1.** Une réponse d'erreur signale l'échec de la requête ; le dénouement du paiement est
 porté par `status` (10.2.2).
 
-**10.2.2.** Un paiement refusé est rapporté en `200`, avec `"status": "failed"` et un
+**10.2.2.** Un paiement refusé est renvoyé en `200`, avec `"status": "failed"` et un
 `failure_reason` ([cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)).
 
-**10.2.3.** La passerelle NE DOIT PAS rapporter un paiement refusé par une réponse d'erreur, ni
+**10.2.3.** La passerelle NE DOIT PAS signaler un paiement refusé par une réponse d'erreur, ni
 utiliser un statut `4xx` ou `5xx` pour le dénouement d'un paiement.
 
 **10.2.4.** Un client NE DOIT PAS traiter une réponse non `2xx` comme un paiement échoué. Son
@@ -444,7 +444,8 @@ d'effet en double ; il n'en garantit pas le succès.
 **10.5.3.** Un client NE DOIT PAS renvoyer une requête dont l'erreur porte `retryable: false`.
 
 **10.5.4.** Un client qui renvoie DOIT réutiliser la clé d'origine et espacer ses renvois
-([idempotence 8.1, 8.4](/fr/docs/spec/idempotency#8.4)).
+([idempotence 8.1](/fr/docs/spec/idempotency#8.1),
+[8.4](/fr/docs/spec/idempotency#8.4)).
 
 **10.5.5.** Un client DOIT respecter `Retry-After`.
 
@@ -459,7 +460,7 @@ d'effet en double ; il n'en garantit pas le succès.
 | `none`    | L'opération n'a pas pris effet. |
 | `unknown` | L'opération a pu prendre effet. |
 
-**10.6.2.** La passerelle DOIT rapporter `none` seulement si elle peut l'établir, `unknown`
+**10.6.2.** La passerelle DOIT indiquer `none` seulement si elle peut l'établir, `unknown`
 sinon.
 
 **10.6.3.** Sur `unknown`, un client NE DOIT PAS conclure à l'échec. Il DOIT renvoyer avec la clé
@@ -469,7 +470,7 @@ d'origine ou lire la ressource par sa `reference`
 **10.6.4.** `effect` et `retryable` sont indépendants.
 
 **10.6.5.** La passerelle NE DOIT PAS enregistrer au titre de l'[idempotence](/fr/docs/spec/idempotency)
-une erreur portant `effect: unknown` ; un renvoi est traité selon idempotence 3.
+une erreur portant `effect: unknown` ; un renvoi est traité selon l'[idempotence 3](/fr/docs/spec/idempotency#3).
 
 ### 10.7. Erreurs par champ
 
@@ -508,7 +509,7 @@ une erreur portant `effect: unknown` ; un renvoi est traité selon idempotence 3
 }
 ```
 
-**10.7.2.** La passerelle DEVRAIT rapporter tous les champs invalides dans une seule réponse.
+**10.7.2.** La passerelle DEVRAIT signaler tous les champs invalides dans une seule réponse.
 
 **10.7.3.** `field` DOIT désigner la requête telle qu'envoyée par le client.
 
@@ -535,7 +536,7 @@ d'authentification ; la passerelle DOIT caviarder un tel contenu.
 
 ### 10.9. Catalogue
 
-Fermé ; l'étendre requiert une ADR.
+Fermé ; l'étendre exige une décision écrite.
 
 #### 10.9.1. Requête
 
@@ -610,7 +611,7 @@ d'hôte).
 
 **10.10.1.** `title` et `detail` DEVRAIENT être en anglais par défaut.
 
-**10.10.2.** Une passerelle PEUT les localiser et DEVRAIT alors honorer `Accept-Language`.
+**10.10.2.** Une passerelle PEUT les localiser et DEVRAIT alors respecter `Accept-Language`.
 
 **10.10.3.** La localisation NE DOIT PAS modifier `type`, `retryable`, `effect` ni aucun `code`.
 

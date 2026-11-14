@@ -1,6 +1,6 @@
 ---
-title: Capacités et plafonds
-description: Ce que la passerelle annonce sur chaque opérateur et les bornes qu'elle applique aux montants.
+title: Capacités et bornes
+description: Ce que la passerelle annonce pour chaque opérateur, comment un client le découvre, et comment les bornes de montant sont déclarées et appliquées.
 ---
 
 Je justifie ces choix dans les [décisions](/fr/docs/decisions#0005).
@@ -10,7 +10,7 @@ Je justifie ces choix dans les [décisions](/fr/docs/decisions#0005).
 **1.1.** Une capacité est une fonctionnalité nommée, prise en charge ou non pour un opérateur
 donné.
 
-**1.2.** Les capacités sont rapportées par opérateur, jamais pour la passerelle entière.
+**1.2.** Les capacités sont déclarées par opérateur, jamais pour la passerelle entière.
 
 **1.3.** Une passerelle DOIT n'annoncer une capacité que si l'opérateur exécute l'opération
 lui-même. Elle NE DOIT PAS annoncer une capacité obtenue par émulation,
@@ -31,7 +31,7 @@ annoncé.
 | `payments`                     | spécifié, obligatoire | Créer, lire, synchroniser un paiement ([API](/fr/docs/spec/payments-api)).                                                                                                                   |
 | `payments.lookup`              | spécifié              | Consultation faisant foi de l'état chez l'opérateur (5).                                                                                                                                     |
 | `payments.statement`           | spécifié              | Relevé des transactions par canal authentifié ([cycle de vie 6.7](/fr/docs/spec/lifecycle#6.7)), lisible par le client ([relevés](/fr/docs/spec/lifecycle#10)).                              |
-| `payments.fee`                 | spécifié              | L'opérateur rapporte les frais ([modèle de données 8](/fr/docs/spec/data-model#8)).                                                                                                          |
+| `payments.fee`                 | spécifié              | L'opérateur communique les frais ([modèle de données 8](/fr/docs/spec/data-model#8)).                                                                                                        |
 | `payments.refund`              | réservé               | Remboursement d'un paiement capturé.                                                                                                                                                         |
 | `payments.capture`             | réservé               | Autorisation et capture séparées.                                                                                                                                                            |
 | `payments.cancel`              | réservé               | Annulation avant achèvement.                                                                                                                                                                 |
@@ -43,7 +43,7 @@ annoncé.
 | `webhooks.verify`              | spécifié              | Rappels signés par l'opérateur ([cycle de vie 6.5](/fr/docs/spec/lifecycle#6.5) a).                                                                                                          |
 | `webhooks.per_payment_url`     | spécifié              | URL de rappel propre à chaque paiement ([cycle de vie 6.6](/fr/docs/spec/lifecycle#6.6)), transmise à un opérateur natif par `callback_url` ([API 5.1.8](/fr/docs/spec/payments-api#5.1.8)). |
 
-**2.3.** Ajouter un nom requiert une ADR. Un ajout n'est pas une rupture (4.3).
+**2.3.** Ajouter un nom exige une décision écrite. Un ajout ne rompt pas la compatibilité (4.3).
 
 **2.4.** Une passerelle PEUT annoncer des noms hors registre, préfixés d'un nom DNS inversé
 qu'elle contrôle (`com.example.payments.instalments`), et NE DOIT PAS inventer de noms non
@@ -54,7 +54,7 @@ préfixés.
 **2.6.** La passerelle DOIT utiliser l'identifiant enregistré de chaque opérateur
 ([registre](/fr/docs/registry)).
 
-**2.7.** Un identifiant d'opérateur s'enregistre par pull request sur le registre, sans ADR.
+**2.7.** Un identifiant d'opérateur s'enregistre par pull request sur le registre, sans décision écrite.
 
 **2.8.** Les identifiants sont permanents ; un opérateur renommé reçoit un nouvel identifiant
 et l'ancien est marqué remplacé.
@@ -199,7 +199,7 @@ renvoyer l'état stocké comme s'il avait été relu.
 **5.4.** Sans `payments.lookup`, le rapprochement s'appuie sur les autres sources du
 [cycle de vie 6.5](/fr/docs/spec/lifecycle#6.5).
 
-## 6. Plafonds de montant
+## 6. Bornes de montant
 
 **6.1.** Les bornes d'un opérateur sont le montant minimal et le montant maximal d'une
 transaction sur le compte marchand, fixés par l'opérateur pour ce marchand.
@@ -258,7 +258,7 @@ l'[idempotence 5.1](/fr/docs/spec/idempotency#5.1). Après un changement de born
 nouveau la création DOIT utiliser une nouvelle `Idempotency-Key`.
 
 **6.9.** Un paiement refusé par l'opérateur pour un plafond du payeur, ou pour une borne que la
-passerelle ne connaissait pas, prend `failed` avec `limit_exceeded`
+passerelle ne connaissait pas, passe à `failed` avec `limit_exceeded`
 ([cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)). La passerelle NE DOIT PAS le convertir en
 `amount-out-of-range`.
 
@@ -273,10 +273,10 @@ et vérifie qu'aucun appel n'atteint l'opérateur simulé.
 
 ## 8. Sécurité
 
-**8.1.** Le descripteur public DEVRAIT être limité en débit.
+**8.1.** Le document de configuration DEVRAIT être limité en débit.
 
 **8.2.** L'annonce d'une capacité ne confère aucune autorisation : la passerelle DOIT contrôler
 la portée de la clé indépendamment ([authentification 6](/fr/docs/spec/authentication#6)).
 
 **8.3.** Les bornes ne sont servies que par le point d'accès authentifié du 3.2,
-jamais par le descripteur public (3.1.1).
+jamais par le document de configuration (3.1.1).

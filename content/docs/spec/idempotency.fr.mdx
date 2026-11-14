@@ -8,16 +8,16 @@ Je justifie ces choix dans les [décisions](/fr/docs/decisions#0004).
 ## 1. Opérations concernées
 
 **1.1.** Toute requête `POST`, `PATCH` ou `DELETE` de l'API client est une opération
-soumise à idempotence, sauf exemption (1.4). Les points appelés par l'opérateur ou le payeur
-(rappels, retour) ne sont pas concernés.
+soumise à idempotence, sauf exemption (1.4). Les points d'accès appelés par l'opérateur ou le payeur
+(rappels, URL de retour) ne sont pas concernés.
 
 **1.2.** `GET` et `HEAD` ne sont pas concernées. Un client PEUT les renvoyer librement.
 
 **1.3.** Un client DOIT envoyer `Idempotency-Key` sur toute opération soumise à idempotence. La
-passerelle DOIT rejeter sans l'exécuter une telle requête qui n'en porte pas, avec
+passerelle DOIT rejeter sans l'exécuter une telle requête sans cet en-tête, avec
 `idempotency-key-required`.
 
-**1.4.** Une ADR PEUT exempter une opération nommée si les deux conditions sont réunies :
+**1.4.** Une décision écrite PEUT exempter une opération nommée si les deux conditions sont réunies :
 l'exécuter deux fois est sans effet, et une réponse enregistrée servie à sa place rapporterait
 un état antérieur à l'exécution. Pour une opération exemptée, la passerelle NE DOIT PAS exiger la clé, NE DOIT PAS
 enregistrer de réponse, et DOIT ignorer l'en-tête s'il est présent.
@@ -44,7 +44,7 @@ créée.
 Je note _P_ le principal, _O_ l'opération, _K_ la clé et _F_ l'empreinte du 4.
 
 **3.1. Première requête.** Sans enregistrement pour (_P_, _O_, _K_), la passerelle exécute
-l'opération puis, le dénouement déterminé (5), enregistre _F_, le statut et le corps de la
+l'opération puis, une fois le dénouement déterminé (5), enregistre _F_, le statut et le corps de la
 réponse.
 
 **3.2. Rejeu.** Si l'enregistrement existe avec la même empreinte, la passerelle NE DOIT PAS
@@ -68,7 +68,7 @@ PAS être utilisé.
 sont des entiers : un nombre à virgule flottante est rejeté avant le calcul de l'empreinte. Un
 corps vide a l'empreinte de `{}`.
 
-**4.2.** Seul le corps entre dans l'empreinte. Le chemin, les paramètres et les en-têtes en
+**4.2.** Seul le corps entre dans l'empreinte. Le chemin, les paramètres de requête et les en-têtes en
 sont exclus.
 
 ## 5. Enregistrement
@@ -83,7 +83,7 @@ sont exclus.
 
 - une erreur interne dont l'effet est inconnu ;
 - une expiration ou un échec de transport vers l'opérateur ;
-- un arrêt avant la persistance du dénouement ;
+- un arrêt avant que le dénouement soit enregistré ;
 - une réponse `idempotency-request-in-progress`.
 
 **5.3.** La passerelle NE DOIT PAS modifier une réponse enregistrée.
@@ -119,7 +119,7 @@ passerelle DOIT tenter de l'établir par une source faisant foi
 - encodé en base32 minuscule sur 26 caractères, soit au moins 128 bits ;
 - DOIT être stocké et indexé avec le paiement ([API 7.4](/fr/docs/spec/payments-api#7.4),
   [cycle de vie 10.4.1](/fr/docs/spec/lifecycle#10.4.1)) ;
-- valide après un changement de clé de dérivation ; la nouvelle clé de dérivation sert aux
+- toujours valide après un changement de clé de dérivation, la nouvelle clé ne servant qu'aux
   nouveaux paiements ;
 - dérivé de la même façon pour les opérateurs `mock_*`.
 
@@ -151,7 +151,7 @@ NE DOIT PAS le déduire de la dernière réponse reçue.
 **8.4.** Un client DOIT espacer ses renvois et respecter `Retry-After`. Il DEVRAIT utiliser
 une temporisation exponentielle avec gigue.
 
-**8.5.** Un client DEVRAIT persister la clé avant d'envoyer la requête.
+**8.5.** Un client DEVRAIT enregistrer durablement la clé avant d'envoyer la requête.
 
 ## 9. Sécurité
 

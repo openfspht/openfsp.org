@@ -210,7 +210,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
             body: "Même demande, mêmes statuts, mêmes messages d'erreur, quel que soit l'opérateur choisi par le client.",
           },
           {
-            title: "Jamais payé deux fois",
+            title: "Jamais débité deux fois",
             body: "Si la connexion coupe et que votre boutique renvoie la demande, le client n'est débité qu'une fois.",
           },
           {

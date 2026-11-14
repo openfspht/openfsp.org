@@ -1,6 +1,6 @@
 ---
 title: Webhooks
-description: La livraison des événements, leur signature et la vérification par l'abonné.
+description: Comment la passerelle signe et livre les événements à un abonné, et comment l'abonné les vérifie, les ordonne et les déduplique.
 ---
 
 Je justifie ces choix dans les [décisions](/fr/docs/decisions#0006).
@@ -13,7 +13,7 @@ est une requête HTTP portant un événement ; un événement peut être livré 
 **1.2.** Une signature vérifiée (5) garantit l'émetteur et l'intégrité du corps.
 
 **1.3.** Un événement décrit la ressource à son émission. En cas de contradiction avec une
-lecture, l'abonné DOIT tenir la lecture pour faisant foi.
+lecture, c'est la lecture qui DOIT faire foi pour l'abonné.
 
 **1.4.** La passerelle NE DOIT PAS émettre d'événement pour un état que la ressource n'a pas
 atteint.
@@ -58,7 +58,7 @@ DOIT être identique sur toutes les livraisons d'un même événement.
 **2.4.** `data` est un instantané complet, jamais un différentiel.
 
 **2.5.** Un abonné DOIT tolérer les membres inconnus de l'objet et de `data`. La passerelle NE
-DOIT PAS retirer un membre de l'objet sans ADR.
+DOIT PAS retirer un membre de l'objet sans décision écrite.
 
 **2.6.** Un abonné NE DOIT PAS rejeter un événement au seul motif que `previous_status` diffère
 de l'état qu'il détient ; il DEVRAIT alors relire la ressource.
@@ -83,10 +83,10 @@ l'événement.
 **3.4.** Il n'y a pas de `payment.updated` : un changement de champ sans transition n'émet pas
 d'événement.
 
-**3.5.** Ajouter un type requiert une ADR, sans nouvelle version majeure.
+**3.5.** Ajouter un type exige une décision écrite, sans nouvelle version majeure.
 
-**3.6.** La passerelle NE DOIT PAS émettre vers un point d'accès un type qu'il n'a pas demandé
-(7.1).
+**3.6.** La passerelle NE DOIT PAS émettre vers un point d'accès un type auquel il n'est pas
+abonné (7.1).
 
 ## 4. Livraison
 
@@ -278,8 +278,7 @@ au total, hors gigue) :
 | 7         | 24 heures   |
 
 **9.3.** Chaque délai DOIT être allongé d'une gigue aléatoire positive, d'amplitude au moins 20 %. La
-passerelle PEUT espacer
-davantage et NE DOIT PAS renvoyer plus tôt.
+passerelle PEUT espacer davantage les renvois et NE DOIT PAS renvoyer plus tôt.
 
 **9.4.** Après la dernière tentative, la passerelle DOIT s'arrêter, DOIT consigner l'abandon de
 façon visible pour l'exploitant, NE DOIT PAS supprimer l'événement et NE DOIT PAS modifier la
@@ -310,7 +309,7 @@ annonce, signe selon le 5, publie les clés selon le 6, renvoie selon le 9, n'é
 que pour une création ou une transition (1.4, 3.4).
 
 **11.2.** Abonné conforme : vérifie selon le 5.9, rejette selon le 5.12, déduplique selon le
-8.4, séquence selon le 8.3, respecte le 8.5 et dispose du 10.2.
+8.4, ordonne selon le 8.3, respecte le 8.5 et dispose de l'accès du 10.2.
 
 **11.3.** L'émission est annoncée par `webhooks.emit`, distincte de `webhooks.verify` qui
 concerne l'opérateur. Une passerelle qui n'annonce pas `webhooks.emit` NE DOIT PAS émettre
@@ -329,6 +328,6 @@ immédiatement avec une nouvelle clé, par exception au 6.4, et retirer sans dé
 compromise de l'ensemble publié.
 
 **12.4.** Un abonné DEVRAIT journaliser `id`, `type` et `sequence`, et NE DEVRAIT PAS
-journaliser le corps. Valeurs de signature et nonces NE DEVRAIENT PAS être journalisés.
+journaliser le corps. Les valeurs de signature et les nonces NE DEVRAIENT PAS être journalisés.
 
 **12.5.** La ressource fait foi comme registre des opérations (1.3).

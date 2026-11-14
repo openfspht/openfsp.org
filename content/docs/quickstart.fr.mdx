@@ -14,13 +14,13 @@ make demo
 
 La cible lance `docker compose --profile demo up --build` et démarre :
 
-| Service                 | Adresse                 |
-| ----------------------- | ----------------------- |
-| Passerelle              | `http://localhost:8080` |
-| Console                 | `http://localhost:5173` |
-| Interface du simulé     | `http://localhost:5175` |
-| Interface du validateur | `http://localhost:5176` |
-| Boutique                | `http://localhost:3000` |
+| Service                     | Adresse                 |
+| --------------------------- | ----------------------- |
+| Passerelle                  | `http://localhost:8080` |
+| Console                     | `http://localhost:5173` |
+| Interface du serveur simulé | `http://localhost:5175` |
+| Interface du validateur     | `http://localhost:5176` |
+| Boutique                    | `http://localhost:3000` |
 
 PostgreSQL, le serveur simulé et le service de validation tournent aussi, sans port fixe sur l'hôte. La console demande le jeton d'administration :
 `demo-admin-token`. Les clients découvrent les points d'accès sur `/.well-known/openfsp-configuration`.
@@ -28,7 +28,7 @@ PostgreSQL, le serveur simulé et le service de validation tournent aussi, sans 
 ## 2. Développement
 
 Il faut le JDK 25, Bun et un PostgreSQL sur `127.0.0.1:5432`, avec un rôle `openfsp` propriétaire d'une base `openfsp`. `DB_NAME`, `DB_USER` et `DB_PASSWORD`
-les modifient.
+permettent de les changer.
 
 ```bash
 make install
@@ -38,15 +38,15 @@ make dev
 `make dev` ouvre un terminal à onglets, un processus par onglet, connecte la console avec `demo-admin-token` et fournit à la boutique la clé d'API de
 démonstration.
 
-| Processus               | Port                |
-| ----------------------- | ------------------- |
-| Passerelle              | 8080                |
-| Serveur simulé          | 8090                |
-| Validateur              | 8095                |
-| Console                 | 5173                |
-| Boutique                | 5174 (API sur 3000) |
-| Interface du simulé     | 5175                |
-| Interface du validateur | 5176                |
+| Processus                   | Port                |
+| --------------------------- | ------------------- |
+| Passerelle                  | 8080                |
+| Serveur simulé              | 8090                |
+| Validateur                  | 8095                |
+| Console                     | 5173                |
+| Boutique                    | 5174 (API sur 3000) |
+| Interface du serveur simulé | 5175                |
+| Interface du validateur     | 5176                |
 
 `make check` compile, analyse, vérifie les types et teste le backend et le frontend.
 
@@ -70,8 +70,8 @@ opérateurs exigent une passerelle joignable depuis Internet.
 
 ## 4. Conformité d'une passerelle
 
-On démarre le serveur simulé, puis la passerelle avec son profil `conformance`, qui ajoute les opérateurs de test `mock_no_source`, `mock_statement_only` et
-`mock_unreachable`, avant de lancer la suite :
+Démarrez le serveur simulé, puis la passerelle avec son profil `conformance`, qui ajoute les opérateurs de test `mock_no_source`, `mock_statement_only` et
+`mock_unreachable`, et lancez la suite :
 
 ```bash
 make simulator             # terminal 1, port 8090
@@ -81,7 +81,7 @@ make validate              # terminal 3
 
 `make validate` émet par l'API d'administration les clés dont les scénarios ont besoin et enregistre un récepteur de webhooks sur le port 8099 le temps de
 l'exécution, puis les révoque et le retire. Le rapport est écrit dans `backend/validator/build/conformance-report.json`. Contre une passerelle lancée par
-`make gateway`, la cible signale l'absence des opérateurs de test et leurs scénarios ne sont pas couverts.
+`make gateway`, la cible signale l'absence des opérateurs de test et saute leurs scénarios.
 
 ## 5. Conformité d'un opérateur natif
 
