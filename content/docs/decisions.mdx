@@ -1,0 +1,97 @@
+---
+title: Decisions
+description: The design choices behind the OpenFSP specification, the reason for each and the alternatives I set aside.
+---
+
+I made these choices for a master's research project and propose them for discussion. Each section states one decision, why I chose it, what I set aside, and the chapter it governs.
+
+## 0001. Architecture and scope
+
+I propose an open specification, a gateway self-hosted by the merchant, a mock server and thin client libraries, written in Kotlin and Spring Boot. The project holds no funds, runs no hosted service and does no clearing. Each provider announces its own capabilities and nothing is emulated; an adapter translates without inventing a capability, a terminal state or an unverifiable retry.
+
+The main reason: integrations drop from `providers × applications` to `providers + applications`, and a native provider makes its adapter unnecessary.
+
+Set aside: per-language libraries without a server, a specification without a reference implementation, a hosted multi-tenant service, the GSMA Mobile Money API as is, and Mojaloop.
+
+Governs: [Architecture](/docs/architecture).
+
+## 0002. Data model
+
+Amounts are integers in HTG cents, bounded to ±(2⁵³ - 1) so double-precision JSON parsers stay exact: no floats, no rounding. The `currency` field stays, fixed to `"HTG"`. Phone numbers are E.164 only, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque (UUIDv7 recommended). Unknown fields are ignored in responses and rejected in requests.
+
+The main reason: these primitives condition every other chapter, and provider data (decimal amounts, numbers without `+`, timestamps without offset) must be normalized once, at the gateway.
+
+Set aside: decimal strings, floats, a combined `"HTG 1250.00"` string, multi-currency, server-side national phone formats, epoch timestamps and `camelCase`.
+
+Governs: [Data model](/docs/spec/data-model).
+
+## 0003. Payment lifecycle
+
+I chose five states: `pending`, the only non-terminal one, and `succeeded`, `failed`, `expired`, `canceled`. A terminal state is reached only on authoritative information and is never left. `pending` also covers a provider that does not answer, and nothing expires by clock. The authoritative sources are, in order: signed callback, lookup, per-payment callback URL, statement, operator attestation.
+
+The main reason: a merchant delivers on the state, so a status that changes after looking final leads to delivering against a failed payment or charging twice.
+
+Set aside: revisable terminal states, `unknown`, `processing`, provider-shaped states, clock expiry, `refunded` and a single `closed` state.
+
+Governs: [Lifecycle](/docs/spec/lifecycle).
+
+## 0006. Payments API
+
+The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed catalogue of 19 problem types. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations; the provider gets an order identifier derived by HMAC from the `reference`.
+
+The main reason: these are the merchant's actual needs (create, read back after an outage by its own reference, force a lookup when a callback is lost), and each provider can implement them.
+
+Set aside: routing by the gateway, `GET ?synchronize=true`, `404` for an unknown reference, a `/by-reference` path, a URL-only `next_action` and a list endpoint for now.
+
+Governs: [Payments API](/docs/spec/payments-api) and [Idempotency](/docs/spec/idempotency).
+
+## 0007. Capability discovery
+
+A capability is announced only when the provider supports it, and an operation not announced is refused. Discovery has two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per provider. Provider-specific behaviour and the merchant account limits (`limits`) are machine-readable fields.
+
+The main reason: a uniform interface that emulates missing features hides the gap until a real payment fails, and probing by trial can charge the payer.
+
+Set aside: fixed capabilities per version, HTTP `OPTIONS`, try and handle the error, versioned capabilities, capabilities in every payment response, gateway-wide capabilities, and limits hard-coded in the adapter.
+
+Governs: [Capabilities](/docs/spec/capabilities).
+
+## 0008. Webhooks and event delivery
+
+Delivery is at least once and unordered, with a per-resource `sequence` and an `id` for deduplication. Each event is signed with RFC 9421 HTTP Message Signatures over Ed25519, with a 300 second freshness window and a nonce. The body is a full snapshot of the resource, there are five event types, and retries span seven attempts over 31 hours. Polling stays the recovery path.
+
+The main reason: a public-key signature lets a subscriber reject a forgery with a standard library and proves to a third party what the gateway stated.
+
+Set aside: shared-secret HMAC, a custom signature header, mutual TLS alone, exactly-once delivery, thin events, batches and guaranteed ordering.
+
+Governs: [Webhooks](/docs/spec/webhooks).
+
+## 0009. Authentication and credentials
+
+Clients use a bearer key `ofsp_<env>_<secret>` with 128 bits of entropy, sent only in `Authorization: Bearer`. The gateway stores a SHA-256 digest, compares in constant time and returns a single `unauthenticated` error for every failure. Four scopes without implication; several keys per principal, revocation effective within 60 seconds. Provider secrets are never returned or logged, and are redacted from relayed fields.
+
+The main reason: without a shared rule, an implementation may compare in variable time, store keys in clear or tell unknown keys from revoked ones.
+
+Set aside: OAuth 2.0 client credentials, self-issued JWT, HMAC request signing, mutual TLS as the main credential, a single unscoped key, slow hashing and per-provider scopes.
+
+Governs: [Authentication](/docs/spec/authentication).
+
+## 0015. Conformance
+
+Conformance is a triple: target (client, gateway, native provider), level and protocol version. Core is mandatory, then one profile per announced capability, with no partial pass and no ranking. Anyone can run the suite offline without modifying the implementation; the mock server plays three providers, `mock_openfsp`, `mock_moncash` and `mock_natcash`, through declared failure scenarios. The report is machine-readable and states its limits.
+
+The main reason: non-emulation can only be checked by a black-box test, and audits under BRH Circulars 121 and 126 prescribe no benchmark.
+
+Set aside: paid certification by the project, bronze to gold levels, a percentage score, provider sandboxes, scenarios chosen by amount, random failures and instrumentation.
+
+Governs: [Conformance](/docs/spec/conformance).
+
+## References
+
+- RFC 3339, Date and Time on the Internet: Timestamps.
+- RFC 9421, HTTP Message Signatures.
+- RFC 9457, Problem Details for HTTP APIs.
+- RFC 9562, Universally Unique IDentifiers (UUIDs).
+- ITU-T E.164, The international public telecommunication numbering plan.
+- ISO 4217, Currency codes.
+- OpenID Connect Discovery 1.0.
+- GSMA Mobile Money API Specification 1.2.

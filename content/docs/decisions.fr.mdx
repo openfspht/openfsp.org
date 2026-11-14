@@ -1,0 +1,97 @@
+---
+title: Décisions
+description: Les choix de conception de la spécification OpenFSP, la raison de chacun et les solutions que j'ai écartées.
+---
+
+J'ai fait ces choix dans le cadre d'un projet de recherche de master et je les propose à la discussion. Chaque section énonce une décision, sa raison, ce que j'ai écarté et le chapitre qu'elle régit.
+
+## 0001. Architecture et périmètre
+
+Je propose une spécification ouverte, une passerelle auto-hébergée par le marchand, un serveur simulé et des bibliothèques clientes minces, en Kotlin et Spring Boot. Le projet ne détient aucun fonds, n'offre aucun service hébergé et ne fait aucune compensation. Chaque opérateur annonce ses capacités et rien n'est émulé ; un adaptateur traduit sans inventer de capacité, d'état terminal ni de renvoi invérifiable.
+
+Raison principale : le nombre d'intégrations passe de `opérateurs × applications` à `opérateurs + applications`, et un opérateur natif rend son adaptateur inutile.
+
+Écartés : bibliothèques par langage sans serveur, spécification sans implémentation de référence, service hébergé multi-locataire, GSMA Mobile Money API telle quelle, Mojaloop.
+
+Régit : [Architecture](/fr/docs/architecture).
+
+## 0002. Modèle de données
+
+Un montant est un entier en centimes de gourde, borné à ±(2⁵³ - 1) pour rester exact dans les analyseurs JSON en double précision : ni flottant, ni arrondi. Le champ `currency` reste, fixé à `"HTG"`. Téléphone en E.164 uniquement, horodatage RFC 3339 en UTC avec `Z`, identifiants opaques (UUIDv7 recommandé). Les champs inconnus sont ignorés en réponse et rejetés en requête.
+
+Raison principale : ces primitives conditionnent tous les autres chapitres, et les données des opérateurs (montants décimaux, numéros sans `+`, horodatages sans décalage) doivent être converties une seule fois, dans la passerelle.
+
+Écartés : chaîne décimale, flottant, chaîne unique `"HTG 1250.00"`, multi-devise, formats nationaux normalisés côté serveur, horodatage epoch, `camelCase`.
+
+Régit : [Modèle de données](/fr/docs/spec/data-model).
+
+## 0003. Cycle de vie du paiement
+
+Je retiens cinq états : `pending`, seul non terminal, puis `succeeded`, `failed`, `expired` et `canceled`. Un état terminal n'est atteint que sur information faisant foi et n'est jamais quitté. `pending` couvre aussi l'absence de réponse de l'opérateur, et rien n'expire par horloge. Les sources faisant foi sont, dans l'ordre : rappel signé, consultation, URL de rappel propre au paiement, relevé, attestation de l'exploitant.
+
+Raison principale : le marchand livre selon l'état ; un statut qui change après avoir paru définitif conduit à livrer contre un paiement échoué ou à débiter deux fois.
+
+Écartés : terminal révisable, états `unknown` et `processing`, machine calquée sur les opérateurs, expiration par horloge, état `refunded`, état unique `closed`.
+
+Régit : [Cycle de vie](/fr/docs/spec/lifecycle).
+
+## 0006. API des paiements
+
+L'API passe par HTTPS sous `/v1`, en JSON, avec des erreurs RFC 9457 portant `retryable` et `effect`, et un catalogue fermé de 19 types. La capacité de base `payments` crée, lit par `id` ou par `reference`, et synchronise. Le client nomme l'opérateur. `Idempotency-Key` est obligatoire sur les opérations idempotentes ; l'opérateur reçoit un identifiant de commande dérivé de la `reference` par HMAC.
+
+Raison principale : ce sont les besoins réels du marchand (créer, relire après une coupure par sa propre référence, forcer une consultation quand un rappel se perd), et chaque opérateur peut les satisfaire.
+
+Écartés : choix de l'opérateur par la passerelle, `GET ?synchronize=true`, `404` pour une référence inconnue, chemin `/by-reference`, `next_action` réduit à une URL, point d'accès de liste pour l'instant.
+
+Régit : [API des paiements](/fr/docs/spec/payments-api) et [Idempotence](/fr/docs/spec/idempotency).
+
+## 0007. Découverte de capacités
+
+Une capacité n'est annoncée que si l'opérateur la prend en charge, et une opération non annoncée est refusée. Deux points d'accès : `/.well-known/openfsp-configuration`, public et calqué sur la découverte OpenID Connect, et `/v1/capabilities`, authentifié et détaillé par opérateur. Les comportements propres à un opérateur et les plafonds du compte marchand (`limits`) sont des champs lisibles par machine.
+
+Raison principale : une interface uniforme qui émule les manques ne révèle l'écart qu'à l'échec d'un paiement réel, et tester par essai peut débiter le payeur.
+
+Écartés : capacités fixes par version, `OPTIONS` HTTP, essayer puis traiter l'erreur, capacités versionnées, capacités dans chaque réponse de paiement, capacités globales à la passerelle, plafonds codés dans l'adaptateur.
+
+Régit : [Capacités](/fr/docs/spec/capabilities).
+
+## 0008. Webhooks et livraison des événements
+
+Livraison au moins une fois, non ordonnée, avec une `sequence` par ressource et un `id` de déduplication. Chaque événement est signé selon RFC 9421 sur Ed25519, avec une fraîcheur de 300 secondes et un nonce. Le corps est un instantané complet de la ressource ; cinq types d'événement ; sept tentatives sur 31 heures. Le sondage reste le chemin de récupération.
+
+Raison principale : une signature à clé publique permet à l'abonné de rejeter une contrefaçon avec une bibliothèque standard et prouve à un tiers ce que la passerelle a affirmé.
+
+Écartés : HMAC à secret partagé, en-tête de signature maison, TLS mutuel seul, livraison exactement une fois, événements minces, lots, ordre garanti.
+
+Régit : [Webhooks](/fr/docs/spec/webhooks).
+
+## 0009. Authentification et secrets
+
+Le client présente une clé porteur `ofsp_<env>_<secret>` de 128 bits d'entropie, uniquement dans `Authorization: Bearer`. La passerelle stocke un condensé SHA-256, compare en temps constant et renvoie une seule erreur `unauthenticated` pour tout échec. Quatre portées sans implication ; plusieurs clés par principal, révocation effective en 60 secondes au plus. Les secrets d'opérateur ne sont jamais renvoyés ni journalisés, et sont caviardés dans les champs relayés.
+
+Raison principale : sans règle commune, une implémentation peut comparer en temps variable, stocker en clair ou distinguer clé inconnue et clé révoquée.
+
+Écartés : OAuth 2.0 client credentials, JWT autoémis, signature HMAC des requêtes, TLS mutuel comme identifiant principal, clé unique sans portée, hachage lent, portées par opérateur.
+
+Régit : [Authentification](/fr/docs/spec/authentication).
+
+## 0015. Conformité
+
+La conformité est un triplet : cible (client, passerelle, opérateur natif), niveau et version du protocole. Core est obligatoire, puis un profil par capacité annoncée, sans réussite partielle ni classement. Quiconque exécute la suite hors ligne, sans modifier l'implémentation ; le serveur simulé joue trois opérateurs, `mock_openfsp`, `mock_moncash` et `mock_natcash`, à travers des scénarios de défaillance déclarés. Le rapport est lisible par machine et porte ses limites.
+
+Raison principale : la non-émulation ne se vérifie que par un test en boîte noire, et les audits des circulaires 121 et 126 de la BRH ne prescrivent aucun étalon.
+
+Écartés : certification payante par le projet, niveaux bronze à or, score en pourcentage, bacs à sable des opérateurs, scénario choisi par le montant, défaillances aléatoires, instrumentation.
+
+Régit : [Conformité](/fr/docs/spec/conformance).
+
+## Références
+
+- RFC 3339, Date and Time on the Internet: Timestamps.
+- RFC 9421, HTTP Message Signatures.
+- RFC 9457, Problem Details for HTTP APIs.
+- RFC 9562, Universally Unique IDentifiers (UUIDs).
+- UIT-T E.164, The international public telecommunication numbering plan.
+- ISO 4217, Currency codes.
+- OpenID Connect Discovery 1.0.
+- GSMA Mobile Money API Specification 1.2.
