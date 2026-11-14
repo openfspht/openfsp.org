@@ -27,7 +27,7 @@ export function baseOptions(locale: Locale): BaseLayoutProps {
     links: [
       { text: t.docs, url: localePath(locale, "/docs"), active: "nested-url" },
       { text: t.spec, url: localePath(locale, "/docs/spec/payments-api"), active: "none" },
-      { text: t.conformance, url: localePath(locale, "/docs/conformance"), active: "none" },
+      { text: t.conformance, url: localePath(locale, "/docs/spec/conformance"), active: "none" },
     ],
   };
 }

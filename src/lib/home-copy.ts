@@ -51,7 +51,11 @@ export const homeCopy: Record<Locale, HomeCopy> = {
         { name: "Specification", body: "564 numbered rules: data model, lifecycle, idempotency, API, webhooks, authentication.", href: "/docs/spec" },
         { name: "Gateway", body: "A server the merchant hosts. OpenFSP in, provider APIs out. It never holds funds.", href: "/docs/architecture" },
         { name: "Simulator", body: "MonCash, NatCash and a native provider, failures included, without a merchant account.", href: "/docs/quickstart" },
-        { name: "Conformance suite", body: "Runs the rules against an implementation and signs an attestation anyone can check.", href: "/docs/conformance" },
+        {
+          name: "Conformance suite",
+          body: "Runs the rules against an implementation and signs an attestation anyone can check.",
+          href: "/docs/spec/conformance",
+        },
       ],
     },
     demo: {
@@ -107,7 +111,7 @@ export const homeCopy: Record<Locale, HomeCopy> = {
         {
           name: "Suite de conformité",
           body: "Applique les règles à une implémentation et signe une attestation que chacun peut vérifier.",
-          href: "/docs/conformance",
+          href: "/docs/spec/conformance",
         },
       ],
     },
