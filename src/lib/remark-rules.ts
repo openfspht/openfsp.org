@@ -1,6 +1,7 @@
-import type { Heading, Nodes, Paragraph, PhrasingContent, Root } from "mdast";
+import type { Heading, Nodes, Paragraph, PhrasingContent, Root, TableRow } from "mdast";
 
 const NUMBER = /^(\d+(?:\.\d+)*)\.?(?:\s|$)/;
+const PROBLEM_CODE = /^[a-z]+(?:-[a-z]+)+$/;
 
 function textOf(node: PhrasingContent | undefined): string {
   if (!node) return "";
@@ -20,17 +21,27 @@ function anchorRule(paragraph: Paragraph) {
 
 function anchorHeading(heading: Heading) {
   const match = textOf(heading.children[0]).match(NUMBER);
+  if (!match) return;
   const last = heading.children.at(-1);
-  if (!match || last?.type !== "text" || /\[#[^\]]+\]\s*$/.test(last.value)) return;
-  last.value = `${last.value} [#${match[1]}]`;
+  if (last?.type === "text") {
+    if (!/\[#[^\]]+\]\s*$/.test(last.value)) last.value = `${last.value} [#${match[1]}]`;
+  } else heading.children.push({ type: "text", value: ` [#${match[1]}]` });
 }
 
-function walk(node: Nodes) {
+function anchorProblem(row: TableRow, seen: Set<string>) {
+  const first = row.children[0]?.children[0];
+  if (first?.type !== "inlineCode" || !PROBLEM_CODE.test(first.value) || seen.has(first.value)) return;
+  seen.add(first.value);
+  row.data = { ...row.data, hProperties: { id: first.value, className: ["problem"] } };
+}
+
+function walk(node: Nodes, seen: Set<string>) {
   if (node.type === "paragraph") anchorRule(node);
   else if (node.type === "heading") anchorHeading(node);
-  if ("children" in node) for (const child of node.children) walk(child as Nodes);
+  else if (node.type === "tableRow") anchorProblem(node, seen);
+  if ("children" in node) for (const child of node.children) walk(child as Nodes, seen);
 }
 
 export function remarkRules() {
-  return (tree: Root) => walk(tree);
+  return (tree: Root) => walk(tree, new Set());
 }
