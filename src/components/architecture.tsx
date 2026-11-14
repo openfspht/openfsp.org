@@ -52,6 +52,7 @@ export function Architecture({ copy }: { copy: ArchitectureCopy }) {
           <p className="mb-3 px-1 text-sm font-semibold">{copy.servers}</p>
           <div className="rounded-xl bg-fd-primary p-4 text-fd-primary-foreground">
             <p className="text-lg font-bold tracking-tight">{copy.gateway}</p>
+            <p className="text-sm text-fd-primary-foreground/80">{copy.gatewayNote}</p>
             <div className="mt-3 flex items-center gap-2 rounded-lg bg-fd-primary-foreground/10 px-3 py-2 text-sm">
               <Marker n={2} active={active === 2} />
               {copy.store}
