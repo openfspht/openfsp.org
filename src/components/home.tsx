@@ -2,10 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { DynamicCodeBlock } from "fumadocs-ui/components/dynamic-codeblock";
 import { ArrowRight } from "lucide-react";
+import { CodeTabs } from "@/components/code-tabs";
 import { IntegrationDiagram } from "@/components/integration-diagram";
 import { localePath, type Locale } from "@/lib/i18n";
-import { baseOptions, STACK_REPO } from "@/lib/layout.shared";
-import { homeCopy } from "@/lib/home-copy";
+import { GITHUB_URL, STACK_REPO, baseOptions } from "@/lib/layout.shared";
+import { homeCopy, type ChapterSlug } from "@/lib/home-copy";
 
 const REQUEST = `curl https://pay.merchant.example/v1/payments \\
   -H "Authorization: Bearer ofsp_test_..." \\
@@ -26,7 +27,6 @@ const RESPONSE = `HTTP/1.1 201 Created
   "status": "pending",
   "amount": { "amount": 125000, "currency": "HTG" },
   "provider": "moncash",
-  "provider_order_id": "q3v7m2kxbh4tapewdc5nzr2b3z",
   "next_action": {
     "type": "redirect",
     "redirect_url": "https://provider.example/checkout/abc123",
@@ -38,6 +38,21 @@ const DEMO = `git clone ${STACK_REPO}.git
 cd stack
 make demo`;
 
+const CHAPTERS: [ChapterSlug, number][] = [
+  ["data-model", 54],
+  ["lifecycle", 71],
+  ["idempotency", 33],
+  ["payments-api", 108],
+  ["capabilities", 49],
+  ["webhooks", 75],
+  ["authentication", 61],
+  ["conformance", 90],
+];
+
+const RULE_COUNT = CHAPTERS.reduce((total, [, rules]) => total + rules, 0);
+
+const sectionTitle = "text-3xl leading-tight font-bold tracking-[-0.02em] text-balance";
+
 export function Home({ locale }: { locale: Locale }) {
   const t = homeCopy[locale];
   const href = (path: string) => localePath(locale, path);
@@ -45,78 +60,78 @@ export function Home({ locale }: { locale: Locale }) {
   return (
     <HomeLayout {...baseOptions(locale)}>
       <main className="flex-1">
-        <section className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 sm:pt-28">
-          <h1 className="max-w-3xl text-[clamp(2.5rem,1.6rem+3.6vw,4.25rem)] leading-[1.04] font-bold tracking-[-0.03em] text-balance">{t.title}</h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-fd-muted-foreground sm:text-xl">{t.lead}</p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link to={href("/docs")} className="btn btn-primary">
-              {t.readDocs}
-              <ArrowRight className="size-4" aria-hidden />
-            </Link>
-            <Link to={href("/docs/quickstart")} className="btn">
-              {t.runDemo}
-            </Link>
+        <section className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pt-16 pb-20 sm:pt-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16 lg:pb-28">
+          <div>
+            <h1 className="text-[clamp(2.25rem,1.5rem+3vw,3.5rem)] leading-[1.06] font-bold tracking-[-0.03em] text-balance">{t.title}</h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-fd-muted-foreground">{t.lead}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to={href("/docs/spec")} className="btn btn-primary">
+                {t.readSpec}
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
+              <Link to={href("/docs/quickstart")} className="btn">
+                {t.quickstart}
+              </Link>
+            </div>
+            <p className="mt-8 max-w-xl text-sm text-fd-muted-foreground">{t.status}</p>
           </div>
-          <p className="mt-8 text-sm text-fd-muted-foreground">{t.status}</p>
+          <CodeTabs
+            tabs={[
+              { label: t.request, lang: "bash", code: REQUEST },
+              { label: t.response, lang: "json", code: RESPONSE },
+            ]}
+          />
         </section>
 
-        <section className="mx-auto w-full max-w-6xl px-4 pb-24">
-          <IntegrationDiagram copy={t.diagram} />
-          <p className="mt-4 max-w-2xl text-fd-muted-foreground">{t.diagramCaption}</p>
+        <section className="border-t border-fd-border">
+          <div className="mx-auto w-full max-w-6xl px-4 py-20 lg:py-24">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
+              <h2 className={sectionTitle}>{t.flow.title}</h2>
+              <p className="max-w-xl text-fd-muted-foreground lg:pt-1.5">{t.flow.body}</p>
+            </div>
+            <IntegrationDiagram copy={t.diagram} />
+          </div>
         </section>
 
-        <section className="border-y border-fd-border bg-fd-card/50">
-          <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-20 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
-            <div>
-              <h2 className="text-3xl font-bold tracking-[-0.02em] text-balance">{t.api.title}</h2>
-              <p className="mt-4 text-fd-muted-foreground">{t.api.body}</p>
-              <ul className="mt-8 space-y-4">
-                {t.api.points.map((point) => (
-                  <li key={point.rule} className="text-[0.9375rem]">
-                    <span className="font-medium">{point.text}</span>{" "}
-                    <Link
-                      to={href(point.href)}
-                      className="font-mono text-[0.8125rem] whitespace-nowrap text-fd-muted-foreground underline decoration-fd-border underline-offset-4 hover:text-fd-foreground"
-                    >
-                      {point.rule}
+        <section className="border-t border-fd-border">
+          <div className="mx-auto w-full max-w-6xl px-4 py-20 lg:py-24">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
+              <h2 className={sectionTitle}>{t.spec.title}</h2>
+              <p className="max-w-xl text-fd-muted-foreground lg:pt-1.5">{t.spec.body(RULE_COUNT)}</p>
+            </div>
+            <ol className="mt-12 grid border-t border-fd-border md:grid-cols-2 md:gap-x-12">
+              {CHAPTERS.map(([slug, rules]) => {
+                const chapter = t.spec.chapters[slug];
+                return (
+                  <li key={slug} className="border-b border-fd-border">
+                    <Link to={href(`/docs/spec/${slug}`)} className="group flex items-baseline gap-6 py-5 transition-colors">
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2 font-semibold group-hover:text-fd-primary">
+                          {chapter.name}
+                          <ArrowRight
+                            className="size-4 -translate-x-1 opacity-0 transition duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100"
+                            aria-hidden
+                          />
+                        </span>
+                        <span className="mt-1 block text-[0.9375rem] text-fd-muted-foreground">{chapter.body}</span>
+                      </span>
+                      <span className="shrink-0 font-mono text-sm text-fd-muted-foreground tabular-nums">
+                        {rules} {t.spec.rules}
+                      </span>
                     </Link>
                   </li>
-                ))}
-              </ul>
-            </div>
-            <div className="min-w-0 space-y-3 [&_figure]:my-0">
-              <DynamicCodeBlock lang="bash" code={REQUEST} />
-              <DynamicCodeBlock lang="json" code={RESPONSE} />
-            </div>
+                );
+              })}
+            </ol>
           </div>
         </section>
 
-        <section className="mx-auto w-full max-w-6xl px-4 py-24">
-          <h2 className="text-3xl font-bold tracking-[-0.02em]">{t.parts.title}</h2>
-          <ul className="mt-10 grid border-t border-fd-border sm:grid-cols-2">
-            {t.parts.items.map((item) => (
-              <li key={item.name} className="border-b border-fd-border sm:odd:border-r sm:odd:pr-8 sm:even:pl-8">
-                <Link to={href(item.href)} className="group block py-7">
-                  <h3 className="flex items-center gap-2 text-lg font-bold">
-                    {item.name}
-                    <ArrowRight
-                      className="size-4 -translate-x-1 opacity-0 transition duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100"
-                      aria-hidden
-                    />
-                  </h3>
-                  <p className="mt-2 max-w-md text-fd-muted-foreground">{item.body}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="mx-auto w-full max-w-6xl px-4 pb-24">
-          <div className="grid items-center gap-10 rounded-2xl border border-fd-border bg-fd-card px-6 py-12 sm:px-12 lg:grid-cols-2">
+        <section className="border-t border-fd-border">
+          <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 py-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16 lg:py-24">
             <div>
-              <h2 className="text-3xl font-bold tracking-[-0.02em]">{t.demo.title}</h2>
+              <h2 className={sectionTitle}>{t.demo.title}</h2>
               <p className="mt-4 max-w-md text-fd-muted-foreground">{t.demo.body}</p>
-              <Link to={href("/docs/quickstart")} className="btn btn-primary mt-8">
+              <Link to={href("/docs/quickstart")} className="btn mt-8">
                 {t.demo.cta}
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
@@ -128,19 +143,49 @@ export function Home({ locale }: { locale: Locale }) {
         </section>
       </main>
 
-      <footer className="border-t border-fd-border">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-fd-muted-foreground">
-          <p>{t.footer}</p>
-          <nav className="flex gap-5">
-            <a href="https://github.com/openfspht" className="hover:text-fd-foreground">
-              GitHub
-            </a>
-            <Link to={href("/docs/decisions")} className="hover:text-fd-foreground">
-              {t.decisions}
-            </Link>
-            <a href="https://github.com/openfspht/openfsp/blob/main/LICENSE" className="hover:text-fd-foreground">
-              Apache-2.0
-            </a>
+      <footer className="border-t border-fd-border bg-fd-card">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 text-sm sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+          <div className="space-y-3">
+            <p className="flex items-center gap-2 text-base font-bold tracking-tight">
+              <img src="/openfsp-mark.svg" alt="" width={20} height={20} className="dark:hidden" />
+              <img src="/openfsp-mark-inverse.svg" alt="" width={20} height={20} className="hidden dark:block" />
+              OpenFSP
+            </p>
+            <p className="max-w-xs text-fd-muted-foreground">{t.footer.about}</p>
+          </div>
+          {t.footer.columns.map((column) => (
+            <nav key={column.title} aria-label={column.title}>
+              <p className="font-semibold">{column.title}</p>
+              <ul className="mt-3 space-y-2">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link to={href(link.href)} className="text-fd-muted-foreground hover:text-fd-foreground">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+          <nav aria-label="GitHub">
+            <p className="font-semibold">GitHub</p>
+            <ul className="mt-3 space-y-2">
+              <li>
+                <a href={GITHUB_URL} className="text-fd-muted-foreground hover:text-fd-foreground">
+                  openfspht
+                </a>
+              </li>
+              <li>
+                <a href={STACK_REPO} className="text-fd-muted-foreground hover:text-fd-foreground">
+                  stack
+                </a>
+              </li>
+              <li>
+                <a href={`${GITHUB_URL}/openfsp/blob/main/LICENSE`} className="text-fd-muted-foreground hover:text-fd-foreground">
+                  Apache-2.0
+                </a>
+              </li>
+            </ul>
           </nav>
         </div>
       </footer>

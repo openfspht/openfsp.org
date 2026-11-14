@@ -118,8 +118,8 @@ export function IntegrationDiagram({ copy }: { copy: DiagramCopy }) {
   const count = mode === "with" ? copy.countWith : copy.countWithout;
 
   return (
-    <figure className="rounded-2xl border border-fd-border bg-fd-card/60 p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <figure className="mt-12">
+      <div className="flex flex-col items-center gap-3">
         <div role="radiogroup" className="inline-flex rounded-lg border border-fd-border bg-fd-background p-1 text-sm">
           {(["without", "with"] as const).map((value) => (
             <button
@@ -140,8 +140,8 @@ export function IntegrationDiagram({ copy }: { copy: DiagramCopy }) {
           {count}
         </p>
       </div>
-      <Diagram g={WIDE} mode={mode} copy={copy} className="mt-4 hidden h-auto w-full sm:block" />
-      <Diagram g={TALL} mode={mode} copy={copy} className="mt-4 block h-auto w-full sm:hidden" />
+      <Diagram g={WIDE} mode={mode} copy={copy} className="mx-auto mt-8 hidden h-auto w-full max-w-4xl sm:block" />
+      <Diagram g={TALL} mode={mode} copy={copy} className="mx-auto mt-8 block h-auto w-full max-w-sm sm:hidden" />
     </figure>
   );
 }
