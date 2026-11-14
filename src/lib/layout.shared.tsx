@@ -19,7 +19,7 @@ export function baseOptions(locale: Locale): BaseLayoutProps {
         <>
           <img src="/openfsp-mark.svg" alt="" width={22} height={22} className="dark:hidden" />
           <img src="/openfsp-mark-inverse.svg" alt="" width={22} height={22} className="hidden dark:block" />
-          <span className="font-display text-[1.05rem] font-bold tracking-tight">OpenFSP</span>
+          <span className="text-[1.05rem] font-bold tracking-tight">OpenFSP</span>
         </>
       ),
       url: localePath(locale, "/"),

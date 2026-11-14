@@ -46,9 +46,7 @@ export function Home({ locale }: { locale: Locale }) {
     <HomeLayout {...baseOptions(locale)}>
       <main className="flex-1">
         <section className="mx-auto w-full max-w-6xl px-4 pt-20 pb-16 sm:pt-28">
-          <h1 className="max-w-3xl font-display text-[clamp(2.5rem,1.6rem+3.6vw,4.25rem)] leading-[1.04] font-bold tracking-[-0.03em] text-balance">
-            {t.title}
-          </h1>
+          <h1 className="max-w-3xl text-[clamp(2.5rem,1.6rem+3.6vw,4.25rem)] leading-[1.04] font-bold tracking-[-0.03em] text-balance">{t.title}</h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-fd-muted-foreground sm:text-xl">{t.lead}</p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link to={href("/docs")} className="btn btn-primary">
@@ -70,7 +68,7 @@ export function Home({ locale }: { locale: Locale }) {
         <section className="border-y border-fd-border bg-fd-card/50">
           <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-20 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
             <div>
-              <h2 className="font-display text-3xl font-bold tracking-[-0.02em] text-balance">{t.api.title}</h2>
+              <h2 className="text-3xl font-bold tracking-[-0.02em] text-balance">{t.api.title}</h2>
               <p className="mt-4 text-fd-muted-foreground">{t.api.body}</p>
               <ul className="mt-8 space-y-4">
                 {t.api.points.map((point) => (
@@ -94,12 +92,12 @@ export function Home({ locale }: { locale: Locale }) {
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-4 py-24">
-          <h2 className="font-display text-3xl font-bold tracking-[-0.02em]">{t.parts.title}</h2>
+          <h2 className="text-3xl font-bold tracking-[-0.02em]">{t.parts.title}</h2>
           <ul className="mt-10 grid border-t border-fd-border sm:grid-cols-2">
             {t.parts.items.map((item) => (
               <li key={item.name} className="border-b border-fd-border sm:odd:border-r sm:odd:pr-8 sm:even:pl-8">
                 <Link to={href(item.href)} className="group block py-7">
-                  <h3 className="flex items-center gap-2 font-display text-lg font-bold">
+                  <h3 className="flex items-center gap-2 text-lg font-bold">
                     {item.name}
                     <ArrowRight
                       className="size-4 -translate-x-1 opacity-0 transition duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100"
@@ -114,11 +112,11 @@ export function Home({ locale }: { locale: Locale }) {
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-4 pb-24">
-          <div className="grid items-center gap-10 rounded-2xl bg-ink px-6 py-12 text-[#f7f5ef] sm:px-12 lg:grid-cols-2 dark:bg-fd-card dark:ring-1 dark:ring-fd-border">
+          <div className="grid items-center gap-10 rounded-2xl border border-fd-border bg-fd-card px-6 py-12 sm:px-12 lg:grid-cols-2">
             <div>
-              <h2 className="font-display text-3xl font-bold tracking-[-0.02em]">{t.demo.title}</h2>
-              <p className="mt-4 max-w-md text-[#c9d6d2]">{t.demo.body}</p>
-              <Link to={href("/docs/quickstart")} className="btn mt-8 border-[#f7f5ef]/30 text-[#f7f5ef] hover:border-[#f7f5ef]">
+              <h2 className="text-3xl font-bold tracking-[-0.02em]">{t.demo.title}</h2>
+              <p className="mt-4 max-w-md text-fd-muted-foreground">{t.demo.body}</p>
+              <Link to={href("/docs/quickstart")} className="btn btn-primary mt-8">
                 {t.demo.cta}
                 <ArrowRight className="size-4" aria-hidden />
               </Link>

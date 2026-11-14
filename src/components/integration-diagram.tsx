@@ -88,7 +88,7 @@ function Diagram({ g, mode, copy, className }: { g: Geometry; mode: Mode; copy: 
           <path key={`${a.x}-${a.y}`} className="stroke-fd-primary" d={curve(edge(a, g, "out"), gatewayEdge(g, "in"), g.vertical)} />
         ))}
         {g.providers.map((p) => (
-          <path key={`${p.x}-${p.y}`} className="stroke-amber-deep dark:stroke-amber" d={curve(gatewayEdge(g, "out"), edge(p, g, "in"), g.vertical)} />
+          <path key={`${p.x}-${p.y}`} className="stroke-brand-accent" d={curve(gatewayEdge(g, "out"), edge(p, g, "in"), g.vertical)} />
         ))}
       </g>
       <g style={fade(mode === "with")}>
@@ -100,7 +100,7 @@ function Diagram({ g, mode, copy, className }: { g: Geometry; mode: Mode; copy: 
           rx={12}
           className="fill-fd-primary"
         />
-        <text x={g.gateway.x} y={g.gateway.y - 3} textAnchor="middle" fontSize={15} className="fill-fd-primary-foreground font-display font-bold">
+        <text x={g.gateway.x} y={g.gateway.y - 3} textAnchor="middle" fontSize={15} className="fill-fd-primary-foreground font-bold">
           {copy.gateway}
         </text>
         <text x={g.gateway.x} y={g.gateway.y + 16} textAnchor="middle" fontSize={11.5} className="fill-fd-primary-foreground/80">
