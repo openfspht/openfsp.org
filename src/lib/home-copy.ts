@@ -3,8 +3,8 @@ import type { Locale } from "@/lib/i18n";
 export const homeCopy = {
   fr: {
     title: "Une norme ouverte pour les paiements en Haïti",
-    headline: ["Une norme.", "Une API.", "Une intégration."],
-    lead: "OpenFSP propose une norme ouverte entre les applications marchandes et les fournisseurs de services de paiement en Haïti. Chaque opérateur qui l’implémente expose la même API, et le marchand n’écrit qu’une intégration pour tous.",
+    headline: ["Une norme.", "Une API.", "Un seul SDK."],
+    lead: "OpenFSP propose une norme ouverte entre les applications marchandes et les fournisseurs de services de paiement en Haïti. Chaque opérateur qui l’implémente expose la même API. Les SDK, prochaine étape du projet, permettront au marchand de les intégrer tous avec une seule bibliothèque.",
     primary: "Lire la norme",
     secondary: "Explorer l’API",
     facts: ["Apache-2.0", "Implémentable par tous", "Paiements en HTG"],
@@ -33,7 +33,7 @@ export const homeCopy = {
       title: "À terme, chaque opérateur implémente la norme dans son propre système.",
       caption: "Architecture visée",
       app: "Application marchande",
-      contract: "Contrat OpenFSP",
+      contract: "SDK OpenFSP",
       contractDetail: "HTTP et webhooks signés",
       providers: "Opérateurs qui adoptent la norme",
       api: "API OpenFSP natives",
@@ -45,8 +45,8 @@ export const homeCopy = {
           body: "Il expose le contrat commun dans son propre système et déclare les capacités qu’il prend en charge.",
         },
         {
-          title: "Le marchand écrit une seule intégration",
-          body: "L’application appelle la même API chez chaque opérateur compatible. Seuls les identifiants et la configuration changent.",
+          title: "Le marchand intègre un seul SDK",
+          body: "L’application utilise la même bibliothèque chez chaque opérateur compatible. Seuls les identifiants et la configuration changent.",
         },
         {
           title: "La connexion devient directe",
@@ -84,6 +84,10 @@ export const homeCopy = {
       phases: [
         { title: "Phase 1, en cours", body: "Contrat d’intégration marchande, implémentations de référence et conformité reproductible." },
         {
+          title: "Prochaine étape, les SDK",
+          body: "Des bibliothèques clientes publiées, d’abord TypeScript, puis PHP et Python, qui appellent la même API chez chaque opérateur.",
+        },
+        {
           title: "Phase 2, envisagée",
           body: "Paiement de proximité par jeton éphémère présenté par le client. Ce parcours ne fait pas partie de la version actuelle.",
         },
@@ -106,8 +110,8 @@ export const homeCopy = {
   },
   en: {
     title: "An open standard for payments in Haiti",
-    headline: ["One standard.", "One API.", "One integration."],
-    lead: "OpenFSP proposes an open standard between merchant applications and payment service providers in Haiti. Every provider that implements it exposes the same API, so a merchant writes one integration for all of them.",
+    headline: ["One standard.", "One API.", "One SDK."],
+    lead: "OpenFSP proposes an open standard between merchant applications and payment service providers in Haiti. Every provider that implements it exposes the same API. SDKs, the project’s next step, will let a merchant integrate all of them with a single library.",
     primary: "Read the standard",
     secondary: "Explore the API",
     facts: ["Apache-2.0", "Open to any implementer", "Payments in HTG"],
@@ -136,7 +140,7 @@ export const homeCopy = {
       title: "In the long run, each provider implements the standard in its own system.",
       caption: "Target architecture",
       app: "Merchant application",
-      contract: "OpenFSP contract",
+      contract: "OpenFSP SDK",
       contractDetail: "HTTP and signed webhooks",
       providers: "Providers adopting the standard",
       api: "Native OpenFSP APIs",
@@ -148,8 +152,8 @@ export const homeCopy = {
           body: "It exposes the shared contract in its own system and declares the capabilities it supports.",
         },
         {
-          title: "The merchant writes one integration",
-          body: "The application calls the same API at every compatible provider. Only credentials and configuration change.",
+          title: "The merchant integrates one SDK",
+          body: "The application uses the same library with every compatible provider. Only credentials and configuration change.",
         },
         {
           title: "The connection becomes direct",
@@ -186,6 +190,7 @@ export const homeCopy = {
       body: "The specification, reference implementations and conformance suite are published and exercised against simulated providers. No provider or regulator has adopted the standard yet.",
       phases: [
         { title: "Phase 1, in progress", body: "Merchant integration contract, reference implementations and reproducible conformance." },
+        { title: "Next step, SDKs", body: "Published client libraries, TypeScript first, then PHP and Python, that call the same API at every provider." },
         {
           title: "Phase 2, envisaged",
           body: "Proximity payments with a short-lived token presented by the customer. This flow is not part of the current version.",
