@@ -1,34 +1,35 @@
 ---
 name: openfsp.org
-description: The public home of the OpenFSP payment standard, a quiet documentation site in neutral grounds with a teal voice.
+description: The public home of the OpenFSP interoperability standard, with a neutral interface and a standard-first documentation hierarchy.
 colors:
   primary: "oklch(0.32 0.05 184.8)"
-  primary-foreground: "oklch(0.979 0.021 166.113)"
+  primary-foreground: "oklch(0.958 0.011 88)"
   brand-accent: "oklch(0.765 0.14 72.9)"
-  background: "oklch(1 0 0)"
-  foreground: "oklch(0.147 0.004 49.25)"
-  card: "oklch(0.985 0.001 106.423)"
-  muted: "oklch(0.97 0.001 106.424)"
-  muted-foreground: "oklch(0.553 0.013 58.071)"
-  border: "oklch(0.923 0.003 48.717)"
-  ring: "oklch(0.709 0.01 56.259)"
-  success: "oklch(72.3% 0.219 149.579)"
-  error: "oklch(63.7% 0.237 25.331)"
+  brand-accent-deep: "oklch(0.64 0.13 69)"
+  background: "oklch(0.99 0.004 88)"
+  foreground: "oklch(0.24 0.035 185)"
+  card: "oklch(0.958 0.011 88)"
+  muted: "oklch(0.958 0.011 88)"
+  muted-foreground: "oklch(0.47 0.025 185)"
+  border: "oklch(0.9 0.012 88)"
+  ring: "oklch(0.64 0.13 69)"
+  success: "oklch(0.5 0.13 150)"
+  error: "oklch(0.52 0.2 27)"
   primary-dark: "oklch(0.72 0.09 184)"
-  primary-foreground-dark: "oklch(0.147 0.004 49.25)"
-  background-dark: "oklch(0.147 0.004 49.25)"
-  foreground-dark: "oklch(0.9 0.006 95)"
-  card-dark: "oklch(0.216 0.006 56.043)"
-  muted-dark: "oklch(0.268 0.007 34.298)"
-  muted-foreground-dark: "oklch(0.709 0.01 56.259)"
-  border-dark: "oklch(1 0 0 / 10%)"
-  ring-dark: "oklch(0.553 0.013 58.071)"
+  primary-foreground-dark: "oklch(0.17 0.02 190)"
+  background-dark: "oklch(0.17 0.02 190)"
+  foreground-dark: "oklch(0.94 0.011 88)"
+  card-dark: "oklch(0.21 0.025 190)"
+  muted-dark: "oklch(0.25 0.025 190)"
+  muted-foreground-dark: "oklch(0.74 0.02 185)"
+  border-dark: "oklch(0.958 0.011 88 / 12%)"
+  ring-dark: "oklch(0.765 0.14 72.9)"
 typography:
   display:
     fontFamily: "Inter Variable, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(2.25rem, 1.5rem + 3vw, 3.5rem)"
-    fontWeight: 700
-    lineHeight: 1.06
+    fontSize: "clamp(42px, 5vw, 68px)"
+    fontWeight: 640
+    lineHeight: 1.05
     letterSpacing: "-0.03em"
   headline:
     fontFamily: "Inter Variable, ui-sans-serif, system-ui, sans-serif"
@@ -118,196 +119,60 @@ components:
     textColor: "{colors.foreground}"
     rounded: "{rounded.lg}"
     padding: "20px"
-  diagram-node:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.md}"
-    height: "40px"
-  diagram-gateway:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.primary-foreground}"
-    rounded: "{rounded.lg}"
-    height: "68px"
+  code-window:
+    backgroundColor: "var(--code-bg)"
+    textColor: "var(--code-fg)"
+    rounded: "11px"
+  landing-button-primary:
+    backgroundColor: "{colors.foreground}"
+    textColor: "{colors.background}"
+    rounded: "7px"
+    height: "46px"
 ---
 
-# Design System: openfsp.org
+# Design system: openfsp.org
 
-## Overview
+## Direction
 
-**Creative North Star: "The Open Ledger"**
+The site presents OpenFSP as an open interoperability standard between merchant applications and payment service providers. The standard and its native implementation by each provider lead the narrative. The gateway is the transitional implementation, with its own page.
 
-openfsp.org reads like a well-kept reference: white or near-black grounds, one deep teal voice, Inter throughout, and hairline borders doing the structural work. It sits on Fumadocs UI and keeps its chrome (navigation, sidebar, search, code blocks, table of contents) close to defaults; the identity lives in the palette, a single interactive diagram, and the way rule anchors light up. The reference point is a calm developer documentation site in the spirit of coolify.io: simple, clean, legible at a glance, with one interesting moving part rather than many decorative ones.
+Colors come from the brand (`art/BRAND.md`): Ink for text, links and the primary fill, Chalk for light grounds, deep ink for dark grounds, Accent amber used sparingly. Keep the original logo and its amber arc. Avoid decorative gradients, tinted grounds, eyebrow labels and repetitive feature cards.
 
-The palette and type are copied from the console design system in the code repository (`openfspht/openfsp`, `frontend/packages/ui/src/styles/globals.css`), so the site and the console read as one family. This diverges from the older brand sheet, which named Space Grotesk and a chalk and ink palette; the build and the standing preference of 2026-11-14 win. The brand survives in the ring mark itself (ink and amber in light mode, chalk and amber in dark mode) and in the amber accent, which appears as a stroke, never as text.
+## Palette
 
-Density is moderate: generous section spacing on the home page, Fumadocs reading density in the docs. Surfaces are flat; depth comes from a slightly tinted card ground and a 1px border, never from shadows.
+- The home and the documentation share the `--color-fd-*` tokens in `src/styles/app.css`, in light and dark: `background` for the page and the nav, `card` for panels, `border` for rules, `muted-foreground` for secondary text, `primary` for links and the accent line of the headline.
+- Light neutrals are the Chalk family (hue 88), dark neutrals are deep ink (hue 190). No cool grays.
+- Code panels are deep ink in both modes, from `--code-*` tokens on `.landing`, with a darker `--code-bg` and `--code-line` under `.dark`.
+- Amber marks decoration only: the simulated and pending dots, the current phase rule, the last headline line (`brand-accent-deep` on light, at display size only; `brand-accent` on dark). Never amber body text on a light ground.
+- The home primary button is a neutral `foreground` fill. The documentation `.btn-primary` uses `primary`.
+- State: a written label always accompanies color. Pending mixes `brand-accent` into the background; paid uses `success`.
 
-**Key Characteristics:**
+## Typography and layout
 
-- Neutral grounds in both modes, a teal primary for action and emphasis, amber reserved for one diagram role.
-- Inter Variable for every role, bold and tightly tracked for headings, mono only for identifiers, rule numbers and counts.
-- Hairline borders and tonal cards instead of shadows.
-- Fumadocs UI chrome left largely at its defaults.
-- Rule anchors highlight with a soft primary tint when targeted.
+Inter Variable throughout. Monospace only for code, JSON, HTTP lines and commands. Body text is 15 to 17px, captions 13px, never smaller. Headline tracking stays at -0.03em or looser.
 
-## Colors
+The home content width is 1184px with 40px side margins, 16px below 768px. Sections in order: a two-column hero (three-line headline, lead, simulated request and payment), the target architecture (application, OpenFSP contract, providers) with three steps, the HTTP contract with a webhook payload, a short gateway note linking to its page, the local quickstart, and the project status with phases 1 and 2. Layout lives in Tailwind utilities in `src/components/home.tsx`; `app.css` keeps only tokens, the code panel, buttons and states.
 
-A restrained neutral system with one committed teal and one amber stroke color.
+Grids collapse to one column on small screens. Code scrolls inside its own region; the page never overflows at 320px. The documentation keeps Fumadocs navigation, search, locale switching, table of contents and reading layout.
 
-### Primary
+## Documentation hierarchy
 
-- **Deep Harbour Teal** (primary, light mode): primary buttons, the selected option of the diagram toggle, the gateway node, the app-to-gateway edges of the diagram, rule number hover, and the tint behind a targeted rule. Paired with a pale mint foreground for text on it.
-- **Lit Teal** (primary-dark): the same roles in dark mode, lifted in lightness so it reads on the dark ground; text on it switches to the dark ground color.
+1. Introduction to the standard.
+2. Standard architecture: application-to-provider layer, native adoption, contract invariants, capabilities and conformance.
+3. Normative specification and design decisions.
+4. Reference information.
+5. Implementations and tools: transition gateway, quickstart and attestation verifier.
 
-### Secondary
+The gateway page contains deployment, adapters and implementation details formerly on the architecture page. Preserve historical architecture URLs through explicit anchor compatibility, with a readable fallback link. Keep all numbered specification and adapter requirements stable. Where normative text names a gateway target, explain its scope rather than mechanically substituting a provider and changing obligations.
 
-- **Ring Amber** (brand-accent): the gateway-to-provider edges of the integration diagram, and the arc in the logo mark. It is a stroke color only.
+## Interaction
 
-### Neutral
+The home contract example is explicitly simulated. Choosing a provider updates the request body and resets the example; confirmation updates the displayed payment and event. It sends no payment request. The preview is an explanatory UI, not a screenshot of a deployed console.
 
-- **Paper White** (background): the page ground in light mode, also the inset ground of fields and the toggle track.
-- **Stone Ink** (foreground): body text and headings in light mode; doubles as the dark mode ground.
-- **Card Mist** (card): one step off white for the footer and diagram nodes.
-- **Muted Wash** (muted): Fumadocs hover and inline code grounds.
-- **Slate Note** (muted-foreground): secondary text, captions, lead paragraphs, footer links at rest, the 404 code.
-- **Hairline** (border): every divider and container edge.
-- **Focus Stone** (ring): the 2px focus ring on fields and the file picker.
-- **Night Stone** (background-dark), **Night Card** (card-dark), **Night Wash** (muted-dark), **Night Hairline** (border-dark, white at 10%), **Moon Text** (foreground-dark), **Night Note** (muted-foreground-dark): the dark mode set. The sidebar repeats the muted, secondary and muted-foreground overrides so Fumadocs' own sidebar never falls back to its gray defaults.
+There are no autoplay diagrams or carousels on the home page. Buttons provide brief press feedback only when reduced motion is not requested. Keyboard focus remains visible, copy failures have a readable fallback, and live status changes are announced. No interaction should depend on color alone.
 
-### Status
+## Evidence and language
 
-- **Signal Green** (success) and **Signal Red** (error): Fumadocs defaults, used for the verifier's valid and invalid verdicts and the error alert (red at 40% for the border, 10% for the ground). The verdict word always carries the meaning; color only reinforces it.
+Maintain French and English together. Native adoption is a goal; it must not be portrayed as achieved. Phase 1 is the current work. Proximity payments by short-lived token belong to an envisaged later phase, not the currently available contract.
 
-### Named Rules
-
-**The Neutral Ground Rule.** Grounds are neutral in both modes: white and stone in light, near-black stone in dark. No earth, brown, olive or green grounds in dark mode; hue belongs to the primary and the accent, never to a surface.
-
-**The Amber Stroke Rule.** Ring Amber is a line or an arc, never text, never a fill behind text, never the only carrier of meaning. It fails contrast on light grounds.
-
-**The One Voice Rule.** Teal is the only color that signals action or emphasis. Secondary actions are outlined neutrals, not a second hue.
-
-## Typography
-
-**Display Font:** Inter Variable (with ui-sans-serif, system-ui, sans-serif)
-**Body Font:** Inter Variable
-**Label/Mono Font:** the Tailwind default monospace stack (ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas)
-
-**Character:** One family, differentiated by weight and tracking. Headings are bold and pulled tight; body text is plain and roomy; mono marks anything a reader might copy or cite.
-
-### Hierarchy
-
-- **Display** (700, fluid 2.25rem to 3.5rem, line-height 1.06, -0.03em): the home page title only, balanced and centered, held to about 48rem.
-- **Headline** (700, 1.875rem, -0.02em): home section titles and the 404 title. Docs headings and page titles take -0.02em tracking over Fumadocs' prose sizes.
-- **Title** (700, 1.5rem, -0.02em): the goal line of each role in the usage section.
-- **Lead** (400, 1.125rem rising to 1.25rem from 640px, line-height 1.625): the paragraph under the display title, in muted color, about 42rem wide.
-- **Body** (400, 1rem, 1.5): paragraphs and captions; Fumadocs prose in the docs. Captions and section bodies keep to 28rem to 42rem.
-- **Label** (600, 0.9375rem): button text. Form labels use 500 at 0.875rem.
-- **Mono** (400, 0.8125rem to 0.875rem, tabular figures): rule references beside API points, the diagram count, the 404 code, verifier values and inputs. Code blocks follow Fumadocs.
-
-### Named Rules
-
-**The One Family Rule.** Inter carries every role. Hierarchy comes from weight (400, 500, 600, 700), size and negative tracking on headings, not from a second display face.
-
-**The Mono Means Citable Rule.** Monospace is for things a reader copies or cites: rule numbers, URLs, keys, counts, codes. Never for decoration or section labels.
-
-## Layout
-
-A single column capped at 72rem with 16px side padding. The home page reads top to bottom as an argument, with no code and no rule references: a centered hero (title, lead, two buttons) above the integration diagram; then three sections that share one grid from 1024px, a 1 : 1.1 split with a 64px gap, headline left and paragraph right, content full width below: the architecture ("usable right now"), the payment flow, and the three roles; then a centered closing call to run the demo; then the footer. Sections are separated by a full-bleed hairline, never by a tinted band, with 80px to 112px of vertical space. Copy presents OpenFSP as the standard and the gateway as the implementation that makes it usable before providers adopt it. The footer sits on the card ground with the mark and the project line on the left and three link columns (Docs, Project, GitHub).
-
-The integration diagram swaps geometry at 640px: a wide left-to-right graph (720 by 300) above, a tall top-to-bottom graph (340 by 420) below, with smaller node labels.
-
-Docs pages use the Fumadocs docs layout unchanged: top nav, left sidebar, content, table of contents. The 404 page is a narrow 36rem column, left aligned and vertically centered.
-
-Breakpoints are Tailwind's: 640px and 1024px are the ones in use.
-
-## Elevation & Depth
-
-Flat. Custom surfaces carry no shadow; depth is a tonal step (card over background) plus a 1px hairline. The one box-shadow in the system is the targeted-rule halo: a 6px spread of the same primary tint as the row ground, no blur, which reads as padding around the highlight rather than lift. Fumadocs' own overlays (search dialog, popovers) keep their default shadows.
-
-### Named Rules
-
-**The Hairline Rule.** Separate with a 1px border or a tonal card, never with a shadow.
-
-## Shapes
-
-Gently rounded throughout, scaled to the container: 6px for small inner pieces (toggle options, the rule anchor highlight), 8px for buttons, fields, the toggle track and diagram nodes, 12px for form and result cards and the gateway node, 12px for the code tabs. Diagram edges are smooth cubic curves, 1.25px for the tangle and 1.75px for the routed lines. The logo is a ring with three gaps; nothing else on the site imitates it.
-
-## Components
-
-Quiet, precise, and few. Every custom component is built from the same border, card and primary tokens as the Fumadocs chrome around it.
-
-### Buttons
-
-- **Shape:** gently rounded (8px), 42px tall, 18px side padding, 8px gap to an optional 16px trailing arrow.
-- **Primary:** teal ground, teal border, pale foreground, 600 weight at 0.9375rem.
-- **Hover:** primary mixes 14% toward the background and drops its border; the outline button's border darkens to the foreground color. Transitions are 140ms ease-out on background and border.
-- **Outline:** transparent ground, hairline border, foreground text. Also used, compact (36px, 12px padding), as the verifier's file picker, which takes the focus ring from its hidden input.
-- **Disabled:** 60% opacity, not-allowed cursor.
-
-### Segmented Toggle
-
-- **Style:** a radio group in an 8px rounded track with background ground, hairline border and 4px inner padding; options are 6px rounded, 0.875rem at 500.
-- **State:** the selected option fills with teal and pale text; others are muted text that darkens to foreground on hover, with a color transition.
-
-### Cards / Containers
-
-- **Corner Style:** 12px for the gateway block and verifier form and result cards, 16px for the dashed "your servers" boundary.
-- **Background:** card ground for the footer; architecture nodes and result cards stay on the page ground.
-- **Shadow Strategy:** none (see Elevation & Depth).
-- **Border:** 1px hairline.
-- **Internal Padding:** 20px on verifier cards, 16px in the gateway block.
-
-### Inputs / Fields
-
-- **Style:** full width, 8px rounded, hairline border, page ground, 8px by 12px padding, 0.875rem text; mono for the JWS textarea (0.75rem) and the URL field.
-- **Focus:** no outline, a 2px ring in the focus stone color.
-- **Error:** an alert block below the form, 8px rounded, red at 40% border and 10% ground, plain foreground text.
-
-### Navigation
-
-- **Style:** Fumadocs top nav with the 22px ring mark (light and inverse versions swapped by mode), the wordmark "OpenFSP" at 700 and 1.05rem with tight tracking, three text links (Docs, Specification, Conformance), the locale switcher and the GitHub link. Fumadocs handles states and the mobile menu.
-- **Footer (home):** hairline top border, 0.875rem muted text, links that darken to foreground on hover.
-
-### Integration Diagram (signature)
-
-The one interactive figure. A two-option toggle switches between "without" (nine thin muted curves from every app to every provider) and "with" (a solid teal gateway node in the middle, teal curves from apps in, amber curves out to providers). Nodes are card-ground rectangles with a hairline stroke and 500 weight labels; the gateway carries a 700 name and an 80% opacity caption. Layers cross-fade on opacity over 420ms with an expo-out curve (cubic-bezier(0.16, 1, 0.3, 1)), and a mono count under the centered toggle updates politely for screen readers. The SVG itself is hidden from assistive technology; the caption below carries the idea in text.
-
-### Rule Anchors
-
-Every numbered rule paragraph and every problem catalogue row is an anchor. Rule numbers are undecorated links with tabular figures that turn teal on hover. When targeted, the paragraph or row takes a soft primary tint (14% primary mixed into transparent) with a matching 6px halo and 6px corners, and scrolls to sit 24px below the nav.
-
-### Architecture
-
-Three columns from 1024px, stacked below: applications, a dashed 16px boundary labelled "your servers" holding the primary gateway block (name, one caption, a tracking row, two adapter chips) and the console, then providers, including a dashed node for a provider applying the standard. Connectors are 1px lines, primary on the application side and amber on the provider side, with a wrapped label under the line. Four numbered markers sit on the diagram; hovering the matching guarantee below fills its marker with the foreground color and a soft ring.
-
-### Payment Flow
-
-A sequence diagram with four lanes (customer, shop, gateway, provider) beside a list of six steps. The active step fills its number with primary and expands its sentence; its arrow turns primary and thickens, past arrows stay at 45% foreground, future ones at 15%. The flow advances every 2.8s unless the visitor prefers reduced motion, and stops when a step is clicked; a play and pause control sits under the list. A status pill under the gateway lane reads pending, then turns primary once the provider confirms.
-
-### Roles
-
-Three columns from 768px: the role name in primary at 600, a 1.5rem goal line, and three steps on a hairline rail with small muted dots.
-
-### Diagrams in the docs
-
-Mermaid diagrams use the base theme fed from the live tokens (card nodes, hairline borders, muted lines, page-ground labels) and redraw when the theme changes.
-
-## Do's and Don'ts
-
-### Do:
-
-- **Do** take every color from the tokens above; extend the system by copying from the console design system, not by inventing hues.
-- **Do** keep teal as the single action color: one primary button per group, outlined neutrals for the rest.
-- **Do** separate surfaces with a 1px hairline and a card ground step.
-- **Do** highlight a targeted rule or problem row with the 14% primary tint and its 6px halo, nothing stronger.
-- **Do** set anything citable (rule numbers, URLs, keys, codes, counts) in mono with tabular figures.
-- **Do** leave Fumadocs chrome at its defaults unless a token override is needed to keep it on the neutral palette.
-
-### Don't:
-
-- **Don't** use earth, brown, olive or green grounds in dark mode, or tint any surface with the primary or the accent.
-- **Don't** use Ring Amber for text, for a fill behind text, or as the only signal of a state.
-- **Don't** add shadows to custom surfaces.
-- **Don't** introduce a second typeface for headings; Space Grotesk belongs to the retired system.
-- **Don't** use the Haitian flag colors anywhere.
-- **Don't** write an em dash or a typographic minus in any copy, label or generated text; use a comma, colon, parentheses or a plain hyphen.
+Keep simulated, sandbox and production evidence distinct. Do not imply operator or regulator support, invent endorsements or show fabricated production screenshots. The demo illustrates the contract; it does not prove production readiness.

@@ -1,305 +1,210 @@
-import type { DiagramCopy } from "@/components/integration-diagram";
 import type { Locale } from "@/lib/i18n";
 
-interface Item {
-  title: string;
-  body: string;
-}
-
-export interface ArchitectureCopy {
-  apps: { title: string; items: [string, string, string] };
-  protocol: string;
-  servers: string;
-  gateway: string;
-  gatewayNote: string;
-  store: string;
-  adapters: [string, string];
-  console: string;
-  providerApis: string;
-  providers: { title: string; items: [string, string]; native: string; nativeNote: string };
-  guarantees: [Item, Item, Item, Item];
-}
-
-export interface FlowCopy {
-  lanes: [string, string, string, string];
-  pending: string;
-  succeeded: string;
-  play: string;
-  pause: string;
-  steps: Item[];
-}
-
-interface HomeCopy {
-  title: string;
-  lead: string;
-  readDocs: string;
-  runDemo: string;
-  diagram: DiagramCopy;
-  architecture: { title: string; body: string; copy: ArchitectureCopy };
-  flow: { title: string; body: string; copy: FlowCopy };
-  usage: { title: string; roles: { name: string; goal: string; steps: string[] }[] };
-  closing: { title: string; body: string; github: string };
-  footer: { about: string; columns: { title: string; links: { label: string; href: string }[] }[] };
-}
-
-export const homeCopy: Record<Locale, HomeCopy> = {
-  en: {
-    title: "One payment standard for Haiti.",
-    lead: "Today each provider has its own API, its own error codes and its own way of confirming a payment, so a merchant who wants both MonCash and NatCash builds everything twice. OpenFSP proposes a common rule: one way to ask for a payment and learn its result, whatever the provider.",
-    readDocs: "Read the docs",
-    runDemo: "Run the demo",
-    diagram: {
-      without: "Without OpenFSP",
-      with: "With OpenFSP",
-      apps: ["Online shop", "Mobile app", "Billing system"],
-      providers: ["MonCash", "NatCash", "Next provider"],
-      gateway: "OpenFSP",
-      hosted: "common standard",
-      countWithout: "3 apps × 3 providers = 9 integrations",
-      countWith: "3 apps + 3 providers = 6 integrations",
-    },
-    architecture: {
-      title: "Usable right now",
-      body: "MonCash and NatCash do not apply the standard yet. Until they do, a gateway bridges the gap: installed on your servers, it takes your requests in the OpenFSP format and passes them to each provider in its own format. When a provider adopts the standard, your applications can talk to it directly, with the same integration.",
-      copy: {
-        apps: { title: "Your applications", items: ["Online shop", "Mobile app", "Billing system"] },
-        protocol: "OpenFSP format",
-        servers: "Your servers",
-        gateway: "OpenFSP gateway",
-        gatewayNote: "bridges the gap for now",
-        store: "Payment tracking",
-        adapters: ["MonCash adapter", "NatCash adapter"],
-        console: "Console",
-        providerApis: "Each provider's format",
-        providers: { title: "Providers", items: ["MonCash", "NatCash"], native: "Provider applying the standard", nativeNote: "no gateway needed" },
-        guarantees: [
-          {
-            title: "One format",
-            body: "Same request, same statuses, same error messages, whichever provider the customer picks.",
-          },
-          {
-            title: "Never charged twice",
-            body: "If the connection drops and your shop sends the request again, the customer is charged once.",
-          },
-          {
-            title: "Your access stays with you",
-            body: "The credentials MonCash and NatCash give you stay on your servers. Nobody else holds them.",
-          },
-          {
-            title: "Money does not pass through it",
-            body: "The customer pays straight into your account at the provider, as today. The gateway never touches the funds.",
-          },
-        ],
-      },
-    },
-    flow: {
-      title: "A payment, from click to confirmation",
-      body: "A customer pays an order with MonCash. If MonCash applied the standard, the gateway would disappear from this picture: your shop would talk to MonCash directly, with the same messages.",
-      copy: {
-        lanes: ["Customer", "Shop", "Gateway", "MonCash"],
-        pending: "Pending",
-        succeeded: "Paid",
-        play: "Play",
-        pause: "Pause",
-        steps: [
-          { title: "The customer picks MonCash", body: "They confirm an order of 1,250 gourdes." },
-          { title: "The shop asks for the payment", body: "One request, in the OpenFSP format. The payment is pending." },
-          { title: "The gateway passes it to MonCash", body: "It gives the shop the link where the customer will confirm." },
-          { title: "The customer confirms on their phone", body: "In the MonCash app, with their PIN. The shop never sees it." },
-          { title: "MonCash confirms the payment", body: "The gateway checks the answer and marks the payment as paid. That status is final." },
-          { title: "The shop is notified", body: "It receives a signed notice, checks that it comes from its own gateway and completes the order." },
-        ],
-      },
-    },
-    usage: {
-      title: "Who it is for",
-      roles: [
-        {
-          name: "Developers",
-          goal: "Write it once.",
-          steps: [
-            "Test every case, failures included, on a simulator and without a merchant account.",
-            "Write one integration for every provider.",
-            "Add a provider without touching the application again.",
-          ],
-        },
-        {
-          name: "Merchants",
-          goal: "Use it right now.",
-          steps: [
-            "Install the gateway on your servers to accept MonCash and NatCash.",
-            "Follow every payment in the console.",
-            "Keep your contracts and your accounts with each provider.",
-          ],
-        },
-        {
-          name: "Providers",
-          goal: "Apply the standard.",
-          steps: [
-            "Offer the standard in your own API: every compatible application can accept you, with no gateway.",
-            "Check your implementation with the conformance tests.",
-            "Publish a signed attestation that anyone can check.",
-          ],
-        },
-      ],
-    },
-    closing: {
-      title: "Try it on your computer.",
-      body: "The demo sets everything up locally: the gateway, a provider simulator, the console and a test shop. Place an order and follow the payment to its confirmation.",
-      github: "GitHub",
-    },
-    footer: {
-      about: "A research project of the MBDS master, carried by Karako Systems. Apache-2.0.",
-      columns: [
-        {
-          title: "Docs",
-          links: [
-            { label: "Introduction", href: "/docs" },
-            { label: "Architecture", href: "/docs/architecture" },
-            { label: "Specification", href: "/docs/spec" },
-          ],
-        },
-        {
-          title: "Project",
-          links: [
-            { label: "Decisions", href: "/docs/decisions" },
-            { label: "Provider registry", href: "/docs/registry" },
-            { label: "Verify an attestation", href: "/docs/verify" },
-          ],
-        },
-      ],
-    },
-  },
+export const homeCopy = {
   fr: {
-    title: "Une norme de paiement commune pour Haïti.",
-    lead: "Aujourd'hui, chaque opérateur impose son API, ses codes d'erreur et sa façon de confirmer un paiement. Un marchand qui veut accepter MonCash et NatCash doit donc tout développer deux fois. OpenFSP propose une règle commune : une seule façon de demander un paiement et d'en connaître le résultat, quel que soit l'opérateur.",
-    readDocs: "Lire la documentation",
-    runDemo: "Lancer la démo",
-    diagram: {
-      without: "Sans OpenFSP",
-      with: "Avec OpenFSP",
-      apps: ["Boutique", "Appli mobile", "Facturation"],
-      providers: ["MonCash", "NatCash", "Autre opérateur"],
-      gateway: "OpenFSP",
-      hosted: "norme commune",
-      countWithout: "3 applications × 3 opérateurs = 9 intégrations",
-      countWith: "3 applications + 3 opérateurs = 6 intégrations",
+    title: "Une norme ouverte pour les paiements en Haïti",
+    headline: ["Une norme.", "Une API.", "Une intégration."],
+    lead: "OpenFSP propose une norme ouverte entre les applications marchandes et les fournisseurs de services de paiement en Haïti. Chaque opérateur qui l’implémente expose la même API, et le marchand n’écrit qu’une intégration pour tous.",
+    primary: "Lire la norme",
+    secondary: "Explorer l’API",
+    facts: ["Apache-2.0", "Implémentable par tous", "Paiements en HTG"],
+    demo: {
+      simulation: "Exemple simulé",
+      provider: "Choisir un opérateur simulé",
+      request: "Votre demande",
+      response: "Dans votre application",
+      order: "Commande #184",
+      amount: "1 250,00 HTG",
+      pending: "En attente",
+      paid: "Payé",
+      confirm: "Simuler la confirmation",
+      reset: "Recommencer",
+      sent: "Demande créée",
+      webhook: "Webhook signé reçu",
+      waiting: "En attente de l’opérateur",
+      done: "La boutique peut valider la commande.",
+      notice: "Le contrat OpenFSP, illustré avec un opérateur simulé.",
+      responseLink: "Lire le contrat de création",
+      copy: "Copier la requête",
+      copied: "Copié",
+      copyError: "Copie indisponible, sélectionnez le code.",
     },
-    architecture: {
-      title: "Utilisable dès maintenant",
-      body: "MonCash et NatCash n'appliquent pas encore la norme. En attendant, une passerelle fait le lien : installée sur vos serveurs, elle reçoit vos demandes au format OpenFSP et les transmet à chaque opérateur dans son propre format. Le jour où un opérateur adopte la norme, vos applications s'adressent à lui directement, avec la même intégration.",
-      copy: {
-        apps: { title: "Vos applications", items: ["Boutique", "Appli mobile", "Facturation"] },
-        protocol: "Format OpenFSP",
-        servers: "Vos serveurs",
-        gateway: "Passerelle OpenFSP",
-        gatewayNote: "fait le lien en attendant",
-        store: "Suivi des paiements",
-        adapters: ["Adaptateur MonCash", "Adaptateur NatCash"],
-        console: "Console",
-        providerApis: "Format de chaque opérateur",
-        providers: {
-          title: "Opérateurs",
-          items: ["MonCash", "NatCash"],
-          native: "Opérateur qui applique la norme",
-          nativeNote: "aucune passerelle nécessaire",
-        },
-        guarantees: [
-          {
-            title: "Un seul format",
-            body: "Même demande, mêmes statuts, mêmes messages d'erreur, quel que soit l'opérateur choisi par le client.",
-          },
-          {
-            title: "Jamais débité deux fois",
-            body: "Si la connexion coupe et que votre boutique renvoie la demande, le client n'est débité qu'une fois.",
-          },
-          {
-            title: "Vos accès restent chez vous",
-            body: "Les identifiants que vous donnent MonCash et NatCash restent sur vos serveurs. Personne d'autre ne les détient.",
-          },
-          {
-            title: "L'argent ne passe pas par elle",
-            body: "Le client paie directement sur votre compte chez l'opérateur, comme aujourd'hui. La passerelle ne touche jamais aux fonds.",
-          },
-        ],
-      },
-    },
-    flow: {
-      title: "Un paiement, du clic à la confirmation",
-      body: "Un client paie une commande avec MonCash. Si MonCash appliquait la norme, la passerelle disparaîtrait de ce schéma : votre boutique s'adresserait directement à MonCash, avec les mêmes messages.",
-      copy: {
-        lanes: ["Client", "Boutique", "Passerelle", "MonCash"],
-        pending: "En attente",
-        succeeded: "Payé",
-        play: "Lecture",
-        pause: "Pause",
-        steps: [
-          { title: "Le client choisit MonCash", body: "Il valide une commande de 1 250 gourdes." },
-          { title: "La boutique demande le paiement", body: "Une seule demande, au format OpenFSP. Le paiement est en attente." },
-          { title: "La passerelle transmet à MonCash", body: "Elle renvoie à la boutique le lien où le client va confirmer." },
-          { title: "Le client confirme sur son téléphone", body: "Dans l'application MonCash, avec son code. La boutique ne le voit jamais." },
-          { title: "MonCash confirme le paiement", body: "La passerelle vérifie la réponse et marque le paiement comme payé. Ce statut est définitif." },
-          { title: "La boutique est prévenue", body: "Elle reçoit un avis signé, vérifie qu'il vient bien de sa passerelle et valide la commande." },
-        ],
-      },
-    },
-    usage: {
-      title: "À qui elle sert",
-      roles: [
+    native: {
+      title: "À terme, chaque opérateur implémente la norme dans son propre système.",
+      caption: "Architecture visée",
+      app: "Application marchande",
+      contract: "Contrat OpenFSP",
+      contractDetail: "HTTP et webhooks signés",
+      providers: "Opérateurs qui adoptent la norme",
+      api: "API OpenFSP natives",
+      note: "Connexion directe aux opérateurs compatibles, sans passerelle de traduction.",
+      action: "Implémenter la norme côté opérateur",
+      steps: [
         {
-          name: "Développeurs",
-          goal: "Coder une seule fois.",
-          steps: [
-            "Tester tous les cas, échecs compris, sur un simulateur et sans compte marchand.",
-            "Écrire une seule intégration pour tous les opérateurs.",
-            "Ajouter un opérateur sans retoucher l'application.",
-          ],
+          title: "L’opérateur implémente OpenFSP",
+          body: "Il expose le contrat commun dans son propre système et déclare les capacités qu’il prend en charge.",
         },
         {
-          name: "Marchands",
-          goal: "S'en servir dès maintenant.",
-          steps: [
-            "Installer la passerelle sur vos serveurs pour encaisser avec MonCash et NatCash.",
-            "Suivre chaque paiement dans la console.",
-            "Garder vos contrats et vos comptes chez chaque opérateur.",
-          ],
+          title: "Le marchand écrit une seule intégration",
+          body: "L’application appelle la même API chez chaque opérateur compatible. Seuls les identifiants et la configuration changent.",
         },
         {
-          name: "Opérateurs",
-          goal: "Appliquer la norme.",
-          steps: [
-            "Proposer la norme dans votre propre API : toutes les applications compatibles vous acceptent, sans passerelle.",
-            "Vérifier votre implémentation avec les tests de conformité.",
-            "Publier une attestation signée que chacun peut contrôler.",
-          ],
+          title: "La connexion devient directe",
+          body: "L’application parle directement à l’API de chaque opérateur. Ces connexions n’ont plus besoin de passerelle de traduction.",
         },
       ],
     },
-    closing: {
-      title: "Essayez-la sur votre ordinateur.",
-      body: "La démo installe tout en local : la passerelle, un simulateur des opérateurs, la console et une boutique de test. Passez une commande et suivez le paiement jusqu'à la confirmation.",
-      github: "GitHub",
+    contract: {
+      title: "Le contrat tient en quelques requêtes HTTP et des webhooks signés.",
+      body: "La spécification décrit ce que votre application envoie, ce qu’elle reçoit et comment réagir quand le réseau coupe. Chaque règle a son propre lien.",
+      links: [
+        { title: "API des paiements", body: "Création, consultation et synchronisation.", href: "/docs/spec/payments-api" },
+        { title: "Webhooks signés", body: "Authentifier les notifications reçues.", href: "/docs/spec/webhooks" },
+        { title: "Suite de conformité", body: "Tester une implémentation et ses limites.", href: "/docs/spec/conformance" },
+      ],
+      event: "Événement reçu par la boutique",
+      payload: "Extrait du corps d’un événement simulé",
+      docs: "Voir le format complet",
+    },
+    gateway: {
+      title: "En attendant l’adoption, une passerelle traduit le contrat.",
+      body: "Aucun opérateur local n’implémente encore OpenFSP. La passerelle de référence reçoit les demandes au format de la norme et les traduit vers les API actuelles de MonCash et NatCash, ce qui permet d’essayer le contrat dès maintenant.",
+      link: "Pourquoi la passerelle existe",
+    },
+    start: {
+      title: "Lancer un premier paiement en local.",
+      body: "La démo démarre une boutique, la passerelle et des opérateurs simulés. La suite de conformité peut aussi tester un opérateur natif simulé, sans passerelle.",
+      action: "Ouvrir le guide de démarrage",
+      requirements: "Git, Make et Docker Compose",
+      copy: "Copier les commandes",
+    },
+    status: {
+      title: "Où en est le projet",
+      body: "La spécification, les implémentations de référence et la suite de conformité sont publiées et éprouvées avec des opérateurs simulés. Aucun opérateur ni régulateur n’a encore adopté la norme.",
+      phases: [
+        { title: "Phase 1, en cours", body: "Contrat d’intégration marchande, implémentations de référence et conformité reproductible." },
+        {
+          title: "Phase 2, envisagée",
+          body: "Paiement de proximité par jeton éphémère présenté par le client. Ce parcours ne fait pas partie de la version actuelle.",
+        },
+      ],
+      link: "Périmètre et phases",
     },
     footer: {
-      about: "Projet de recherche du master MBDS, porté par Karako Systems. Apache-2.0.",
-      columns: [
+      description: "Une norme ouverte entre applications marchandes et fournisseurs de services de paiement.",
+      docs: "Documentation",
+      project: "Projet",
+      source: "Code source",
+      quickstart: "Démarrage rapide",
+      spec: "Spécification",
+      architecture: "Architecture",
+      registry: "Registre des opérateurs",
+      decisions: "Décisions",
+      verify: "Vérifier une attestation",
+      note: "Karako Systems · Apache-2.0",
+    },
+  },
+  en: {
+    title: "An open standard for payments in Haiti",
+    headline: ["One standard.", "One API.", "One integration."],
+    lead: "OpenFSP proposes an open standard between merchant applications and payment service providers in Haiti. Every provider that implements it exposes the same API, so a merchant writes one integration for all of them.",
+    primary: "Read the standard",
+    secondary: "Explore the API",
+    facts: ["Apache-2.0", "Open to any implementer", "Payments in HTG"],
+    demo: {
+      simulation: "Simulated example",
+      provider: "Choose a simulated provider",
+      request: "Your request",
+      response: "In your application",
+      order: "Order #184",
+      amount: "1,250.00 HTG",
+      pending: "Pending",
+      paid: "Paid",
+      confirm: "Simulate confirmation",
+      reset: "Start again",
+      sent: "Request created",
+      webhook: "Signed webhook received",
+      waiting: "Waiting for the provider",
+      done: "The shop can complete the order.",
+      notice: "The OpenFSP contract, shown with a simulated provider.",
+      responseLink: "Read the creation contract",
+      copy: "Copy request",
+      copied: "Copied",
+      copyError: "Copy unavailable, select the code.",
+    },
+    native: {
+      title: "In the long run, each provider implements the standard in its own system.",
+      caption: "Target architecture",
+      app: "Merchant application",
+      contract: "OpenFSP contract",
+      contractDetail: "HTTP and signed webhooks",
+      providers: "Providers adopting the standard",
+      api: "Native OpenFSP APIs",
+      note: "Direct connections to compatible providers, with no translation gateway.",
+      action: "Implement the standard as a provider",
+      steps: [
         {
-          title: "Docs",
-          links: [
-            { label: "Introduction", href: "/docs" },
-            { label: "Architecture", href: "/docs/architecture" },
-            { label: "Spécification", href: "/docs/spec" },
-          ],
+          title: "The provider implements OpenFSP",
+          body: "It exposes the shared contract in its own system and declares the capabilities it supports.",
         },
         {
-          title: "Projet",
-          links: [
-            { label: "Décisions", href: "/docs/decisions" },
-            { label: "Registre des opérateurs", href: "/docs/registry" },
-            { label: "Vérifier une attestation", href: "/docs/verify" },
-          ],
+          title: "The merchant writes one integration",
+          body: "The application calls the same API at every compatible provider. Only credentials and configuration change.",
+        },
+        {
+          title: "The connection becomes direct",
+          body: "The application talks to each provider’s API directly. Those connections no longer need a translation gateway.",
         },
       ],
     },
+    contract: {
+      title: "The contract is a few HTTP requests and signed webhooks.",
+      body: "The specification defines what your application sends, what it receives and what to do when the connection drops. Every rule has its own link.",
+      links: [
+        { title: "Payments API", body: "Create, retrieve and synchronize.", href: "/docs/spec/payments-api" },
+        { title: "Signed webhooks", body: "Authenticate incoming notifications.", href: "/docs/spec/webhooks" },
+        { title: "Conformance suite", body: "Test an implementation and its limits.", href: "/docs/spec/conformance" },
+      ],
+      event: "Event received by the shop",
+      payload: "Excerpt from a simulated event body",
+      docs: "See the full format",
+    },
+    gateway: {
+      title: "Until providers adopt it, a gateway translates the contract.",
+      body: "No local provider implements OpenFSP yet. The reference gateway accepts requests in the standard’s format and translates them into the current MonCash and NatCash APIs, so you can try the contract today.",
+      link: "Why the gateway exists",
+    },
+    start: {
+      title: "Run a first payment locally.",
+      body: "The demo starts a shop, the gateway and simulated providers. The conformance suite can also test a simulated native provider, with no gateway.",
+      action: "Open the quickstart guide",
+      requirements: "Git, Make and Docker Compose",
+      copy: "Copy commands",
+    },
+    status: {
+      title: "Where the project stands",
+      body: "The specification, reference implementations and conformance suite are published and exercised against simulated providers. No provider or regulator has adopted the standard yet.",
+      phases: [
+        { title: "Phase 1, in progress", body: "Merchant integration contract, reference implementations and reproducible conformance." },
+        {
+          title: "Phase 2, envisaged",
+          body: "Proximity payments with a short-lived token presented by the customer. This flow is not part of the current version.",
+        },
+      ],
+      link: "Scope and phases",
+    },
+    footer: {
+      description: "An open standard between merchant applications and payment service providers.",
+      docs: "Documentation",
+      project: "Project",
+      source: "Source code",
+      quickstart: "Quickstart",
+      spec: "Specification",
+      architecture: "Architecture",
+      registry: "Provider registry",
+      decisions: "Decisions",
+      verify: "Verify an attestation",
+      note: "Karako Systems · Apache-2.0",
+    },
   },
-};
+} satisfies Record<Locale, unknown>;
