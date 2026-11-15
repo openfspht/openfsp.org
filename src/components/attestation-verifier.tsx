@@ -128,7 +128,7 @@ export function AttestationVerifier({ locale = "en" }: { locale?: "en" | "fr" })
         </label>
         <label className="block space-y-1.5 text-sm font-medium">
           <span>{t.validator}</span>
-          <input name="validator" type="url" required defaultValue="http://localhost:8095" className={`${field} font-mono`} />
+          <input name="validator" type="url" required defaultValue="http://localhost:5176" className={`${field} font-mono`} />
         </label>
         <div className="space-y-1.5 text-sm">
           <span className="block font-medium">{t.report}</span>
