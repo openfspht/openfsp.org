@@ -44,7 +44,7 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 - Voice: first person of the author, proposals rather than verdicts ("je propose", never "accepté" or "validé"); short, dry, technical; no pedagogy; French written as French, not translated English.
 - Licence Apache-2.0, carried by Karako Systems; the commercial product built on top is never named.
 - No em dash and no typographic minus anywhere.
-- Standing visual preference (2026-11-14): simple, clean and interesting like coolify.io and its docs. Colours and type come from the console design system (`stack/frontend/packages/ui/src/styles/globals.css`): neutral grounds, teal primary, amber accent, Inter; no earth or green grounds in dark mode.
+- Standing visual preference (2026-11-14): simple, clean and interesting like coolify.io and its docs. Colours and type come from the console design system (`frontend/packages/ui/src/styles/globals.css` in `openfspht/openfsp`): neutral grounds, teal primary, amber accent, Inter; no earth or green grounds in dark mode.
 
 ## Evidence on Hand
 

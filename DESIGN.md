@@ -138,7 +138,7 @@ components:
 
 openfsp.org reads like a well-kept reference: white or near-black grounds, one deep teal voice, Inter throughout, and hairline borders doing the structural work. It sits on Fumadocs UI and keeps its chrome (navigation, sidebar, search, code blocks, table of contents) close to defaults; the identity lives in the palette, a single interactive diagram, and the way rule anchors light up. The reference point is a calm developer documentation site in the spirit of coolify.io: simple, clean, legible at a glance, with one interesting moving part rather than many decorative ones.
 
-The palette and type are copied from the console design system in the stack (`stack/frontend/packages/ui/src/styles/globals.css`), so the site and the console read as one family. This diverges from the older brand sheet, which named Space Grotesk and a chalk and ink palette; the build and the standing preference of 2026-11-14 win. The brand survives in the ring mark itself (ink and amber in light mode, chalk and amber in dark mode) and in the amber accent, which appears as a stroke, never as text.
+The palette and type are copied from the console design system in the code repository (`openfspht/openfsp`, `frontend/packages/ui/src/styles/globals.css`), so the site and the console read as one family. This diverges from the older brand sheet, which named Space Grotesk and a chalk and ink palette; the build and the standing preference of 2026-11-14 win. The brand survives in the ring mark itself (ink and amber in light mode, chalk and amber in dark mode) and in the amber accent, which appears as a stroke, never as text.
 
 Density is moderate: generous section spacing on the home page, Fumadocs reading density in the docs. Surfaces are flat; depth comes from a slightly tinted card ground and a 1px border, never from shadows.
 
@@ -167,7 +167,7 @@ A restrained neutral system with one committed teal and one amber stroke color.
 
 - **Paper White** (background): the page ground in light mode, also the inset ground of fields and the toggle track.
 - **Stone Ink** (foreground): body text and headings in light mode; doubles as the dark mode ground.
-- **Card Mist** (card): one step off white for the code tabs, the footer and diagram nodes.
+- **Card Mist** (card): one step off white for the footer and diagram nodes.
 - **Muted Wash** (muted): Fumadocs hover and inline code grounds.
 - **Slate Note** (muted-foreground): secondary text, captions, lead paragraphs, footer links at rest, the 404 code.
 - **Hairline** (border): every divider and container edge.
@@ -196,9 +196,9 @@ A restrained neutral system with one committed teal and one amber stroke color.
 
 ### Hierarchy
 
-- **Display** (700, fluid 2.25rem to 3.5rem, line-height 1.06, -0.03em): the home page title only, balanced, in the left column of the hero.
+- **Display** (700, fluid 2.25rem to 3.5rem, line-height 1.06, -0.03em): the home page title only, balanced and centered, held to about 48rem.
 - **Headline** (700, 1.875rem, -0.02em): home section titles and the 404 title. Docs headings and page titles take -0.02em tracking over Fumadocs' prose sizes.
-- **Title** (700, 1.125rem): item names in the parts grid.
+- **Title** (700, 1.5rem, -0.02em): the goal line of each role in the usage section.
 - **Lead** (400, 1.125rem rising to 1.25rem from 640px, line-height 1.625): the paragraph under the display title, in muted color, about 42rem wide.
 - **Body** (400, 1rem, 1.5): paragraphs and captions; Fumadocs prose in the docs. Captions and section bodies keep to 28rem to 42rem.
 - **Label** (600, 0.9375rem): button text. Form labels use 500 at 0.875rem.
@@ -212,7 +212,7 @@ A restrained neutral system with one committed teal and one amber stroke color.
 
 ## Layout
 
-A single column capped at 72rem with 16px side padding. Every home section shares one grid from 1024px, a 1 : 1.1 split with a 64px gap: the hero puts the title, lead, buttons and status left and the request and response code tabs right; the following sections put the headline left and its paragraph right, then their content full width below. Sections are separated by a full-bleed hairline, never by a tinted band, with 80px to 96px of vertical space. Order: hero, integration diagram, specification chapter list, local demo, footer. The home page is an entry point to the specification, not a marketing page: no taglines beyond the title, no feature cards, no metrics. The footer sits on the card ground with the mark and the project line on the left and three link columns (Docs, Reference, GitHub).
+A single column capped at 72rem with 16px side padding. The home page reads top to bottom as an argument, with no code and no rule references: a centered hero (title, lead, two buttons) above the integration diagram; then three sections that share one grid from 1024px, a 1 : 1.1 split with a 64px gap, headline left and paragraph right, content full width below: the architecture ("usable right now"), the payment flow, and the three roles; then a centered closing call to run the demo; then the footer. Sections are separated by a full-bleed hairline, never by a tinted band, with 80px to 112px of vertical space. Copy presents OpenFSP as the standard and the gateway as the implementation that makes it usable before providers adopt it. The footer sits on the card ground with the mark and the project line on the left and three link columns (Docs, Project, GitHub).
 
 The integration diagram swaps geometry at 640px: a wide left-to-right graph (720 by 300) above, a tall top-to-bottom graph (340 by 420) below, with smaller node labels.
 
@@ -251,11 +251,11 @@ Quiet, precise, and few. Every custom component is built from the same border, c
 
 ### Cards / Containers
 
-- **Corner Style:** 12px for the code tabs and verifier form and result cards.
-- **Background:** card ground for the code tabs and the footer; result cards stay on the page ground.
+- **Corner Style:** 12px for the gateway block and verifier form and result cards, 16px for the dashed "your servers" boundary.
+- **Background:** card ground for the footer; architecture nodes and result cards stay on the page ground.
 - **Shadow Strategy:** none (see Elevation & Depth).
 - **Border:** 1px hairline.
-- **Internal Padding:** 20px on verifier cards; the code tabs leave padding to the code block.
+- **Internal Padding:** 20px on verifier cards, 16px in the gateway block.
 
 ### Inputs / Fields
 
@@ -276,13 +276,21 @@ The one interactive figure. A two-option toggle switches between "without" (nine
 
 Every numbered rule paragraph and every problem catalogue row is an anchor. Rule numbers are undecorated links with tabular figures that turn teal on hover. When targeted, the paragraph or row takes a soft primary tint (14% primary mixed into transparent) with a matching 6px halo and 6px corners, and scrolls to sit 24px below the nav.
 
-### Code Tabs
+### Architecture
 
-A 12px rounded card with a row of text tabs over one code block. The selected tab carries a 2px primary underline and foreground text; the others are muted and darken on hover. The code block inside loses its own border and ground.
+Three columns from 1024px, stacked below: applications, a dashed 16px boundary labelled "your servers" holding the primary gateway block (name, one caption, a tracking row, two adapter chips) and the console, then providers, including a dashed node for a provider applying the standard. Connectors are 1px lines, primary on the application side and amber on the provider side, with a wrapped label under the line. Four numbered markers sit on the diagram; hovering the matching guarantee below fills its marker with the foreground color and a soft ring.
 
-### Chapter List
+### Payment Flow
 
-The eight specification chapters in a two-column list from 768px, separated by hairlines: name at 600, one muted line, and the rule count right aligned in mono. The total in the section paragraph is the sum of the chapter counts. Each name turns primary and gains a 16px arrow on hover that slides in 4px and fades from 0 to full opacity over 200ms ease-out.
+A sequence diagram with four lanes (customer, shop, gateway, provider) beside a list of six steps. The active step fills its number with primary and expands its sentence; its arrow turns primary and thickens, past arrows stay at 45% foreground, future ones at 15%. The flow advances every 2.8s unless the visitor prefers reduced motion, and stops when a step is clicked; a play and pause control sits under the list. A status pill under the gateway lane reads pending, then turns primary once the provider confirms.
+
+### Roles
+
+Three columns from 768px: the role name in primary at 600, a 1.5rem goal line, and three steps on a hairline rail with small muted dots.
+
+### Diagrams in the docs
+
+Mermaid diagrams use the base theme fed from the live tokens (card nodes, hairline borders, muted lines, page-ground labels) and redraw when the theme changes.
 
 ## Do's and Don'ts
 
