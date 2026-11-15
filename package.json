@@ -5,7 +5,7 @@
   "sideEffects": false,
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && bun run scripts/prepare-static.ts",
     "preview": "vite preview",
     "check": "tsc --noEmit && prettier --check .",
     "format": "prettier --write .",

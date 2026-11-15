@@ -52,4 +52,16 @@ jobs:
           curl -sf http://localhost:8080/ > /dev/null
           curl -sf http://localhost:8080/docs/spec/payments-api > /dev/null
           curl -sf http://localhost:8080/fr/docs/spec/idempotency > /dev/null
+          curl -sf http://localhost:8080/sitemap.xml > /dev/null
+          curl -sf http://localhost:8080/og.png > /dev/null
+          curl -sf http://localhost:8080/api/search-index/fr > /dev/null
           curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/problems/provider-timeout | grep -q 301
+          curl -s -o /tmp/not-found.html -w '%{http_code}' http://localhost:8080/missing-page | grep -q 404
+          grep -q 'Page introuvable' /tmp/not-found.html
+          for path in / /fr/docs/quickstart /api/search-index/fr /missing-page /problems/provider-timeout; do
+            curl -sI "http://localhost:8080$path" > /tmp/headers.txt
+            grep -qi '^Content-Security-Policy:' /tmp/headers.txt
+            grep -qi '^Referrer-Policy:' /tmp/headers.txt
+            grep -qi '^X-Content-Type-Options: nosniff' /tmp/headers.txt
+          done
+          curl -sI -H 'Accept-Encoding: gzip' http://localhost:8080/api/search-index/fr | grep -qi '^Content-Encoding: gzip'

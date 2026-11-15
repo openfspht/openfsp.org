@@ -6,6 +6,8 @@ The public site of [OpenFSP](https://github.com/openfspht/openfsp), served at `o
 
 Built with Fumadocs on TanStack Start, prerendered to static files and served by nginx.
 
+The build also checks internal links, anchors and EN/FR parity, and writes the sitemap, `robots.txt`, the 404 page and gzip files.
+
 ## Run
 
 ```bash
