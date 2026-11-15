@@ -16,7 +16,8 @@ const urlPath = (file: string) =>
     .replace(/\.html$/, "")
     .replace(/\/$/, "")}`;
 const pages = new Map(htmlFiles.filter((file) => !file.endsWith("/404.html")).map((file) => [urlPath(file), file]));
-const xml = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
+const XML_ENTITIES: Record<string, string> = { "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" };
+const xml = (value: string) => value.replace(/[&"<>]/g, (char) => XML_ENTITIES[char]);
 const sitemap = [...pages.keys()]
   .sort()
   .map((path) => {
