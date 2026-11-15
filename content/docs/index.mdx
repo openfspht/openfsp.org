@@ -3,7 +3,7 @@ title: Introduction
 description: The interoperability standard, native adoption, transition tools and project phases.
 ---
 
-OpenFSP is a proposed open interoperability standard between merchant applications and payment service providers. The goal is for each provider to implement it natively, so merchants use the same HTTP contract with every compatible provider.
+OpenFSP is a proposed open interoperability standard between merchant applications and payment service providers. The goal is for each provider to implement it natively, so merchants use the same SDK and HTTP contract with every compatible provider.
 
 The standard is the deliverable. The reference gateway translates the OpenFSP contract into the existing MonCash and NatCash APIs, so the contract is usable today.
 
@@ -14,11 +14,11 @@ protocol and each provider implements that contract once: `O + L`. The benefit d
 
 ## The target architecture
 
-With native adoption, the application connects directly to each compatible provider. Each relationship keeps its credentials, configuration and actual provider capabilities.
+With native adoption, the application's SDK connects directly to each compatible provider. Each relationship keeps its credentials, configuration and actual provider capabilities.
 
 ```mermaid
 flowchart LR
-    A["Merchant application"] --> S["OpenFSP contract"]
+    A["Merchant application"] --> S["OpenFSP SDK"]
     S --> P1["Native provider A"]
     S --> P2["Native provider B"]
 ```
@@ -28,13 +28,15 @@ The interoperability addressed here is merchant application integration; the sta
 ## Choose a path
 
 - **Payment service provider:** [implement OpenFSP natively](/docs/native-operator), read the contract and test your own target.
-- **Merchant developer:** read the [API](/docs/spec/payments-api), discover your counterparty's capabilities and call it over HTTP.
+- **Merchant developer:** read the [API](/docs/spec/payments-api), discover your counterparty's capabilities and call it over HTTP, then through the SDK once it is published.
 - **Design reader:** read the [decisions](/docs/decisions) and the [project status](/docs/status).
 - **Explore the tools:** run the [local demo](/docs/quickstart) with the [transition gateway](/docs/gateway).
 
 ## Phases
 
 **Phase 1, in progress.** Establish the merchant integration contract, reference tools and reproducible verification. The gateway and adapters make the contract usable with existing APIs; the simulator and conformance suite also exercise a native provider without a gateway.
+
+**Next step, SDKs.** Publish client libraries, TypeScript first from the client in the repository, then PHP and Python. They call the same API at every provider.
 
 **Phase 2, envisaged.** Extend the standard to proximity payments using a short-lived, single-use token presented by the customer. This is outside the current version.
 

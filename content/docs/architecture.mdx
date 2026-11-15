@@ -17,7 +17,7 @@ Interoperability here concerns the merchant interface. The merchant keeps an acc
 
 ```mermaid
 flowchart LR
-    A["Merchant application"] --> S["OpenFSP contract over HTTP"]
+    A["Merchant application"] --> S["OpenFSP SDK or HTTP"]
     S -- "OpenFSP contract" --> P1["Native provider A"]
     S -- "same OpenFSP contract" --> P2["Native provider B"]
 ```
