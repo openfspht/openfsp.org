@@ -1,55 +1,49 @@
 ---
 title: Introduction
-description: What OpenFSP is, what it is made of, and where the project stands.
+description: The interoperability standard, native adoption, transition tools and project phases.
 ---
 
-OpenFSP is a proposed open standard for integrating digital payments in Haiti: one contract between merchant applications and payment providers, and a gateway
-that implements it, hosted by the merchant.
+OpenFSP is a proposed open interoperability standard between merchant applications and payment service providers. The goal is for each provider to implement it natively, so merchants use the same HTTP contract with every compatible provider.
+
+The standard is the deliverable. The reference gateway translates the OpenFSP contract into the existing MonCash and NatCash APIs, so the contract is usable today.
 
 ## The problem
 
 Without a shared contract, each of `L` merchant applications integrates each of `O` providers: `O × L` integrations. With OpenFSP, each application speaks one
-protocol and each provider is integrated once, in the gateway: `O + L`.
+protocol and each provider implements that contract once: `O + L`. The benefit depends on adoption.
+
+## The target architecture
+
+With native adoption, the application connects directly to each compatible provider. Each relationship keeps its credentials, configuration and actual provider capabilities.
 
 ```mermaid
 flowchart LR
-    subgraph apps["L merchant applications"]
-        A1["PHP"]
-        A2["TypeScript"]
-        A3["Python"]
-    end
-    G["<b>OpenFSP gateway</b><br/><i>hosted by the merchant</i>"]
-    subgraph ops["O providers"]
-        P1["Provider 1"]
-        P2["Provider 2"]
-    end
-    A1 --> G
-    A2 --> G
-    A3 --> G
-    G --> P1
-    G --> P2
+    A["Merchant application"] --> S["OpenFSP contract"]
+    S --> P1["Native provider A"]
+    S --> P2["Native provider B"]
 ```
 
-The gateway instructs providers and is never a party to a transaction: it holds no funds, and the merchant keeps its own contract with each provider.
+The interoperability addressed here is merchant application integration; the standard does not transfer, clear or settle funds between providers.
 
-## Components
+## Choose a path
 
-| Component         | Role                                                                                                     |
-| ----------------- | -------------------------------------------------------------------------------------------------------- |
-| Specification     | The contract: data model, lifecycle, capabilities, errors, idempotency, webhooks, authentication.        |
-| Gateway           | Server the merchant hosts: the OpenFSP protocol on one side, the provider APIs on the other.             |
-| Simulator         | Reproduces the providers, failures included, so an integration can be tested without a merchant account. |
-| Client libraries  | Thin clients in TypeScript, PHP and Python. The protocol stays usable over plain HTTP.                   |
-| Conformance suite | Checks that an implementation follows the specification. A third party can run it again.                 |
+- **Payment service provider:** [implement OpenFSP natively](/docs/native-operator), read the contract and test your own target.
+- **Merchant developer:** read the [API](/docs/spec/payments-api), discover your counterparty's capabilities and call it over HTTP.
+- **Design reader:** read the [decisions](/docs/decisions) and the [project status](/docs/status).
+- **Explore the tools:** run the [local demo](/docs/quickstart) with the [transition gateway](/docs/gateway).
 
-## Status
+## Phases
 
-The specification is a draft, version 0.1.0. OpenFSP is the research project of my MBDS master's degree. It is a proposal: no provider or regulator has
-adopted it. Before `1.0.0`, a minor version may break compatibility. The specification and the reference implementation are under the Apache-2.0 license.
+**Phase 1, in progress.** Establish the merchant integration contract, reference tools and reproducible verification. The gateway and adapters make the contract usable with existing APIs; the simulator and conformance suite also exercise a native provider without a gateway.
+
+**Phase 2, envisaged.** Extend the standard to proximity payments using a short-lived, single-use token presented by the customer. This is outside the current version.
+
+The [project status](/docs/status) gives the state of each component. The specification and the reference implementation are under the Apache-2.0 license.
 
 ## Next
 
-- [Quickstart](/docs/quickstart): run the gateway, the simulator and the conformance suite.
-- [Specification](/docs/spec): the normative rules.
-- [Architecture](/docs/architecture): scope, components and provider adapters.
-- [Decisions](/docs/decisions): the reasons behind the rules.
+- [Specification](/docs/spec): normative rules and vocabulary.
+- [Standard architecture](/docs/architecture): contract, native adoption and invariants.
+- [Decisions](/docs/decisions): the reasons for the design choices.
+- [Transition gateway](/docs/gateway): this tool's role and adapter details.
+- [Quickstart](/docs/quickstart): run the demonstration tools and suite.

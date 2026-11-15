@@ -3,13 +3,13 @@ title: Decisions
 description: The design choices behind the OpenFSP specification, the reason for each and the alternatives I set aside.
 ---
 
-I made these choices for a master's research project and propose them for discussion. Each section states one decision, why I chose it, what I set aside, and the chapter it governs.
+I propose these choices for discussion. Each section states one decision, why I chose it, what I set aside, and the chapter it governs.
 
 ## 0001. Architecture and scope
 
 I propose an open specification and, around it, a gateway self-hosted by the merchant as the reference implementation, a mock server and thin client libraries. The gateway and the mock server are written in Kotlin and Spring Boot. The project holds no funds, runs no hosted service and does no clearing. Each provider announces its own capabilities and nothing is emulated; an adapter translates without inventing a capability, a terminal state or an unverifiable retry.
 
-I chose this mainly because integrations drop from `providers × applications` to `providers + applications`, and a native provider makes its adapter unnecessary.
+I chose this mainly because integrations drop from `providers × applications` to `providers + applications`, and a native provider needs no translation.
 
 Set aside: per-language libraries without a server, a specification without a reference implementation, a hosted multi-tenant service, the GSMA Mobile Money API as is, and Mojaloop.
 
@@ -19,7 +19,7 @@ Governs: [Architecture](/docs/architecture).
 
 Amounts are integers in HTG cents, with no floats and no rounding, bounded to ±(2⁵³ - 1) so double-precision JSON parsers stay exact. The `currency` field stays, fixed to `"HTG"`. Phone numbers are E.164 only, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque (UUIDv7 recommended). Unknown fields are ignored in responses and rejected in requests.
 
-Every other chapter depends on these primitives, and provider data (decimal amounts, numbers without `+`, timestamps without offset) must be normalized once, at the gateway.
+Every other chapter depends on these primitives. When the gateway translates an existing API, its adapter converts provider data (decimal amounts, numbers without `+`, timestamps without offset) once.
 
 Set aside: decimal strings, floats, a combined `"HTG 1250.00"` string, multi-currency, server-side national phone formats, epoch timestamps and `camelCase`.
 
@@ -37,7 +37,7 @@ Governs: [Lifecycle](/docs/spec/lifecycle).
 
 ## 0004. Payments API
 
-The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed catalogue of 19 problem types. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations; the provider gets an order identifier derived by HMAC from the `reference`.
+The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed catalogue of 19 problem types. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations. When the gateway translates into an existing API, it derives the provider's order identifier from the `reference` by HMAC.
 
 These operations are what a merchant actually needs (create, read back after an outage by its own reference, force a lookup when a callback is lost), and each provider can implement them.
 
@@ -59,7 +59,7 @@ Governs: [Capabilities](/docs/spec/capabilities).
 
 Delivery is at least once and unordered, with a per-resource `sequence` and an `id` for deduplication. Each event is signed with RFC 9421 HTTP Message Signatures over Ed25519, with a 300 second freshness window and a nonce. The body is a full snapshot of the resource, there are five event types, and retries span seven attempts over 31 hours. Polling stays the recovery path.
 
-I chose a public-key signature because it lets a subscriber reject a forgery with a standard library and proves to a third party what the gateway stated.
+I chose a public-key signature because it lets a subscriber reject a forgery with a standard library and proves to a third party what the sender stated.
 
 Set aside: shared-secret HMAC, a custom signature header, mutual TLS alone, exactly-once delivery, thin events, batches and guaranteed ordering.
 

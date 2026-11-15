@@ -5,6 +5,10 @@ description: Mots-clés, vocabulaire et documents de la spécification.
 
 Voici les règles normatives que je propose pour OpenFSP. Les [décisions](/fr/docs/decisions) en donnent les raisons.
 
+## Portée des termes
+
+La norme définit le contrat partagé, indépendamment de la passerelle de référence. Un opérateur natif expose lui-même ce contrat ; une bibliothèque cliente peut s'y connecter directement. Lorsqu'une règle nomme la passerelle, elle décrit les responsabilités de cette cible. Les exigences applicables à un opérateur natif sont précisées par la [conformité](/fr/docs/spec/conformance#5.7). La traduction vers les API existantes est décrite sur la [page de la passerelle](/fr/docs/gateway).
+
 ## Mots-clés
 
 DOIT, NE DOIT PAS, DEVRAIT, NE DEVRAIT PAS, PEUT, OBLIGATOIRE, RECOMMANDÉ et FACULTATIF
@@ -13,6 +17,10 @@ OPTIONAL au sens des RFC 2119 et RFC 8174, lorsqu'ils sont en capitales. Leurs f
 accordées (DOIVENT, DEVRAIENT, PEUVENT, OBLIGATOIRES, FACULTATIVE) ont le même sens.
 
 Chaque règle porte un numéro. Pour y renvoyer, utilisez son ancre, par exemple [`/fr/docs/spec/idempotency#3.2`](/fr/docs/spec/idempotency#3.2).
+
+## Parcours d'implémentation
+
+Le [guide opérateur natif](/fr/docs/native-operator) relie les chapitres aux tâches d'implémentation et aux tests. [L'état du projet](/fr/docs/status) donne l'état de chaque composant. Ces guides sont informatifs ; les obligations numérotées font autorité.
 
 ## Vocabulaire
 

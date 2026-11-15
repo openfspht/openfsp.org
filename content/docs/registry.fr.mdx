@@ -1,11 +1,13 @@
 ---
 title: Registre des opérateurs
-description: Les identifiants `provider` enregistrés, que toute passerelle utilise pour un même service de paiement.
+description: Les identifiants provider du contrat OpenFSP et leur attribution, indépendamment du mode d'intégration.
 ---
 
 Ce registre attribue les identifiants `provider` qu'utilise l'[API 3.2](/fr/docs/spec/payments-api#3.2) et qu'annonce la [découverte de capacités 3.2](/fr/docs/spec/capabilities#3.2).
 
 Une passerelle utilise l'identifiant enregistré de tout opérateur listé ici ([découverte de capacités 2.6](/fr/docs/spec/capabilities#2.6)). Une graphie locale rendrait les clients non portables d'un déploiement à l'autre.
+
+La présence de `moncash` et `natcash` ne signifie pas que ces opérateurs exposent OpenFSP nativement. Les opérateurs simulés utilisent l'espace `mock_*`.
 
 ## Identifiants enregistrés
 

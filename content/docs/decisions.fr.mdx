@@ -3,13 +3,13 @@ title: Décisions
 description: Les choix de conception de la spécification OpenFSP, la raison de chacun et les solutions que j'ai écartées.
 ---
 
-J'ai fait ces choix dans le cadre d'un projet de recherche de master et je les propose à la discussion. Chaque section énonce une décision, sa raison, ce que j'ai écarté et le chapitre qu'elle régit.
+Je propose ces choix à la discussion. Chaque section énonce une décision, sa raison, ce que j'ai écarté et le chapitre qu'elle régit.
 
 ## 0001. Architecture et périmètre
 
 Je propose une spécification ouverte et, autour d'elle, une passerelle auto-hébergée par le marchand comme implémentation de référence, un serveur simulé et des bibliothèques clientes légères. La passerelle et le serveur simulé sont écrits en Kotlin avec Spring Boot. Le projet ne détient aucun fonds, n'offre aucun service hébergé et ne fait aucune compensation. Chaque opérateur annonce ses capacités et rien n'est émulé ; un adaptateur traduit sans inventer de capacité, d'état terminal ni de renvoi invérifiable.
 
-Je fais ce choix surtout parce que le nombre d'intégrations passe de `opérateurs × applications` à `opérateurs + applications`, et qu'un opérateur natif rend son adaptateur inutile.
+Je fais ce choix surtout parce que le nombre d'intégrations passe de `opérateurs × applications` à `opérateurs + applications`, et qu'un opérateur natif n'a besoin d'aucune traduction.
 
 Écartés : bibliothèques par langage sans serveur, spécification sans implémentation de référence, service hébergé multi-locataire, GSMA Mobile Money API telle quelle, Mojaloop.
 
@@ -19,7 +19,7 @@ Régit : [Architecture](/fr/docs/architecture).
 
 Un montant est un entier en centimes de gourde, sans flottant ni arrondi, borné à ±(2⁵³ - 1) pour rester exact dans les analyseurs JSON en double précision. Le champ `currency` reste, fixé à `"HTG"`. Les numéros de téléphone sont en E.164 uniquement, les horodatages en RFC 3339 UTC avec `Z`, et les identifiants sont opaques (UUIDv7 recommandé). Les champs inconnus sont ignorés en réponse et rejetés en requête.
 
-Tous les autres chapitres reposent sur ces primitives, et les données des opérateurs (montants décimaux, numéros sans `+`, horodatages sans décalage) doivent être converties une seule fois, dans la passerelle.
+Tous les autres chapitres reposent sur ces primitives. Quand la passerelle traduit une API existante, son adaptateur convertit une seule fois les données de l'opérateur (montants décimaux, numéros sans `+`, horodatages sans décalage).
 
 Écartés : chaîne décimale, flottant, chaîne unique `"HTG 1250.00"`, multi-devise, formats nationaux normalisés côté serveur, horodatage epoch, `camelCase`.
 
@@ -37,7 +37,7 @@ Régit : [Cycle de vie](/fr/docs/spec/lifecycle).
 
 ## 0004. API des paiements
 
-L'API passe par HTTPS sous `/v1`, en JSON, avec des erreurs RFC 9457 portant `retryable` et `effect`, et un catalogue fermé de 19 types de problème. La capacité de base `payments` crée, lit par `id` ou par `reference`, et synchronise. Le client nomme l'opérateur. `Idempotency-Key` est obligatoire sur les opérations idempotentes ; l'opérateur reçoit un identifiant de commande dérivé de la `reference` par HMAC.
+L'API passe par HTTPS sous `/v1`, en JSON, avec des erreurs RFC 9457 portant `retryable` et `effect`, et un catalogue fermé de 19 types de problème. La capacité de base `payments` crée, lit par `id` ou par `reference`, et synchronise. Le client nomme l'opérateur. `Idempotency-Key` est obligatoire sur les opérations idempotentes. Quand la passerelle traduit vers une API existante, elle dérive par HMAC de la `reference` l'identifiant de commande transmis à l'opérateur.
 
 Ces opérations répondent aux besoins réels du marchand (créer, relire après une coupure par sa propre référence, forcer une consultation quand un rappel se perd), et chaque opérateur peut les satisfaire.
 
@@ -59,7 +59,7 @@ Régit : [Capacités](/fr/docs/spec/capabilities).
 
 La livraison se fait au moins une fois, sans ordre, avec une `sequence` par ressource et un `id` de déduplication. Chaque événement est signé selon la RFC 9421 sur Ed25519, avec une fenêtre de fraîcheur de 300 secondes et un nonce. Le corps est un instantané complet de la ressource, il existe cinq types d'événement et les renvois s'étalent sur sept tentatives en 31 heures. L'interrogation périodique reste le moyen de rattrapage.
 
-J'ai retenu une signature à clé publique parce qu'elle permet à l'abonné de rejeter une contrefaçon avec une bibliothèque standard et prouve à un tiers ce que la passerelle a affirmé.
+J'ai retenu une signature à clé publique parce qu'elle permet à l'abonné de rejeter une contrefaçon avec une bibliothèque standard et prouve à un tiers ce que l'émetteur a affirmé.
 
 Écartés : HMAC à secret partagé, en-tête de signature maison, TLS mutuel seul, livraison exactement une fois, événements minces, lots, ordre garanti.
 

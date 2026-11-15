@@ -1,3 +1,16 @@
 {
-  "pages": ["index", "quickstart", "architecture", "spec", "---Reference---", "registry", "verify", "decisions"]
+  "pages": [
+    "index",
+    "architecture",
+    "native-operator",
+    "spec",
+    "decisions",
+    "---Reference---",
+    "registry",
+    "status",
+    "---Implementations and tools---",
+    "gateway",
+    "quickstart",
+    "verify"
+  ]
 }

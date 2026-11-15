@@ -6,9 +6,15 @@ description: How to run the reference gateway, its simulator and the conformance
 Every command runs at the root of the [`openfsp`](https://github.com/openfspht/openfsp) repository, which holds the reference gateway, the simulator, the admin
 console, a demo shop and the conformance suite. `make` alone lists the targets.
 
+A provider implementing the standard natively does not need these tools: start with the [provider path](/docs/native-operator).
+
 ## 1. Demo with Docker
 
+Requires Git, Make and Docker with the Compose plugin (`docker compose version`). The first launch downloads images and builds the services; allow several minutes and an Internet connection.
+
 ```bash
+git clone https://github.com/openfspht/openfsp.git
+cd openfsp
 make demo
 ```
 
@@ -24,6 +30,23 @@ This runs `docker compose --profile demo up --build` and starts:
 
 PostgreSQL, the simulator and the validator service also run, without a fixed host port. The console asks for the admin token: `demo-admin-token`. Clients
 discover the endpoints at `/.well-known/openfsp-configuration`.
+
+### First simulated payment
+
+1. Wait for the services to be ready, then open the [local shop](http://localhost:3000).
+2. Add a product to your cart and select a provider marked "(mock)".
+3. Follow the simulator's payment flow. No merchant account or real money is needed.
+4. Open the [local console](http://localhost:5173) with `demo-admin-token` and find the payment. In the success scenario, its status moves from `pending` to `succeeded`.
+
+The Docker demo ports differ from the development ports below.
+
+To stop the demo, press Ctrl+C, then run:
+
+```bash
+docker compose --profile demo down
+```
+
+This keeps the data volumes. If a service fails to start, inspect `docker compose --profile demo logs --tail=100`. If a port is occupied, stop the process using it before running `make demo` again. Check that Docker is running and images can be downloaded.
 
 ## 2. Development
 
@@ -90,3 +113,5 @@ make validate-native   # terminal 2
 
 `make validate-native` runs the suite with the `native-operator` target against the simulator's `mock_openfsp` at `http://127.0.0.1:8090/mock_openfsp`
 (`VALIDATE_NATIVE_BASE_URL`), with the keys it publishes. The report is written to `backend/validator/build/conformance-report-native.json`.
+
+The [provider guide](/docs/native-operator) explains how to read the report.

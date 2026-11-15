@@ -6,9 +6,15 @@ description: Lancer la passerelle de référence, son serveur simulé et la suit
 Toutes les commandes se lancent à la racine du dépôt [`openfsp`](https://github.com/openfspht/openfsp), qui réunit la passerelle de référence, le serveur simulé, la
 console d'administration, une boutique de démonstration et la suite de conformité. `make` seul liste les cibles.
 
+Un opérateur qui implémente la norme nativement n'a pas besoin de ces outils : commencez par le [parcours opérateur](/fr/docs/native-operator).
+
 ## 1. Démonstration avec Docker
 
+Il faut Git, Make et Docker avec le plugin Compose (`docker compose version`). Le premier lancement télécharge les images et compile les services ; prévoyez plusieurs minutes et une connexion Internet.
+
 ```bash
+git clone https://github.com/openfspht/openfsp.git
+cd openfsp
 make demo
 ```
 
@@ -24,6 +30,23 @@ La cible lance `docker compose --profile demo up --build` et démarre :
 
 PostgreSQL, le serveur simulé et le service de validation tournent aussi, sans port fixe sur l'hôte. La console demande le jeton d'administration :
 `demo-admin-token`. Les clients découvrent les points d'accès sur `/.well-known/openfsp-configuration`.
+
+### Premier paiement simulé
+
+1. Attendez que les services soient prêts, puis ouvrez la [boutique locale](http://localhost:3000).
+2. Ajoutez un produit au panier et choisissez un opérateur portant la mention « (mock) ».
+3. Suivez le parcours proposé par le simulateur. Aucun compte marchand ni argent réel n'est nécessaire.
+4. Ouvrez la [console locale](http://localhost:5173) avec `demo-admin-token` et retrouvez le paiement. Dans le scénario de succès, son état passe de `pending` à `succeeded`.
+
+Les ports de cette démo Docker diffèrent de ceux du mode développement ci-dessous.
+
+Pour arrêter la démo, utilisez Ctrl+C, puis :
+
+```bash
+docker compose --profile demo down
+```
+
+Cette commande conserve les volumes de données. Si un service ne démarre pas, consultez `docker compose --profile demo logs --tail=100`. Si un port est occupé, arrêtez le processus qui l'utilise avant de relancer `make demo`. Vérifiez que Docker est lancé et que les images peuvent être téléchargées.
 
 ## 2. Développement
 
@@ -93,3 +116,5 @@ make validate-native   # terminal 2
 `make validate-native` exécute la suite avec la cible `native-operator` contre `mock_openfsp`, l'opérateur natif du serveur simulé, sur
 `http://127.0.0.1:8090/mock_openfsp` (`VALIDATE_NATIVE_BASE_URL`), avec les clés qu'il publie. Le rapport est écrit dans
 `backend/validator/build/conformance-report-native.json`.
+
+Le [guide opérateur](/fr/docs/native-operator) explique comment lire le rapport.

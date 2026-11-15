@@ -1,57 +1,49 @@
 ---
 title: Introduction
-description: Ce qu'est OpenFSP, ses composants et l'état du projet.
+description: La norme d'interopérabilité, l'adoption native, les outils de transition et les phases du projet.
 ---
 
-OpenFSP est une proposition de norme ouverte pour l'intégration des paiements numériques en Haïti : un contrat unique entre les applications marchandes et les
-opérateurs de paiement, et une passerelle hébergée par le marchand qui le met en œuvre.
+OpenFSP est une proposition de norme ouverte d'interopérabilité entre applications marchandes et fournisseurs de services de paiement. L'objectif est que chaque opérateur l'implémente nativement, pour qu'un marchand utilise le même contrat HTTP avec tous les opérateurs compatibles.
+
+La norme est le livrable. La passerelle de référence traduit le contrat OpenFSP vers les API existantes de MonCash et NatCash, pour que le contrat soit utilisable dès aujourd'hui.
 
 ## Le problème
 
 Sans contrat commun, chacune des `L` applications marchandes intègre chacun des `O` opérateurs : `O × L` intégrations. Avec OpenFSP, chaque application utilise un
-seul protocole et chaque opérateur est intégré une seule fois, dans la passerelle : `O + L`.
+seul protocole et chaque opérateur implémente ce contrat une seule fois : `O + L`. Le gain dépend de l'adoption.
+
+## L'architecture cible
+
+Avec l'adoption native, l'application s'adresse directement à chaque opérateur compatible. Chaque relation conserve ses identifiants, sa configuration et les capacités réelles de l'opérateur.
 
 ```mermaid
 flowchart LR
-    subgraph apps["L applications marchandes"]
-        A1["PHP"]
-        A2["TypeScript"]
-        A3["Python"]
-    end
-    G["<b>Passerelle OpenFSP</b><br/><i>hébergée par le marchand</i>"]
-    subgraph ops["O opérateurs"]
-        P1["Opérateur 1"]
-        P2["Opérateur 2"]
-    end
-    A1 --> G
-    A2 --> G
-    A3 --> G
-    G --> P1
-    G --> P2
+    A["Application marchande"] --> S["Contrat OpenFSP"]
+    S --> P1["Opérateur natif A"]
+    S --> P2["Opérateur natif B"]
 ```
 
-La passerelle donne des instructions aux opérateurs sans jamais être partie à une transaction : elle ne détient aucun fonds, et le marchand garde son propre
-contrat avec chaque opérateur.
+L'interopérabilité visée concerne l'intégration applicative marchande ; la norme n'effectue pas de transfert, de compensation ou de règlement entre opérateurs.
 
-## Composants
+## Choisir un parcours
 
-| Composant              | Rôle                                                                                                       |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Spécification          | Le contrat : modèle de données, cycle de vie, capacités, erreurs, idempotence, webhooks, authentification. |
-| Passerelle             | Serveur hébergé par le marchand : protocole OpenFSP d'un côté, API des opérateurs de l'autre.              |
-| Serveur simulé         | Reproduit les opérateurs, défaillances comprises, pour tester sans compte marchand.                        |
-| Bibliothèques clientes | Clients légers en TypeScript, PHP et Python ; le protocole reste utilisable en HTTP seul.                  |
-| Suite de conformité    | Vérifie qu'une implémentation respecte la spécification ; un tiers peut la réexécuter.                     |
+- **Fournisseur de services de paiement :** [implémenter OpenFSP nativement](/fr/docs/native-operator), lire le contrat puis tester votre propre cible.
+- **Développeur marchand :** lire [l'API](/fr/docs/spec/payments-api), découvrir les capacités de votre contrepartie et l'appeler en HTTP.
+- **Lecteur de la conception :** consulter les [décisions](/fr/docs/decisions) et [l'état du projet](/fr/docs/status).
+- **Explorer les outils :** lancer la [démo locale](/fr/docs/quickstart) avec la [passerelle de transition](/fr/docs/gateway).
 
-## État
+## Phases
 
-La spécification est un brouillon, en version 0.1.0. OpenFSP est le projet de recherche de mon master MBDS. C'est une proposition : aucun opérateur ni
-régulateur ne l'a adoptée. Avant `1.0.0`, une version mineure peut rompre la compatibilité. La spécification et l'implémentation de référence sont sous licence
-Apache-2.0.
+**Phase 1, en cours.** Établir le contrat d'intégration marchande, ses outils de référence et sa vérification reproductible. La passerelle et les adaptateurs rendent le contrat utilisable avec les API existantes ; le simulateur et la suite de conformité permettent aussi d'éprouver un opérateur natif sans passerelle.
+
+**Phase 2, envisagée.** Étendre la norme au paiement de proximité, avec un jeton éphémère à usage unique présenté par le client. Ce travail sort du périmètre de la version actuelle.
+
+[L'état du projet](/fr/docs/status) donne l'état de chaque composant. La spécification et l'implémentation de référence sont sous licence Apache-2.0.
 
 ## Pour continuer
 
-- [Démarrage rapide](/fr/docs/quickstart) : lancer la passerelle, le serveur simulé et la suite de conformité.
-- [Spécification](/fr/docs/spec) : les règles normatives.
-- [Architecture](/fr/docs/architecture) : périmètre, composants et adaptateurs d'opérateur.
-- [Décisions](/fr/docs/decisions) : les raisons des règles.
+- [Spécification](/fr/docs/spec) : les règles normatives et le vocabulaire.
+- [Architecture de la norme](/fr/docs/architecture) : contrat, adoption native et invariants.
+- [Décisions](/fr/docs/decisions) : les raisons des choix de conception.
+- [Passerelle de transition](/fr/docs/gateway) : rôle de cet outil et détails des adaptateurs.
+- [Démarrage rapide](/fr/docs/quickstart) : exécuter les outils de démonstration et la suite.
