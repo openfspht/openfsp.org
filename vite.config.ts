@@ -11,7 +11,7 @@ export default defineConfig({
     tailwindcss(),
     tanstackStart({
       prerender: { enabled: true, crawlLinks: true, failOnError: true },
-      pages: [{ path: "/" }, { path: "/fr" }, { path: "/api/search" }],
+      pages: [{ path: "/" }, { path: "/fr" }, { path: "/api/search-index/en" }, { path: "/api/search-index/fr" }],
     }),
     react(),
   ],
