@@ -1,4 +1,5 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { useParams } from "@tanstack/react-router";
 
 const TOKENS = ["background", "foreground", "card", "muted", "muted-foreground", "border", "primary", "primary-foreground"] as const;
 type Palette = Record<(typeof TOKENS)[number], string>;
@@ -36,9 +37,29 @@ export function Mermaid({ chart }: { chart: string }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const dark = useThemeKey();
   const [svg, setSvg] = useState<string>();
+  const [failed, setFailed] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+  const { lang } = useParams({ strict: false }) as { lang?: string };
+  const fr = lang === "fr";
 
   useEffect(() => {
-    if (dark === undefined) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    if (container.current) observer.observe(container.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (dark === undefined || !visible) return;
+    setFailed(false);
     let cancelled = false;
     const p = readPalette();
     renderQueue = renderQueue
@@ -91,15 +112,31 @@ export function Mermaid({ chart }: { chart: string }) {
         const result = await mermaid.render(`mermaid-${id}-${dark ? "d" : "l"}`, chart);
         if (!cancelled) setSvg(result.svg);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [chart, id, dark]);
+  }, [chart, id, dark, visible]);
 
-  return svg ? (
-    <div className="not-prose my-6 flex justify-center overflow-x-auto [&_svg]:h-auto" dangerouslySetInnerHTML={{ __html: svg }} />
-  ) : (
-    <div className="my-6 h-40 animate-pulse rounded-xl bg-fd-muted/50" aria-hidden />
+  return (
+    <div ref={container} className="my-6 min-h-40">
+      {failed ? (
+        <p role="status">
+          {fr
+            ? "Le schéma n’a pas pu être affiché. Sa source est disponible ci-dessous."
+            : "The diagram could not be displayed. Its source is available below."}
+        </p>
+      ) : svg ? (
+        <div className="not-prose flex justify-center overflow-x-auto [&_svg]:h-auto" dangerouslySetInnerHTML={{ __html: svg }} />
+      ) : (
+        <div className="h-40 motion-safe:animate-pulse rounded-xl bg-fd-muted/50" aria-hidden />
+      )}
+      <details className="mt-3 text-sm">
+        <summary className="cursor-pointer text-fd-muted-foreground">{fr ? "Source textuelle du schéma" : "Diagram text source"}</summary>
+        <pre className="overflow-x-auto whitespace-pre-wrap">{chart}</pre>
+      </details>
+    </div>
   );
 }
