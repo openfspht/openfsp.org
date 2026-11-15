@@ -14,7 +14,7 @@ export function NotFound() {
   const t = copy[locale];
   return (
     <HomeLayout {...baseOptions(locale)}>
-      <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-start justify-center gap-4 px-4 py-24">
+      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col items-start justify-center gap-4 px-4 py-24">
         <p className="font-mono text-sm text-fd-muted-foreground">404</p>
         <h1 className="text-3xl font-bold">{t.title}</h1>
         <p className="text-fd-muted-foreground">{t.body}</p>
@@ -26,7 +26,7 @@ export function NotFound() {
             {t.docs}
           </Link>
         </div>
-      </main>
+      </div>
     </HomeLayout>
   );
 }
