@@ -85,7 +85,7 @@ export const homeCopy = {
         { title: "Phase 1, en cours", body: "Contrat d’intégration marchande, implémentations de référence et conformité reproductible." },
         {
           title: "Prochaine étape, les SDK",
-          body: "Des bibliothèques clientes publiées, d’abord TypeScript, puis PHP et Python, qui appellent la même API chez chaque opérateur.",
+          body: "Des bibliothèques clientes publiées, d’abord Kotlin pour la JVM, puis TypeScript, qui appellent la même API chez chaque opérateur.",
         },
         {
           title: "Phase 2, envisagée",
@@ -190,7 +190,7 @@ export const homeCopy = {
       body: "The specification, reference implementations and conformance suite are published and exercised against simulated providers. No provider or regulator has adopted the standard yet.",
       phases: [
         { title: "Phase 1, in progress", body: "Merchant integration contract, reference implementations and reproducible conformance." },
-        { title: "Next step, SDKs", body: "Published client libraries, TypeScript first, then PHP and Python, that call the same API at every provider." },
+        { title: "Next step, SDKs", body: "Published client libraries, Kotlin for the JVM first, then TypeScript, that call the same API at every provider." },
         {
           title: "Phase 2, envisaged",
           body: "Proximity payments with a short-lived token presented by the customer. This flow is not part of the current version.",
