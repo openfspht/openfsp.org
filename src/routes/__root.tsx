@@ -12,9 +12,14 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "OpenFSP" },
-      { name: "description", content: "An open standard and a self-hosted gateway for mobile money payments in Haiti." },
+      { name: "description", content: "An open payment standard for Haiti, with one API shared by merchant applications and every payment service provider." },
       { property: "og:site_name", content: "OpenFSP" },
+      { property: "og:type", content: "website" },
       { property: "og:image", content: "https://openfsp.org/og.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "OpenFSP · Haiti · Open payment standard / Norme de paiement ouverte" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -42,7 +47,7 @@ function Document({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body className="flex min-h-screen flex-col">
-        <RootProvider i18n={i18nProvider(translations, locale)} search={{ options: { type: "static", api: "/api/search" } }}>
+        <RootProvider key={locale} i18n={i18nProvider(translations, locale)} search={{ options: { type: "static", api: `/api/search-index/${locale}` } }}>
           {children}
         </RootProvider>
         <Scripts />
