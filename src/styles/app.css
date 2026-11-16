@@ -10,20 +10,20 @@
   --color-brand-accent: oklch(0.765 0.14 72.9);
   --color-brand-accent-deep: oklch(0.64 0.13 69);
 
-  --color-fd-background: oklch(0.99 0.004 88);
+  --color-fd-background: oklch(0.99 0.004 185);
   --color-fd-foreground: oklch(0.24 0.035 185);
-  --color-fd-muted: oklch(0.958 0.011 88);
+  --color-fd-muted: oklch(0.965 0.008 185);
   --color-fd-muted-foreground: oklch(0.47 0.025 185);
-  --color-fd-popover: oklch(0.99 0.004 88);
+  --color-fd-popover: oklch(0.99 0.004 185);
   --color-fd-popover-foreground: oklch(0.24 0.035 185);
-  --color-fd-card: oklch(0.958 0.011 88);
+  --color-fd-card: oklch(0.965 0.008 185);
   --color-fd-card-foreground: oklch(0.24 0.035 185);
-  --color-fd-border: oklch(0.9 0.012 88);
+  --color-fd-border: oklch(0.9 0.012 185);
   --color-fd-primary: oklch(0.32 0.05 184.8);
-  --color-fd-primary-foreground: oklch(0.958 0.011 88);
-  --color-fd-secondary: oklch(0.958 0.011 88);
+  --color-fd-primary-foreground: oklch(0.965 0.008 185);
+  --color-fd-secondary: oklch(0.965 0.008 185);
   --color-fd-secondary-foreground: oklch(0.24 0.035 185);
-  --color-fd-accent: oklch(0.93 0.013 88);
+  --color-fd-accent: oklch(0.935 0.01 185);
   --color-fd-accent-foreground: oklch(0.24 0.035 185);
   --color-fd-ring: oklch(0.64 0.13 69);
   --color-fd-success: oklch(0.5 0.13 150);
@@ -32,20 +32,20 @@
 
 .dark {
   --color-fd-background: oklch(0.17 0.02 190);
-  --color-fd-foreground: oklch(0.94 0.011 88);
+  --color-fd-foreground: oklch(0.94 0.008 185);
   --color-fd-muted: oklch(0.25 0.025 190);
   --color-fd-muted-foreground: oklch(0.74 0.02 185);
   --color-fd-popover: oklch(0.21 0.025 190);
-  --color-fd-popover-foreground: oklch(0.94 0.011 88);
+  --color-fd-popover-foreground: oklch(0.94 0.008 185);
   --color-fd-card: oklch(0.21 0.025 190);
-  --color-fd-card-foreground: oklch(0.94 0.011 88);
-  --color-fd-border: oklch(0.958 0.011 88 / 12%);
+  --color-fd-card-foreground: oklch(0.94 0.008 185);
+  --color-fd-border: oklch(0.965 0.008 185 / 12%);
   --color-fd-primary: oklch(0.72 0.09 184);
   --color-fd-primary-foreground: oklch(0.17 0.02 190);
   --color-fd-secondary: oklch(0.25 0.025 190);
-  --color-fd-secondary-foreground: oklch(0.94 0.011 88);
+  --color-fd-secondary-foreground: oklch(0.94 0.008 185);
   --color-fd-accent: oklch(0.25 0.025 190);
-  --color-fd-accent-foreground: oklch(0.94 0.011 88);
+  --color-fd-accent-foreground: oklch(0.94 0.008 185);
   --color-fd-ring: oklch(0.765 0.14 72.9);
   --color-fd-success: oklch(0.78 0.15 150);
   --color-fd-error: oklch(0.704 0.191 22.216);
@@ -128,7 +128,7 @@ html > body[data-scroll-locked] {
   --fd-layout-width: 1264px;
   --code-bg: oklch(0.22 0.03 190);
   --code-line: oklch(0.34 0.03 190);
-  --code-fg: oklch(0.94 0.011 88);
+  --code-fg: oklch(0.94 0.008 185);
   --code-muted: oklch(0.8 0.02 185);
   --code-key: oklch(0.86 0.015 185);
   --code-string: oklch(0.84 0.07 170);

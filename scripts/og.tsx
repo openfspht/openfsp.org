@@ -6,9 +6,9 @@ import { OG_HEIGHT, OG_WIDTH } from "../src/lib/og";
 
 const INK = "#0B3B36";
 const ACCENT = "#E8A33D";
-const CHALK = "#F5F2EA";
+const CHALK = "#EEF5F4";
 const MUTED = "#3F5653";
-const RULE = "#DDD6C6";
+const RULE = "#CFDAD8";
 
 const modules = resolve(import.meta.dir, "../node_modules/@fontsource");
 const font = async (name: string, file: string, weight: Font["weight"]): Promise<Font> => ({

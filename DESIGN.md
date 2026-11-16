@@ -3,26 +3,26 @@ name: openfsp.org
 description: The public home of the OpenFSP interoperability standard, with a neutral interface and a standard-first documentation hierarchy.
 colors:
   primary: "oklch(0.32 0.05 184.8)"
-  primary-foreground: "oklch(0.958 0.011 88)"
+  primary-foreground: "oklch(0.965 0.008 185)"
   brand-accent: "oklch(0.765 0.14 72.9)"
   brand-accent-deep: "oklch(0.64 0.13 69)"
-  background: "oklch(0.99 0.004 88)"
+  background: "oklch(0.99 0.004 185)"
   foreground: "oklch(0.24 0.035 185)"
-  card: "oklch(0.958 0.011 88)"
-  muted: "oklch(0.958 0.011 88)"
+  card: "oklch(0.965 0.008 185)"
+  muted: "oklch(0.965 0.008 185)"
   muted-foreground: "oklch(0.47 0.025 185)"
-  border: "oklch(0.9 0.012 88)"
+  border: "oklch(0.9 0.012 185)"
   ring: "oklch(0.64 0.13 69)"
   success: "oklch(0.5 0.13 150)"
   error: "oklch(0.52 0.2 27)"
   primary-dark: "oklch(0.72 0.09 184)"
   primary-foreground-dark: "oklch(0.17 0.02 190)"
   background-dark: "oklch(0.17 0.02 190)"
-  foreground-dark: "oklch(0.94 0.011 88)"
+  foreground-dark: "oklch(0.94 0.008 185)"
   card-dark: "oklch(0.21 0.025 190)"
   muted-dark: "oklch(0.25 0.025 190)"
   muted-foreground-dark: "oklch(0.74 0.02 185)"
-  border-dark: "oklch(0.958 0.011 88 / 12%)"
+  border-dark: "oklch(0.965 0.008 185 / 12%)"
   ring-dark: "oklch(0.765 0.14 72.9)"
 typography:
   display:
@@ -152,7 +152,7 @@ Colors come from the brand (`art/BRAND.md`): Ink for text, links and the primary
 ## Palette
 
 - The home and the documentation share the `--color-fd-*` tokens in `src/styles/app.css`, in light and dark: `background` for the page and the nav, `card` for panels, `border` for rules, `muted-foreground` for secondary text, `primary` for links and the accent line of the headline.
-- Light neutrals are the Chalk family (hue 88), dark neutrals are deep ink (hue 190). No cool grays.
+- Every neutral carries the ink hue: light ones are the Chalk family (hue 185), dark ones deep ink (hue 190). No untinted or warm grays.
 - Code panels are deep ink in both modes, from `--code-*` tokens on `.landing`, with a darker `--code-bg` and `--code-line` under `.dark`.
 - Amber marks decoration only: the simulated and pending dots, the current phase rule, the last headline line (`brand-accent-deep` on light, at display size only; `brand-accent` on dark). Never amber body text on a light ground.
 - The home primary button is a neutral `foreground` fill. The documentation `.btn-primary` uses `primary`.
