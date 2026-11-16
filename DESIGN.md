@@ -3,26 +3,26 @@ name: openfsp.org
 description: The public home of the OpenFSP interoperability standard, with a neutral interface and a standard-first documentation hierarchy.
 colors:
   primary: "oklch(0.32 0.05 184.8)"
-  primary-foreground: "oklch(0.965 0.008 185)"
+  primary-foreground: "oklch(0.965 0 0)"
   brand-accent: "oklch(0.765 0.14 72.9)"
   brand-accent-deep: "oklch(0.64 0.13 69)"
-  background: "oklch(0.99 0.004 185)"
-  foreground: "oklch(0.24 0.035 185)"
-  card: "oklch(0.965 0.008 185)"
-  muted: "oklch(0.965 0.008 185)"
-  muted-foreground: "oklch(0.47 0.025 185)"
-  border: "oklch(0.9 0.012 185)"
+  background: "oklch(0.99 0 0)"
+  foreground: "oklch(0.24 0 0)"
+  card: "oklch(0.965 0 0)"
+  muted: "oklch(0.965 0 0)"
+  muted-foreground: "oklch(0.47 0 0)"
+  border: "oklch(0.9 0 0)"
   ring: "oklch(0.64 0.13 69)"
   success: "oklch(0.5 0.13 150)"
   error: "oklch(0.52 0.2 27)"
   primary-dark: "oklch(0.72 0.09 184)"
-  primary-foreground-dark: "oklch(0.17 0.02 190)"
-  background-dark: "oklch(0.17 0.02 190)"
-  foreground-dark: "oklch(0.94 0.008 185)"
-  card-dark: "oklch(0.21 0.025 190)"
-  muted-dark: "oklch(0.25 0.025 190)"
-  muted-foreground-dark: "oklch(0.74 0.02 185)"
-  border-dark: "oklch(0.965 0.008 185 / 12%)"
+  primary-foreground-dark: "oklch(0.17 0 0)"
+  background-dark: "oklch(0.17 0 0)"
+  foreground-dark: "oklch(0.94 0 0)"
+  card-dark: "oklch(0.21 0 0)"
+  muted-dark: "oklch(0.25 0 0)"
+  muted-foreground-dark: "oklch(0.74 0 0)"
+  border-dark: "oklch(0.965 0 0 / 12%)"
   ring-dark: "oklch(0.765 0.14 72.9)"
 typography:
   display:
@@ -145,15 +145,15 @@ components:
 
 ## Direction
 
-The site presents OpenFSP as an open interoperability standard between merchant applications and payment service providers. The standard and its native implementation by each provider lead the narrative. The gateway is the transitional implementation, with its own page.
+The site presents OpenFSP as an open interoperability standard between merchant applications and payment service providers. The standard and its native implementation by each provider lead the narrative. The gateway is an adoption tool with its own page.
 
-Colors come from the brand (`art/BRAND.md`): Ink for text, links and the primary fill, Chalk for light grounds, deep ink for dark grounds, Accent amber used sparingly. Keep the original logo and its amber arc. Avoid decorative gradients, tinted grounds, eyebrow labels and repetitive feature cards.
+Colors come from the brand (`art/BRAND.md`): Ink for links and the primary fill, Accent amber used sparingly; grounds and text are neutral greys. Keep the original logo and its amber arc. Avoid decorative gradients, tinted grounds, eyebrow labels and repetitive feature cards.
 
 ## Palette
 
 - The home and the documentation share the `--color-fd-*` tokens in `src/styles/app.css`, in light and dark: `background` for the page and the nav, `card` for panels, `border` for rules, `muted-foreground` for secondary text, `primary` for links and the accent line of the headline.
-- Every neutral carries the ink hue: light ones are the Chalk family (hue 185), dark ones deep ink (hue 190). No untinted or warm grays.
-- Code panels are deep ink in both modes, from `--code-*` tokens on `.landing`, with a darker `--code-bg` and `--code-line` under `.dark`.
+- Every neutral is a pure grey (chroma 0), in light and dark: grounds, cards, borders and text. Green comes only from `primary`, amber only from the accent.
+- Code panels are near-black grey in both modes, from `--code-*` tokens on `.landing`, with a darker `--code-bg` and `--code-line` under `.dark`.
 - Amber marks decoration only: the simulated and pending dots, the current phase rule, the last headline line (`brand-accent-deep` on light, at display size only; `brand-accent` on dark). Never amber body text on a light ground.
 - The home primary button is a neutral `foreground` fill. The documentation `.btn-primary` uses `primary`.
 - State: a written label always accompanies color. Pending mixes `brand-accent` into the background; paid uses `success`.
@@ -164,7 +164,7 @@ Inter Variable throughout. Monospace only for code, JSON, HTTP lines and command
 
 The home content width is 1184px with 40px side margins, 16px below 768px. Sections in order: a two-column hero (three-line headline, lead, simulated request and payment), the target architecture (application, OpenFSP contract, providers) with three steps, the HTTP contract with a webhook payload, a short gateway note linking to its page, the local quickstart, and the project status with phases 1 and 2. Layout lives in Tailwind utilities in `src/components/home.tsx`; `app.css` keeps only tokens, the code panel, buttons and states.
 
-Share cards are the one exception to Inter throughout: `scripts/og.tsx` renders a 1200x630 card per page and locale at build time, with the CDN logo, the page title in Space Grotesk (the wordmark's face, from `art/BRAND.md`), its description in Inter, the page URL, an ink top band with an accent segment, on chalk.
+Share cards are the one exception to Inter throughout: `scripts/og.tsx` renders a 1200x630 card per page and locale at build time, with the CDN logo, the page title in Space Grotesk (the wordmark's face, from `art/BRAND.md`), its description in Inter, the page URL, an ink top band with an accent segment, on light grey.
 
 Grids collapse to one column on small screens. Code scrolls inside its own region; the page never overflows at 320px. The documentation keeps Fumadocs navigation, search, locale switching, table of contents and reading layout.
 

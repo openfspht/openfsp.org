@@ -10,51 +10,51 @@
   --color-brand-accent: oklch(0.765 0.14 72.9);
   --color-brand-accent-deep: oklch(0.64 0.13 69);
 
-  --color-fd-background: oklch(0.99 0.004 185);
-  --color-fd-foreground: oklch(0.24 0.035 185);
-  --color-fd-muted: oklch(0.965 0.008 185);
-  --color-fd-muted-foreground: oklch(0.47 0.025 185);
-  --color-fd-popover: oklch(0.99 0.004 185);
-  --color-fd-popover-foreground: oklch(0.24 0.035 185);
-  --color-fd-card: oklch(0.965 0.008 185);
-  --color-fd-card-foreground: oklch(0.24 0.035 185);
-  --color-fd-border: oklch(0.9 0.012 185);
+  --color-fd-background: oklch(0.99 0 0);
+  --color-fd-foreground: oklch(0.24 0 0);
+  --color-fd-muted: oklch(0.965 0 0);
+  --color-fd-muted-foreground: oklch(0.47 0 0);
+  --color-fd-popover: oklch(0.99 0 0);
+  --color-fd-popover-foreground: oklch(0.24 0 0);
+  --color-fd-card: oklch(0.965 0 0);
+  --color-fd-card-foreground: oklch(0.24 0 0);
+  --color-fd-border: oklch(0.9 0 0);
   --color-fd-primary: oklch(0.32 0.05 184.8);
-  --color-fd-primary-foreground: oklch(0.965 0.008 185);
-  --color-fd-secondary: oklch(0.965 0.008 185);
-  --color-fd-secondary-foreground: oklch(0.24 0.035 185);
-  --color-fd-accent: oklch(0.935 0.01 185);
-  --color-fd-accent-foreground: oklch(0.24 0.035 185);
+  --color-fd-primary-foreground: oklch(0.965 0 0);
+  --color-fd-secondary: oklch(0.965 0 0);
+  --color-fd-secondary-foreground: oklch(0.24 0 0);
+  --color-fd-accent: oklch(0.935 0 0);
+  --color-fd-accent-foreground: oklch(0.24 0 0);
   --color-fd-ring: oklch(0.64 0.13 69);
   --color-fd-success: oklch(0.5 0.13 150);
   --color-fd-error: oklch(0.52 0.2 27);
 }
 
 .dark {
-  --color-fd-background: oklch(0.17 0.02 190);
-  --color-fd-foreground: oklch(0.94 0.008 185);
-  --color-fd-muted: oklch(0.25 0.025 190);
-  --color-fd-muted-foreground: oklch(0.74 0.02 185);
-  --color-fd-popover: oklch(0.21 0.025 190);
-  --color-fd-popover-foreground: oklch(0.94 0.008 185);
-  --color-fd-card: oklch(0.21 0.025 190);
-  --color-fd-card-foreground: oklch(0.94 0.008 185);
-  --color-fd-border: oklch(0.965 0.008 185 / 12%);
+  --color-fd-background: oklch(0.17 0 0);
+  --color-fd-foreground: oklch(0.94 0 0);
+  --color-fd-muted: oklch(0.25 0 0);
+  --color-fd-muted-foreground: oklch(0.74 0 0);
+  --color-fd-popover: oklch(0.21 0 0);
+  --color-fd-popover-foreground: oklch(0.94 0 0);
+  --color-fd-card: oklch(0.21 0 0);
+  --color-fd-card-foreground: oklch(0.94 0 0);
+  --color-fd-border: oklch(0.965 0 0 / 12%);
   --color-fd-primary: oklch(0.72 0.09 184);
-  --color-fd-primary-foreground: oklch(0.17 0.02 190);
-  --color-fd-secondary: oklch(0.25 0.025 190);
-  --color-fd-secondary-foreground: oklch(0.94 0.008 185);
-  --color-fd-accent: oklch(0.25 0.025 190);
-  --color-fd-accent-foreground: oklch(0.94 0.008 185);
+  --color-fd-primary-foreground: oklch(0.17 0 0);
+  --color-fd-secondary: oklch(0.25 0 0);
+  --color-fd-secondary-foreground: oklch(0.94 0 0);
+  --color-fd-accent: oklch(0.25 0 0);
+  --color-fd-accent-foreground: oklch(0.94 0 0);
   --color-fd-ring: oklch(0.765 0.14 72.9);
   --color-fd-success: oklch(0.78 0.15 150);
   --color-fd-error: oklch(0.704 0.191 22.216);
 }
 
 .dark #nd-sidebar {
-  --color-fd-muted: oklch(0.25 0.025 190);
-  --color-fd-secondary: oklch(0.25 0.025 190);
-  --color-fd-muted-foreground: oklch(0.74 0.02 185);
+  --color-fd-muted: oklch(0.25 0 0);
+  --color-fd-secondary: oklch(0.25 0 0);
+  --color-fd-muted-foreground: oklch(0.74 0 0);
 }
 
 html {
@@ -126,19 +126,19 @@ html > body[data-scroll-locked] {
 
 .landing {
   --fd-layout-width: 1264px;
-  --code-bg: oklch(0.22 0.03 190);
-  --code-line: oklch(0.34 0.03 190);
-  --code-fg: oklch(0.94 0.008 185);
-  --code-muted: oklch(0.8 0.02 185);
-  --code-key: oklch(0.86 0.015 185);
+  --code-bg: oklch(0.22 0 0);
+  --code-line: oklch(0.34 0 0);
+  --code-fg: oklch(0.94 0 0);
+  --code-muted: oklch(0.8 0 0);
+  --code-key: oklch(0.86 0 0);
   --code-string: oklch(0.84 0.07 170);
   --code-number: oklch(0.86 0.1 80);
   color: var(--color-fd-foreground);
   background: var(--color-fd-background);
 }
 .dark .landing {
-  --code-bg: oklch(0.13 0.015 190);
-  --code-line: oklch(0.27 0.025 190);
+  --code-bg: oklch(0.13 0 0);
+  --code-line: oklch(0.27 0 0);
 }
 .landing-container {
   width: min(1184px, calc(100% - 80px));
