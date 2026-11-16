@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEvent } from "react";
 import {
   MAX_ATTESTATION_SIZE,
   MAX_REPORT_SIZE,
@@ -124,7 +124,7 @@ export function AttestationVerifier({ locale = "en" }: { locale?: "en" | "fr" })
   const [result, setResult] = useState<Success>();
   const [fileName, setFileName] = useState<string>();
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setError(undefined);
