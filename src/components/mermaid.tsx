@@ -13,8 +13,10 @@ const TOKENS = [
 ] as const;
 type Palette = Record<(typeof TOKENS)[number], string>;
 
-function toHex(color: string, context: CanvasRenderingContext2D) {
+function toHex(color: string, context: CanvasRenderingContext2D, ground = "#fff") {
   context.clearRect(0, 0, 1, 1);
+  context.fillStyle = ground;
+  context.fillRect(0, 0, 1, 1);
   context.fillStyle = color;
   context.fillRect(0, 0, 1, 1);
   const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
@@ -24,11 +26,10 @@ function toHex(color: string, context: CanvasRenderingContext2D) {
 function readPalette(): Palette {
   const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
   const style = getComputedStyle(document.documentElement);
+  const value = (token: string) => style.getPropertyValue(`--color-fd-${token}`).trim();
+  const ground = toHex(value("background"), context);
   return Object.fromEntries(
-    TOKENS.map((token) => [
-      token,
-      toHex(style.getPropertyValue(`--color-fd-${token}`).trim(), context),
-    ]),
+    TOKENS.map((token) => [token, toHex(value(token), context, ground)]),
   ) as Palette;
 }
 
@@ -43,6 +44,26 @@ function useThemeKey() {
     return () => observer.disconnect();
   }, []);
   return dark;
+}
+
+function diagramCss(p: Palette) {
+  return `
+    g, rect, path, polygon, circle { filter: none !important; }
+    .node rect, .node polygon, .node circle:not(.state-start), .actor, .note, rect.state, .statediagram-state rect {
+      rx: 10px; ry: 10px; stroke-width: 1px; filter: none;
+    }
+    .node .label, .nodeLabel, .nodeLabel p, .statediagram-state .nodeLabel, .actor tspan, text.actor > tspan {
+      color: ${p.foreground} !important; fill: ${p.foreground} !important; font-weight: 500;
+    }
+    .flowchart-link, .transition, .messageLine0, .messageLine1, .relation { stroke-width: 1.25px; }
+    .edgeLabel, .edgeLabel p, .messageText, .transition + .label {
+      color: ${p["muted-foreground"]} !important; fill: ${p["muted-foreground"]} !important; font-size: 12.5px;
+    }
+    .edgeLabel rect, .labelBkg { fill: ${p.background}; background: ${p.background}; opacity: 1; }
+    .sequenceNumber { font-size: 11px; font-weight: 600; }
+    marker path, .arrowheadPath { fill: ${p["muted-foreground"]}; stroke: none; }
+    .actor-line { stroke-dasharray: 3 4; }
+  `;
 }
 
 let renderQueue: Promise<unknown> = Promise.resolve();
@@ -83,7 +104,15 @@ export function Mermaid({ chart }: { chart: string }) {
           startOnLoad: false,
           theme: "base",
           fontFamily: "Inter Variable, ui-sans-serif, sans-serif",
-          flowchart: { curve: "basis", padding: 12 },
+          flowchart: { curve: "bumpX", padding: 16, nodeSpacing: 36, rankSpacing: 56 },
+          state: { padding: 12, nodeSpacing: 36, rankSpacing: 56 },
+          sequence: {
+            mirrorActors: false,
+            actorMargin: 64,
+            boxMargin: 8,
+            messageMargin: 36,
+            noteMargin: 12,
+          },
           themeVariables: {
             darkMode: dark,
             background: p.background,
@@ -95,16 +124,18 @@ export function Mermaid({ chart }: { chart: string }) {
             tertiaryColor: p.background,
             lineColor: p["muted-foreground"],
             textColor: p.foreground,
+            nodeTextColor: p.foreground,
+            stateLabelColor: p.foreground,
             edgeLabelBackground: p.background,
             clusterBkg: p.background,
-            clusterBorder: p["muted-foreground"],
+            clusterBorder: p.border,
             nodeBorder: p.border,
             mainBkg: p.card,
             actorBkg: p.card,
             actorBorder: p.border,
             actorTextColor: p.foreground,
             actorLineColor: p.border,
-            signalColor: p.foreground,
+            signalColor: p["muted-foreground"],
             signalTextColor: p.foreground,
             labelBoxBkgColor: p.card,
             labelBoxBorderColor: p.border,
@@ -118,10 +149,11 @@ export function Mermaid({ chart }: { chart: string }) {
             stateBkg: p.card,
             stateBorder: p.border,
             transitionColor: p["muted-foreground"],
-            transitionLabelColor: p.foreground,
+            transitionLabelColor: p["muted-foreground"],
             specialStateColor: p.primary,
             innerEndBackground: p.primary,
           },
+          themeCSS: diagramCss(p),
         });
         const result = await mermaid.render(`mermaid-${id}-${dark ? "d" : "l"}`, chart);
         if (!cancelled) setSvg(result.svg);
@@ -144,13 +176,13 @@ export function Mermaid({ chart }: { chart: string }) {
         </p>
       ) : svg ? (
         <div
-          className="not-prose flex justify-center overflow-x-auto [&_svg]:h-auto"
+          className="not-prose flex justify-center overflow-x-auto rounded-xl border border-fd-border bg-fd-card/50 px-4 py-8 [&_svg]:h-auto"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       ) : (
         <div className="h-40 motion-safe:animate-pulse rounded-xl bg-fd-muted/50" aria-hidden />
       )}
-      <details className="mt-3 text-sm">
+      <details className="mt-2 text-xs">
         <summary className="cursor-pointer text-fd-muted-foreground">
           {fr ? "Source textuelle du schéma" : "Diagram text source"}
         </summary>
