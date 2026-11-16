@@ -128,10 +128,12 @@ const decode = (value: string) =>
     (entity, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? entity,
   );
 const meta = (html: string, property: string) => {
-  const found = html.match(
-    new RegExp(`<meta[^>]*(?:property|name)="${property}"[^>]*content="([^"]*)"`),
-  );
-  return found ? decode(found[1]) : undefined;
+  for (const [, name, content] of html.matchAll(
+    /<meta[^>]*(?:property|name)="([^"]*)"[^>]*content="([^"]*)"/g,
+  )) {
+    if (name === property) return decode(content);
+  }
+  return undefined;
 };
 const sectionOf = (path: string) => {
   const french = path === "/fr" || path.startsWith("/fr/");
