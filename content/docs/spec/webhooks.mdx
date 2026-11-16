@@ -14,7 +14,7 @@ delivered several times.
 
 **1.3.** An event describes the resource at emission time. If it contradicts a read, the subscriber MUST treat the read as authoritative.
 
-**1.4.** The gateway MUST NOT emit an event for a state the resource has not reached.
+**1.4.** The server MUST NOT emit an event for a state the resource has not reached.
 
 ## 2. `event` object
 
@@ -54,7 +54,7 @@ The body of a delivery is a single JSON object, never an array or a batch.
 
 **2.4.** `data` is a full snapshot, never a diff.
 
-**2.5.** A subscriber MUST tolerate unknown members in the object and in `data`. The gateway MUST NOT remove a member from the object without a decision record.
+**2.5.** A subscriber MUST tolerate unknown members in the object and in `data`. The server MUST NOT remove a member from the object without a decision record.
 
 **2.6.** A subscriber MUST NOT reject an event solely because `previous_status` differs from the state it holds. It SHOULD then read the resource again.
 
@@ -78,7 +78,7 @@ The body of a delivery is a single JSON object, never an array or a batch.
 
 **3.5.** Adding a type requires a decision record, without a new major version.
 
-**3.6.** The gateway MUST NOT send an endpoint a type it has not subscribed to (7.1).
+**3.6.** The server MUST NOT send an endpoint a type it has not subscribed to (7.1).
 
 ## 4. Delivery
 
@@ -95,19 +95,19 @@ The body of a delivery is a single JSON object, never an array or a batch.
 
 A subscriber MUST NOT base a trust decision on an uncovered header. The authoritative values are in the body.
 
-**4.3.** A delivery succeeds on a `2xx` status received within the time limit of 4.5. The gateway MUST NOT parse the response body, act on it, or log it in
+**4.3.** A delivery succeeds on a `2xx` status received within the time limit of 4.5. The server MUST NOT parse the response body, act on it, or log it in
 full.
 
-**4.4.** Any other status, connection failure, TLS failure or timeout is a failure, retried according to 9. Exception: `410 Gone` is final. The gateway MUST
+**4.4.** Any other status, connection failure, TLS failure or timeout is a failure, retried according to 9. Exception: `410 Gone` is final. The server MUST
 stop retrying that event and SHOULD stop delivering to that endpoint, recording it (9.6).
 
-**4.5.** The gateway MUST put a time limit on connection and response. The total MUST NOT exceed 10 seconds.
+**4.5.** The server MUST put a time limit on connection and response. The total MUST NOT exceed 10 seconds.
 
 **4.6.** A `3xx` MUST be treated as a failure: redirects are not followed.
 
 **4.7.** The body MUST be byte-for-byte identical from one attempt to the next. Only the signature is recomputed.
 
-**4.8.** The gateway MAY deliver in parallel and out of order, and MUST NOT block the deliveries of one resource behind those of another.
+**4.8.** The server MAY deliver in parallel and out of order, and MUST NOT block the deliveries of one resource behind those of another.
 
 ## 5. Signature
 
@@ -129,7 +129,7 @@ Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
 Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 ```
 
-**5.4.** The gateway MUST support `ed25519` and use it by default. It MAY offer `ecdsa-p256-sha256` and MUST NOT offer any other algorithm.
+**5.4.** The server MUST support `ed25519` and use it by default. It MAY offer `ecdsa-p256-sha256` and MUST NOT offer any other algorithm.
 
 **5.5.** `Content-Digest` is REQUIRED, with `sha-256`. The verifier MUST recompute the digest of the received body and compare it with the header.
 
@@ -152,7 +152,7 @@ digest, then the signature.
 
 ## 6. Keys
 
-**6.1.** The gateway MUST publish its verification keys as an array of JWKs (RFC 7517) in the `webhook_keys` member of the configuration document
+**6.1.** The server MUST publish its verification keys as an array of JWKs (RFC 7517) in the `webhook_keys` member of the configuration document
 ([capabilities 3.1](/docs/spec/capabilities#3.1)), and nowhere else.
 
 ```json
@@ -171,8 +171,6 @@ digest, then the signature.
 }
 ```
 
-**6.1.1.** A native provider that announces `webhooks.verify` publishes its keys the same way, in the `webhook_keys` of its own configuration document.
-
 **6.2.** `kid` MUST equal the `keyid` of 5.3. The verifier MUST accept the pairing of the JOSE name `EdDSA` with the RFC 9421 name `ed25519`.
 
 **6.3.** `openfsp_status` is `active` (signing key) or `retired` (verification only). A decommissioned key (neither `active` nor `retired`) MUST NOT be
@@ -185,17 +183,17 @@ last use.
 
 **6.6.** A subscriber MUST fetch keys only from the configured base URL, and MUST NOT take a key, key URL or certificate from a delivery.
 
-**6.7.** The configuration document that carries the keys is unauthenticated. The gateway MAY rate-limit it.
+**6.7.** The configuration document that carries the keys is unauthenticated. The server MAY rate-limit it.
 
-**6.8.** Private keys are held by the operator. The gateway MUST NOT log them or expose them through an endpoint.
+**6.8.** Private keys are held by the operator. The server MUST NOT log them or expose them through an endpoint.
 
 ## 7. Subscriber endpoint
 
-**7.1.** The gateway MUST allow configuring, per endpoint: the URL, the event types, and whether it is enabled.
+**7.1.** The server MUST allow configuring, per endpoint: the URL, the event types, and whether it is enabled.
 
-**7.2.** The gateway MUST refuse a non-`https` URL, outside development mode.
+**7.2.** The server MUST refuse a non-`https` URL, outside development mode.
 
-**7.3.** The gateway MUST validate the endpoint's TLS certificate and MUST NOT offer an option to disable this validation.
+**7.3.** The server MUST validate the endpoint's TLS certificate and MUST NOT offer an option to disable this validation.
 
 **7.4.** A subscriber SHOULD verify, persist the event and respond `2xx`, then process asynchronously.
 
@@ -203,12 +201,14 @@ last use.
 
 **7.6.** A subscriber MUST accept any type in 3.2 at any time, including for a resource it does not know.
 
+**7.7.** An endpoint belongs to one merchant account. The server MUST NOT deliver to it the events of another merchant account.
+
 ## 8. Ordering and duplicates
 
 **8.1.** `sequence` starts at `1` for the first event of a resource and increases by one with each event of that resource. It does not order events across
 resources.
 
-**8.2.** The gateway MUST assign `sequence` when the event is recorded and MUST NOT reuse a value for a resource.
+**8.2.** The server MUST assign `sequence` when the event is recorded and MUST NOT reuse a value for a resource.
 
 **8.3.** A subscriber MUST ignore an event whose `sequence` is less than or equal to the highest already processed for that `resource_id`.
 
@@ -234,16 +234,16 @@ resources.
 | 6       | 6 hours    |
 | 7       | 24 hours   |
 
-**9.3.** Each delay MUST be extended by a positive random jitter of at least 20%. The gateway MAY space retries further and MUST NOT retry earlier.
+**9.3.** Each delay MUST be extended by a positive random jitter of at least 20%. The server MAY space retries further and MUST NOT retry earlier.
 
-**9.4.** After the last attempt, the gateway MUST stop, MUST record the abandonment visibly for the operator, MUST NOT delete the event and MUST NOT modify the
+**9.4.** After the last attempt, the server MUST stop, MUST record the abandonment visibly for the operator, MUST NOT delete the event and MUST NOT modify the
 resource.
 
-**9.5.** The gateway MUST honour `Retry-After` on `429` and `503`, up to a cap it sets.
+**9.5.** The server MUST honour `Retry-After` on `429` and `503`, up to a cap it sets.
 
-**9.6.** The gateway MAY disable an endpoint under prolonged failure. It MUST then record the reason visibly for the operator.
+**9.6.** The server MAY disable an endpoint under prolonged failure. It MUST then record the reason visibly for the operator.
 
-**9.7.** The gateway MUST cap its delivery queue at a size it sets and shed load by refusing new deliveries to the failing endpoint, without deleting any event.
+**9.7.** The server MUST cap its delivery queue at a size it sets and shed load by refusing new deliveries to the failing endpoint, without deleting any event.
 
 ## 10. Polling
 
@@ -255,23 +255,23 @@ resource.
 
 ## 11. Conformance
 
-**11.1.** Conformant gateway: emits each type in 3.2 that falls under a capability it announces, signs according to 5, publishes keys according to 6, retries
+**11.1.** Conformant server: emits each type in 3.2 that falls under a capability it announces, signs according to 5, publishes keys according to 6, retries
 according to 9, and emits an event only for a creation or a transition (1.4, 3.4).
 
 **11.2.** Conformant subscriber: verifies according to 5.9, rejects according to 5.12, deduplicates according to 8.4, orders according to 8.3, complies with
 8.5 and has the access of 10.2.
 
-**11.3.** Emission is announced by `webhooks.emit`, distinct from `webhooks.verify`, which concerns the provider. A gateway that does not announce
-`webhooks.emit` MUST NOT emit events.
+**11.3.** Emission to configured endpoints is announced by `webhooks.emit`. A server that does not announce it for a provider MUST NOT deliver that
+provider's events to configured endpoints. Delivery to a `callback_url` falls under `webhooks.per_payment_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)).
 
 ## 12. Security
 
-**12.1.** The gateway MUST refuse an endpoint URL that resolves to a loopback, link-local, private or cloud metadata address, outside development mode, and MUST
+**12.1.** The server MUST refuse an endpoint URL that resolves to a loopback, link-local, private or cloud metadata address, outside development mode, and MUST
 repeat this check on every delivery.
 
 **12.2.** Mutual TLS MAY be added to the signature and MUST NOT replace it.
 
-**12.3.** On suspected compromise, the gateway SHOULD be able to sign immediately with a new key, as an exception to 6.4, and remove the compromised key from
+**12.3.** On suspected compromise, the server SHOULD be able to sign immediately with a new key, as an exception to 6.4, and remove the compromised key from
 the published set without delay.
 
 **12.4.** A subscriber SHOULD log `id`, `type` and `sequence`, and SHOULD NOT log the body. Signature values and nonces SHOULD NOT be logged.

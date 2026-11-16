@@ -5,8 +5,6 @@ description: La couche d'intégration marchande, le contrat commun, l'adoption n
 
 OpenFSP se place entre le serveur marchand et l'opérateur de paiement. Chaque opérateur compatible expose le même contrat HTTP. Le marchand choisit son opérateur et utilise ses propres identifiants, directement ou avec les SDK Kotlin, Java et TypeScript.
 
-La [passerelle](/fr/docs/gateway) traduit ce contrat vers MonCash et NatCash lorsque l’API du service ne parle pas OpenFSP.
-
 ## Le segment application vers opérateur
 
 Le problème traité est le coût d'intégration applicative : sans langage commun, chaque application développe une intégration propre à chaque opérateur. Un contrat partagé vise à passer de `opérateurs × applications` à `opérateurs + applications`. Le gain dépend de l'adoption.
@@ -23,8 +21,6 @@ flowchart LR
 ```
 
 L'application choisit sa contrepartie et utilise ses identifiants et sa configuration. La bibliothèque cliente met en forme les échanges ; elle ne crée pas un service central et ne remplace pas le système de l'opérateur.
-
-Un opérateur qui implémente le contrat nativement rend la traduction de son API inutile.
 
 ## Contrat et invariants
 
@@ -49,9 +45,9 @@ La [découverte](/fr/docs/spec/capabilities) décrit les points d'accès, les li
 
 ## Vérification de conformité
 
-Une affirmation de conformité porte sur une cible, un niveau et une version du protocole. La norme distingue trois cibles : client, opérateur natif et passerelle de transition. Le niveau Core et les profils de capacité sont définis par la [spécification de conformité](/fr/docs/spec/conformance).
+Une affirmation de conformité porte sur une cible, un niveau et une version du protocole. La norme distingue deux cibles : client et serveur. Le niveau Core et les profils de capacité sont définis par la [spécification de conformité](/fr/docs/spec/conformance).
 
-La cible opérateur natif éprouve une implémentation directe du contrat, sans adaptateur de traduction. Une attestation consigne une exécution ; elle ne certifie pas une implémentation.
+Une attestation consigne une exécution ; elle ne certifie pas une implémentation.
 
 ## Versions
 
@@ -68,9 +64,8 @@ complètent OpenFSP, car seul un commutateur permet à un payeur chez A de payer
 ## Sécurité
 
 - Transport TLS partout ([API 1.1](/fr/docs/spec/payments-api#1.1), [webhooks 7.2](/fr/docs/spec/webhooks#7.2)).
-- Secrets d'opérateur hors des fichiers versionnés, jamais journalisés ([authentification 9](/fr/docs/spec/authentication#9)).
-- Un rappel ne fonde une transition que dans les cas (a) et (c) du [cycle de vie 6.5](/fr/docs/spec/lifecycle#6.5).
-- Toute transition est horodatée (`updated_at`, `completed_at`) ; une attestation est attribuée à une personne ([cycle de vie 6.8](/fr/docs/spec/lifecycle#6.8)).
+- Clés d'API stockées sous forme de condensé, jamais journalisées ([authentification 4](/fr/docs/spec/authentication#4)).
+- Toute transition est horodatée (`updated_at`, `completed_at`), et l'API n'offre aucun moyen de fixer un état ([cycle de vie 6.1](/fr/docs/spec/lifecycle#6.1)).
 
 ## Cadre réglementaire
 
@@ -80,7 +75,7 @@ La conformité au protocole n'est pas une conformité réglementaire. Les donné
 
 Je justifie ce cadrage dans les [décisions](/fr/docs/decisions#0001). Lever l'une de ces limites exige une nouvelle décision.
 
-- OpenFSP ne détient, ne déplace ni ne conserve de fonds. Une passerelle transmet des ordres aux opérateurs et n'est jamais partie à une transaction.
+- OpenFSP ne détient, ne déplace ni ne conserve de fonds.
 - OpenFSP n’exploite aucun service de paiement hébergé. Une offre hébergée fondée sur OpenFSP relève de son exploitant et de ses propres obligations réglementaires.
 - OpenFSP n'est pas un établissement de paiement agréé et ne remplace aucun agrément ni aucun contrat avec un opérateur.
 - OpenFSP n'est ni un commutateur, ni une chambre de compensation, ni un système de règlement.
@@ -91,4 +86,4 @@ Le paiement de proximité relève d'une [phase](/fr/docs#phases) ultérieure.
 
 ## Implémentations de référence
 
-La spécification est indépendante d'un langage de programmation. Le simulateur et la suite de conformité permettent de l'essayer et de tester une implémentation. La [passerelle de transition](/fr/docs/gateway) rend le contrat utilisable avec les API existantes. Pour construire votre propre cible, suivez le [parcours opérateur natif](/fr/docs/native-operator).
+La spécification est indépendante d'un langage de programmation. Le serveur simulé de référence et la suite de conformité permettent de l'essayer et de tester une implémentation. Pour construire votre propre serveur, suivez le [guide d'implémentation](/fr/docs/native-operator).

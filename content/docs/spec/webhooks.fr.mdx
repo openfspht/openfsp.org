@@ -15,7 +15,7 @@ est une requête HTTP portant un événement ; un événement peut être livré 
 **1.3.** Un événement décrit la ressource à son émission. En cas de contradiction avec une
 lecture, c'est la lecture qui DOIT faire foi pour l'abonné.
 
-**1.4.** La passerelle NE DOIT PAS émettre d'événement pour un état que la ressource n'a pas
+**1.4.** Le serveur NE DOIT PAS émettre d'événement pour un état que la ressource n'a pas
 atteint.
 
 ## 2. Objet `event`
@@ -57,7 +57,7 @@ DOIT être identique sur toutes les livraisons d'un même événement.
 
 **2.4.** `data` est un instantané complet, jamais un différentiel.
 
-**2.5.** Un abonné DOIT tolérer les membres inconnus de l'objet et de `data`. La passerelle NE
+**2.5.** Un abonné DOIT tolérer les membres inconnus de l'objet et de `data`. Le serveur NE
 DOIT PAS retirer un membre de l'objet sans décision écrite.
 
 **2.6.** Un abonné NE DOIT PAS rejeter un événement au seul motif que `previous_status` diffère
@@ -85,7 +85,7 @@ d'événement.
 
 **3.5.** Ajouter un type exige une décision écrite, sans nouvelle version majeure.
 
-**3.6.** La passerelle NE DOIT PAS émettre vers un point d'accès un type auquel il n'est pas
+**3.6.** Le serveur NE DOIT PAS émettre vers un point d'accès un type auquel il n'est pas
 abonné (7.1).
 
 ## 4. Livraison
@@ -105,14 +105,14 @@ signé selon le 5.
 Un abonné NE DOIT PAS fonder une décision de confiance sur un en-tête non couvert. Les valeurs
 qui font foi sont dans le corps.
 
-**4.3.** Une livraison réussit sur un statut `2xx` reçu dans le délai du 4.5. La passerelle NE
+**4.3.** Une livraison réussit sur un statut `2xx` reçu dans le délai du 4.5. Le serveur NE
 DOIT PAS analyser le corps de la réponse, ni agir dessus, ni le journaliser en entier.
 
 **4.4.** Tout autre statut, échec de connexion, échec TLS ou expiration est un échec, renvoyé
-selon le 9. Exception : `410 Gone` est définitif ; la passerelle DOIT cesser de renvoyer cet
+selon le 9. Exception : `410 Gone` est définitif ; le serveur DOIT cesser de renvoyer cet
 événement et DEVRAIT cesser de livrer à ce point d'accès, en le consignant (9.6).
 
-**4.5.** La passerelle DOIT borner connexion et réponse ; le total NE DOIT PAS dépasser
+**4.5.** Le serveur DOIT borner connexion et réponse ; le total NE DOIT PAS dépasser
 10 secondes.
 
 **4.6.** Un `3xx` DOIT être traité comme un échec : les redirections ne sont pas suivies.
@@ -120,7 +120,7 @@ selon le 9. Exception : `410 Gone` est définitif ; la passerelle DOIT cesser de
 **4.7.** Le corps DOIT être identique à l'octet près d'une tentative à l'autre ; seule la
 signature est recalculée.
 
-**4.8.** La passerelle PEUT livrer en parallèle et dans le désordre, et NE DOIT PAS bloquer les
+**4.8.** Le serveur PEUT livrer en parallèle et dans le désordre, et NE DOIT PAS bloquer les
 livraisons d'une ressource derrière celles d'une autre.
 
 ## 5. Signature
@@ -145,7 +145,7 @@ Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
 Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 ```
 
-**5.4.** La passerelle DOIT prendre en charge `ed25519` et l'utiliser par défaut. Elle PEUT
+**5.4.** Le serveur DOIT prendre en charge `ed25519` et l'utiliser par défaut. Il PEUT
 offrir `ecdsa-p256-sha256` et NE DOIT PAS offrir d'autre algorithme.
 
 **5.5.** `Content-Digest` est OBLIGATOIRE, en `sha-256`. Le vérificateur DOIT recalculer le
@@ -176,7 +176,7 @@ PAS répondre `2xx`, et DEVRAIT répondre `400`.
 
 ## 6. Clés
 
-**6.1.** La passerelle DOIT publier ses clés de vérification en tableau de JWK (RFC 7517) dans
+**6.1.** Le serveur DOIT publier ses clés de vérification en tableau de JWK (RFC 7517) dans
 le membre `webhook_keys` du document de configuration ([capacités 3.1](/fr/docs/spec/capabilities#3.1)), et nulle
 part ailleurs.
 
@@ -196,9 +196,6 @@ part ailleurs.
 }
 ```
 
-**6.1.1.** Un opérateur natif qui annonce `webhooks.verify` publie ses clés de la même façon,
-dans le `webhook_keys` de son propre document de configuration.
-
 **6.2.** `kid` DOIT être égal au `keyid` du 5.3. Le vérificateur DOIT accepter l'appariement du
 nom JOSE `EdDSA` et du nom RFC 9421 `ed25519`.
 
@@ -214,20 +211,20 @@ inconnu, avec limitation de débit. Il NE DOIT PAS le rafraîchir à chaque livr
 **6.6.** Un abonné DOIT récupérer les clés uniquement depuis l'URL de base configurée, et NE
 DOIT PAS prendre de clé, d'URL de clé ni de certificat dans une livraison.
 
-**6.7.** Le document de configuration qui porte les clés n'est pas authentifié. La passerelle PEUT
+**6.7.** Le document de configuration qui porte les clés n'est pas authentifié. Le serveur PEUT
 en limiter le débit.
 
-**6.8.** Les clés privées sont détenues par l'exploitant. La passerelle NE DOIT PAS les
+**6.8.** Les clés privées sont détenues par l'exploitant. Le serveur NE DOIT PAS les
 journaliser ni les exposer par un point d'accès.
 
 ## 7. Point d'accès de l'abonné
 
-**7.1.** La passerelle DOIT permettre de configurer, par point d'accès : l'URL, les types
+**7.1.** Le serveur DOIT permettre de configurer, par point d'accès : l'URL, les types
 d'événement, l'activation.
 
-**7.2.** La passerelle DOIT refuser une URL non `https`, hors mode de développement.
+**7.2.** Le serveur DOIT refuser une URL non `https`, hors mode de développement.
 
-**7.3.** La passerelle DOIT valider le certificat TLS du point d'accès et NE DOIT PAS offrir
+**7.3.** Le serveur DOIT valider le certificat TLS du point d'accès et NE DOIT PAS offrir
 d'option pour désactiver cette validation.
 
 **7.4.** Un abonné DEVRAIT vérifier, persister l'événement et répondre `2xx`, puis traiter de
@@ -239,12 +236,15 @@ son point d'accès.
 **7.6.** Un abonné DOIT accepter tout type du 3.2 à tout moment, y compris pour une ressource
 qu'il ne connaît pas.
 
+**7.7.** Un point d'accès appartient à un compte marchand. Le serveur NE DOIT PAS lui livrer les
+événements d'un autre compte marchand.
+
 ## 8. Ordre et doublons
 
 **8.1.** `sequence` commence à `1` pour le premier événement d'une ressource et croît de un à
 chaque événement de cette ressource. Il n'ordonne pas les événements entre ressources.
 
-**8.2.** La passerelle DOIT attribuer `sequence` à l'enregistrement de l'événement et NE DOIT
+**8.2.** Le serveur DOIT attribuer `sequence` à l'enregistrement de l'événement et NE DOIT
 PAS réutiliser une valeur pour une ressource.
 
 **8.3.** Un abonné DOIT ignorer un événement dont `sequence` est inférieur ou égal au plus grand
@@ -277,20 +277,20 @@ au total, hors gigue) :
 | 6         | 6 heures    |
 | 7         | 24 heures   |
 
-**9.3.** Chaque délai DOIT être allongé d'une gigue aléatoire positive, d'amplitude au moins 20 %. La
-passerelle PEUT espacer davantage les renvois et NE DOIT PAS renvoyer plus tôt.
+**9.3.** Chaque délai DOIT être allongé d'une gigue aléatoire positive, d'amplitude au moins 20 %. Le
+serveur PEUT espacer davantage les renvois et NE DOIT PAS renvoyer plus tôt.
 
-**9.4.** Après la dernière tentative, la passerelle DOIT s'arrêter, DOIT consigner l'abandon de
+**9.4.** Après la dernière tentative, le serveur DOIT s'arrêter, DOIT consigner l'abandon de
 façon visible pour l'exploitant, NE DOIT PAS supprimer l'événement et NE DOIT PAS modifier la
 ressource.
 
-**9.5.** La passerelle DOIT honorer `Retry-After` sur `429` et `503`, jusqu'à une borne qu'elle
+**9.5.** Le serveur DOIT honorer `Retry-After` sur `429` et `503`, jusqu'à une borne qu'il
 fixe.
 
-**9.6.** La passerelle PEUT désactiver un point d'accès en échec prolongé ; elle DOIT alors
+**9.6.** Le serveur PEUT désactiver un point d'accès en échec prolongé ; il DOIT alors
 consigner la raison de façon visible pour l'exploitant.
 
-**9.7.** La passerelle DOIT borner sa file de livraisons à une taille qu'elle fixe et délester en refusant de nouvelles
+**9.7.** Le serveur DOIT borner sa file de livraisons à une taille qu'il fixe et délester en refusant de nouvelles
 livraisons vers le point d'accès défaillant, sans supprimer d'événement.
 
 ## 10. Sondage
@@ -304,26 +304,27 @@ lecture ou synchronisation ([API 5.2, 5.3](/fr/docs/spec/payments-api#5.3)).
 
 ## 11. Conformité
 
-**11.1.** Passerelle conforme : émet chaque type du 3.2 relevant d'une capacité qu'elle
+**11.1.** Serveur conforme : émet chaque type du 3.2 relevant d'une capacité qu'il
 annonce, signe selon le 5, publie les clés selon le 6, renvoie selon le 9, n'émet d'événement
 que pour une création ou une transition (1.4, 3.4).
 
 **11.2.** Abonné conforme : vérifie selon le 5.9, rejette selon le 5.12, déduplique selon le
 8.4, ordonne selon le 8.3, respecte le 8.5 et dispose de l'accès du 10.2.
 
-**11.3.** L'émission est annoncée par `webhooks.emit`, distincte de `webhooks.verify` qui
-concerne l'opérateur. Une passerelle qui n'annonce pas `webhooks.emit` NE DOIT PAS émettre
-d'événement.
+**11.3.** L'émission vers les points d'accès configurés est annoncée par `webhooks.emit`. Un
+serveur qui ne l'annonce pas pour un opérateur NE DOIT PAS livrer les événements de cet opérateur
+aux points d'accès configurés. La livraison à une `callback_url` relève de
+`webhooks.per_payment_url` ([API 5.1.8](/fr/docs/spec/payments-api#5.1.8)).
 
 ## 12. Sécurité
 
-**12.1.** La passerelle DOIT refuser une URL de point d'accès qui se résout vers une adresse de
+**12.1.** Le serveur DOIT refuser une URL de point d'accès qui se résout vers une adresse de
 bouclage, de lien local, privée ou de métadonnées d'hébergeur, hors mode de développement, et
 DOIT refaire ce contrôle à chaque livraison.
 
 **12.2.** Un TLS mutuel PEUT s'ajouter à la signature et NE DOIT PAS la remplacer.
 
-**12.3.** En cas de compromission soupçonnée, la passerelle DEVRAIT pouvoir signer
+**12.3.** En cas de compromission soupçonnée, le serveur DEVRAIT pouvoir signer
 immédiatement avec une nouvelle clé, par exception au 6.4, et retirer sans délai la clé
 compromise de l'ensemble publié.
 

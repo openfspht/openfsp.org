@@ -14,7 +14,6 @@ Je retiens des montants entiers, une devise explicite et des identifiants opaque
 | `PhoneNumber`       | chaîne, E.164                  | `"+50934567890"`                                                        |
 | `ResourceId`        | chaîne opaque                  | `"pay_01J9ZK3QF8XN2M7VYB4C6D8E0G"`                                      |
 | `Reference`         | chaîne choisie par le marchand | `"INV-2026-00184"`                                                      |
-| `ProviderReference` | chaîne opaque                  | `"MC-8837291"`                                                          |
 | `Timestamp`         | chaîne, RFC 3339 UTC           | `"2026-08-17T14:32:07.412Z"`                                            |
 | `Date`              | chaîne, `full-date` RFC 3339   | `"2026-09-28"` ([cycle de vie 10.1](/fr/docs/spec/lifecycle#10.1))      |
 | `Fee`               | objet                          | `{"amount": {"amount": 1250, "currency": "HTG"}, "bearer": "merchant"}` |
@@ -65,10 +64,6 @@ DOIT être strictement positif. Un montant nul DOIT être rejeté.
 
 **3.8.** Une implémentation NE DOIT PAS arrondir un montant.
 
-**3.9.** Un montant reçu de l'opérateur DOIT être converti depuis sa forme décimale textuelle,
-sans passer par un flottant. Si un montant n'est pas exact au centime, la passerelle DOIT
-traiter la réponse comme inexploitable (`provider-error`).
-
 ## 4. Devise
 
 **4.1.** La seule devise est la gourde : `currency` DOIT valoir `"HTG"` (ISO 4217, exposant
@@ -83,22 +78,18 @@ traiter la réponse comme inexploitable (`provider-error`).
 **5.2.** Valide : `"+50934567890"`. Invalides : `"34567890"`, `"+509 34 56 78 90"`,
 `"+509-3456-7890"`, `"050934567890"`.
 
-**5.3.** Une passerelle NE DOIT PAS déduire un indicatif pays d'un numéro national et DOIT
+**5.3.** Un serveur NE DOIT PAS déduire un indicatif pays d'un numéro national et DOIT
 rejeter toute valeur non conforme au 5.1. Un SDK PEUT convertir une saisie locale en E.164.
 Une interface marchande PEUT afficher un numéro haïtien sous la forme `+509 40 00 0000` ;
 la valeur échangée reste en E.164 (`+50940000000`).
 
 **5.4.** Un numéro syntaxiquement valide NE DOIT PAS être traité comme vérifié.
 
-**5.5.** Un numéro reçu de l'opérateur DOIT être converti en E.164 selon le format documenté de
-cet opérateur (`50937007294` devient `"+50937007294"`). Un numéro dont la conversion n'est pas
-déterminée par ce format DOIT être omis.
-
 ## 6. Identifiants
 
 ### 6.1. `ResourceId`
 
-**6.1.1.** 1 à 64 caractères parmi `A-Za-z0-9_-`, attribué par la passerelle à la création,
+**6.1.1.** 1 à 64 caractères parmi `A-Za-z0-9_-`, attribué par le serveur à la création,
 immuable.
 
 **6.1.2.** Opaque : un client NE DOIT PAS l'analyser, en déduire un ordre, ni en construire
@@ -117,32 +108,21 @@ partie de la valeur opaque.
 **6.2.1.** 1 à 128 caractères parmi `A-Za-z0-9._:/-`, fournie par le marchand à la création,
 immuable.
 
-**6.2.2.** Une `Reference` DOIT être unique parmi les ressources de même type d'une même
-passerelle, quel que soit le principal qui l'a créée. La passerelle DOIT rejeter une création
+**6.2.2.** Une `Reference` DOIT être unique parmi les ressources de même type d'un même
+compte marchand, quel que soit le principal qui l'a créée. Le serveur DOIT rejeter une création
 dont la référence est déjà utilisée.
 
 **6.2.3.** La `Reference` est la clé de corrélation primaire, notamment pour retrouver un
 paiement dont la création n'a pas reçu de réponse.
 
-**6.2.4.** La passerelle NE DOIT PAS transmettre la `Reference` à l'opérateur ; elle transmet
-l'identifiant de commande qui en est dérivé ([idempotence 7.2](/fr/docs/spec/idempotency#7.2)). La `Reference` NE DOIT PAS contenir de données
-personnelles ni d'identifiant secret.
+**6.2.4.** La `Reference` NE DOIT PAS contenir de données personnelles ni d'identifiant
+secret.
 
 **6.2.5.** Le lien avec `Idempotency-Key` est décrit dans [idempotence 6](/fr/docs/spec/idempotency#6).
 
-### 6.3. `ProviderReference`
+### 6.3. `IdempotencyKey`
 
-**6.3.1.** Chaîne opaque d'au plus 255 caractères, attribuée par l'opérateur.
-
-**6.3.2.** FACULTATIVE : absente avant la réponse de l'opérateur, ou définitivement s'il n'en
-a jamais fourni.
-
-**6.3.3.** Un client NE DOIT PAS l'utiliser comme clé de corrélation primaire ni la supposer
-unique entre opérateurs.
-
-### 6.4. `IdempotencyKey`
-
-**6.4.1.** 1 à 255 caractères parmi `A-Za-z0-9_-`, portée par l'en-tête `Idempotency-Key`.
+**6.3.1.** 1 à 255 caractères parmi `A-Za-z0-9_-`, portée par l'en-tête `Idempotency-Key`.
 Sémantique : [idempotence](/fr/docs/spec/idempotency).
 
 ## 7. Horodatage
@@ -158,12 +138,6 @@ FACULTATIVES. Un client DOIT les accepter ; un serveur NE DOIT PAS les exiger.
 **7.4.** Les horodatages NE DOIVENT PAS servir d'ordre total entre événements. Un client NE
 DOIT PAS en déduire une séquence.
 
-**7.5.** Un horodatage reçu de l'opérateur sans décalage DOIT être interprété dans le fuseau
-de la journée comptable de la passerelle : `America/Port-au-Prince` par défaut, configurable par
-l'exploitant. Une heure ambiguë (retour à l'heure d'hiver) DOIT être résolue vers
-l'instant le plus tardif. Une durée relative (`expiredAt: 300`) DOIT courir à partir de la
-réception de la réponse.
-
 ## 8. `Fee`
 
 **8.1.** Frais de l'opérateur sur un paiement.
@@ -176,28 +150,29 @@ réception de la réponse.
 **8.2.** Un `Fee` absent signifie « inconnu » ; des frais nuls sont un montant nul. Un
 client NE DOIT PAS afficher des frais absents comme nuls ni les dériver par soustraction.
 
-**8.3.** `bearer` rapporte qui a supporté les frais selon l'opérateur. La passerelle NE DOIT
+**8.3.** `bearer` rapporte qui a supporté les frais selon l'opérateur. Le serveur NE DOIT
 PAS laisser un client le fixer.
 
-**8.4.** La passerelle NE DOIT PAS retarder une transition terminale dans l'attente des frais,
+**8.4.** Le serveur NE DOIT PAS retarder une transition terminale dans l'attente des frais,
 ni les deviner.
 
-**8.5.** Une passerelle dont l'opérateur ne rapporte jamais les frais NE DOIT PAS annoncer
-`payments.fee`.
+**8.5.** Un serveur qui ne peut pas rapporter les frais d'un opérateur NE DOIT PAS annoncer
+`payments.fee` pour cet opérateur.
 
 ## 9. `Metadata`
 
-**9.1.** Objet FACULTATIF qui associe des chaînes à des chaînes, fourni par le marchand, renvoyé
-partout où la ressource est renvoyée.
+**9.1.** Objet FACULTATIF qui associe des chaînes à des chaînes, renvoyé partout où la ressource
+est renvoyée. Le client le fournit à la création ; le serveur PEUT y ajouter ses propres clés
+(9.4).
 
 **9.2.** Au plus 20 clés ; clés de 1 à 40 caractères parmi `A-Za-z0-9_.-` ; valeurs d'au plus
 500 caractères. Toute valeur autre qu'une chaîne est invalide.
 
-**9.3.** La passerelle DOIT stocker et renvoyer les métadonnées sans altération, et NE DOIT
-PAS les interpréter.
+**9.3.** Le serveur DOIT stocker et renvoyer les clés du client sans altération, NE DOIT PAS les
+retirer et NE DOIT PAS les interpréter.
 
-**9.4.** La passerelle NE DOIT PAS transmettre les métadonnées à l'opérateur, sauf exigence
-explicite d'une spécification pour une opération nommée.
+**9.4.** Le serveur documente les clés qu'il ajoute. Il NE DOIT PAS ajouter une clé fixée par le
+client. Ses clés ne comptent pas dans les limites du 9.2.
 
 **9.5.** Les marchands NE DEVRAIENT PAS y placer de données personnelles et NE DOIVENT PAS y
 placer d'identifiants secrets.
@@ -205,8 +180,8 @@ placer d'identifiants secrets.
 ## 10. Sécurité
 
 **10.1.** Les numéros de téléphone NE DOIVENT apparaître ni dans les journaux autres que le
-journal d'audit ([authentification 10](/fr/docs/spec/authentication#10)), ni dans les messages d'erreur,
+journal d'audit ([authentification 9](/fr/docs/spec/authentication#9)), ni dans les messages d'erreur,
 ni dans la télémétrie.
 
-**10.2.** La passerelle DEVRAIT documenter que les métadonnées ne sont pas chiffrées au repos,
+**10.2.** Le serveur DEVRAIT documenter que les métadonnées ne sont pas chiffrées au repos,
 sauf si l'exploitant les chiffre.

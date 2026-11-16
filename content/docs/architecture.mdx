@@ -5,8 +5,6 @@ description: The merchant integration layer, shared contract, native adoption an
 
 OpenFSP sits between the merchant server and the payment provider. Each compatible provider exposes the same HTTP contract. The merchant chooses its provider and uses its own credentials, directly or through the Kotlin, Java and TypeScript SDKs.
 
-The [gateway](/docs/gateway) translates that contract into MonCash and NatCash calls when the service’s API does not speak OpenFSP.
-
 ## The application-to-provider layer
 
 The problem is application integration cost: without a shared language, every application writes a separate integration for every provider. A shared contract aims to move from `providers × applications` to `providers + applications`. The benefit depends on adoption.
@@ -23,8 +21,6 @@ flowchart LR
 ```
 
 The application chooses its counterparty and uses its credentials and configuration. The client library formats exchanges; it does not create a central service or replace the provider's system.
-
-A provider implementing the contract natively makes translation of its API unnecessary.
 
 ## Contract and invariants
 
@@ -49,9 +45,9 @@ A shared language does not mean every provider offers the same functions. Each i
 
 ## Verifying conformance
 
-A conformance claim names a target, level and protocol version. The standard distinguishes three targets: client, native provider and transition gateway. Core and capability profiles are defined in the [conformance specification](/docs/spec/conformance).
+A conformance claim names a target, level and protocol version. The standard distinguishes two targets: client and server. Core and capability profiles are defined in the [conformance specification](/docs/spec/conformance).
 
-The native-provider target exercises a direct contract implementation without a translation adapter. An attestation records one run; it does not certify an implementation.
+An attestation records one run; it does not certify an implementation.
 
 ## Versions
 
@@ -68,9 +64,8 @@ OpenFSP, since only a switch lets a payer at provider A pay a merchant that acce
 ## Security
 
 - TLS everywhere ([API 1.1](/docs/spec/payments-api#1.1), [webhooks 7.2](/docs/spec/webhooks#7.2)).
-- Provider secrets outside versioned files, never logged ([authentication 9](/docs/spec/authentication#9)).
-- A callback grounds a transition only in cases (a) and (c) of [lifecycle 6.5](/docs/spec/lifecycle#6.5).
-- Every transition is timestamped (`updated_at`, `completed_at`); an attestation is attributed to a person ([lifecycle 6.8](/docs/spec/lifecycle#6.8)).
+- API keys stored as digests, never logged ([authentication 4](/docs/spec/authentication#4)).
+- Every transition is timestamped (`updated_at`, `completed_at`), and the API offers no way to set a state ([lifecycle 6.1](/docs/spec/lifecycle#6.1)).
 
 ## Regulation
 
@@ -80,7 +75,7 @@ Protocol conformance is not regulatory compliance. Payment and statement data su
 
 I explain this scope in [Decisions](/docs/decisions#0001). Lifting any of these limits requires a new decision.
 
-- OpenFSP does not hold, move or keep funds. A gateway instructs providers and is never a party to a transaction.
+- OpenFSP does not hold, move or keep funds.
 - OpenFSP runs no hosted payment service. A hosted offer built on OpenFSP is the responsibility of its operator, under that operator's own regulatory obligations.
 - OpenFSP is not a licensed payment institution and replaces no license and no contract with a provider.
 - OpenFSP is not a switch, a clearing house or a settlement system.
@@ -91,4 +86,4 @@ Proximity payments belong to a later [phase](/docs#phases).
 
 ## Reference implementations
 
-The specification is independent of a programming language. The simulator and the conformance suite let you try it and test an implementation. The [transition gateway](/docs/gateway) makes the contract usable with existing APIs. To build your own target, follow the [native provider path](/docs/native-operator).
+The specification is independent of a programming language. The reference mock server and the conformance suite let you try it and test an implementation. To build your own server, follow the [implementation guide](/docs/native-operator).

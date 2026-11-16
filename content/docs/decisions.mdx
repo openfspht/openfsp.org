@@ -7,11 +7,11 @@ I propose these choices for discussion. The numbered proposals link to the rules
 
 ## 0001. Architecture and scope
 
-I propose a shared contract that each provider can expose in its own system. The Kotlin, Java and TypeScript SDKs call that contract. I also supply a gateway for the existing MonCash and NatCash APIs, a simulator and a conformance suite. Adapters translate exchanges without inventing capabilities, terminal states or retries after an unknown outcome.
+I propose a shared contract that each provider can expose in its own system. The Kotlin, Java and TypeScript SDKs call that contract. A reference mock server and a conformance suite let anyone try and test it.
 
-I chose this mainly because integrations drop from `providers × applications` to `providers + applications`, and a native provider needs no translation.
+I chose this mainly because integrations drop from `providers × applications` to `providers + applications`.
 
-Set aside: per-language libraries without a server, a specification without a reference implementation, a hosted multi-tenant service, the GSMA Mobile Money API as is, and Mojaloop.
+Set aside: per-language libraries without a server, a specification without a reference implementation, a central hosted service, the GSMA Mobile Money API as is, and Mojaloop.
 
 Governs: [Architecture](/docs/architecture).
 
@@ -19,7 +19,7 @@ Governs: [Architecture](/docs/architecture).
 
 Amounts are integers in HTG cents, with no floats and no rounding, bounded to ±(2⁵³ - 1) so double-precision JSON parsers stay exact. The `currency` field stays, fixed to `"HTG"`. Phone numbers are E.164 only, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque (UUIDv7 recommended). Unknown fields are ignored in responses and rejected in requests.
 
-Every other chapter depends on these primitives. When the gateway translates an existing API, its adapter converts provider data (decimal amounts, numbers without `+`, timestamps without offset) once.
+Every other chapter depends on these primitives.
 
 Set aside: decimal strings, floats, a combined `"HTG 1250.00"` string, multi-currency, server-side national phone formats, epoch timestamps and `camelCase`.
 
@@ -27,7 +27,7 @@ Governs: [Data model](/docs/spec/data-model).
 
 ## 0003. Payment lifecycle
 
-I chose five states: `pending`, the only non-terminal one, and `succeeded`, `failed`, `expired`, `canceled`. A terminal state is reached only on authoritative information and is never left. `pending` also covers a provider that does not answer, and nothing expires by clock. The authoritative sources are, in order: signed callback, lookup, per-payment callback URL, statement, operator attestation.
+I chose five states: `pending`, the only non-terminal one, and `succeeded`, `failed`, `expired`, `canceled`. A terminal state is reached only on authoritative information and is never left. `pending` also covers an outcome not yet established, and nothing expires by clock unless the provider guarantees it.
 
 A merchant delivers goods based on the state, so a status that changes after looking final leads to delivering against a failed payment or charging twice.
 
@@ -37,11 +37,11 @@ Governs: [Lifecycle](/docs/spec/lifecycle).
 
 ## 0004. Payments API
 
-The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed problem catalogue. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations. When the gateway translates into an existing API, it derives the provider's order identifier from the `reference` by HMAC.
+The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed problem catalogue. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations.
 
 These operations are what a merchant actually needs (create, read back after an outage by its own reference, force a lookup when a callback is lost), and each provider can implement them.
 
-Set aside: routing by the gateway, `GET ?synchronize=true`, `404` for an unknown reference, a `/by-reference` path, a URL-only `next_action` and a list endpoint for now.
+Set aside: routing by the server, `GET ?synchronize=true`, `404` for an unknown reference, a `/by-reference` path, a URL-only `next_action` and a list endpoint for now.
 
 Governs: [Payments API](/docs/spec/payments-api) and [Idempotency](/docs/spec/idempotency).
 
@@ -51,7 +51,7 @@ A capability is announced only when the provider supports it, and an operation n
 
 A uniform interface that emulates missing features hides the gap until a real payment fails, and probing by trial can charge the payer.
 
-Set aside: fixed capabilities per version, HTTP `OPTIONS`, try and handle the error, versioned capabilities, capabilities in every payment response, gateway-wide capabilities, and limits hard-coded in the adapter.
+Set aside: fixed capabilities per version, HTTP `OPTIONS`, try and handle the error, versioned capabilities, capabilities in every payment response, server-wide capabilities, and hard-coded limits.
 
 Governs: [Capabilities](/docs/spec/capabilities).
 
@@ -67,7 +67,7 @@ Governs: [Webhooks](/docs/spec/webhooks).
 
 ## 0007. Authentication and credentials
 
-Clients use a bearer key `ofsp_<env>_<secret>` with 128 bits of entropy, sent only in `Authorization: Bearer`. The gateway stores a SHA-256 digest, compares in constant time and returns a single `unauthenticated` error for every failure. There are four scopes, none implying another; several keys per principal, revocation effective within 60 seconds. Provider secrets are never returned or logged, and are redacted from relayed fields.
+Clients use a bearer key `ofsp_<env>_<secret>` with 128 bits of entropy, sent only in `Authorization: Bearer`. The server stores a SHA-256 digest, compares in constant time and returns a single `unauthenticated` error for every failure. There are four scopes, none implying another; several keys per principal, revocation effective within 60 seconds.
 
 Without a shared rule, an implementation may compare in variable time, store keys in clear or tell unknown keys from revoked ones.
 
@@ -77,7 +77,7 @@ Governs: [Authentication](/docs/spec/authentication).
 
 ## 0008. Conformance
 
-Conformance is a triple: target (client, gateway, native provider), level and protocol version. Core is mandatory, then one profile per announced capability, with no partial pass and no ranking. Anyone can run the suite offline without modifying the implementation; the mock server plays three providers, `mock_openfsp`, `mock_moncash` and `mock_natcash`, through declared failure scenarios. The report is machine-readable and states its limits.
+Conformance is a triple: target (client, server), level and protocol version. Core is mandatory, then one profile per announced capability, with no partial pass and no ranking. Anyone can run the suite offline without modifying the implementation; the reference mock server plays a conforming server, `mock_openfsp`, through declared outcome scenarios. The report is machine-readable and states its limits.
 
 I use black-box scenarios to compare announced capabilities with observable behaviour. The report keeps untested obligations visible.
 

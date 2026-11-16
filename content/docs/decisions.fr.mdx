@@ -7,11 +7,11 @@ Je propose ces choix à la discussion. Les propositions numérotées renvoient a
 
 ## 0001. Architecture et périmètre
 
-Je propose un contrat commun que chaque opérateur peut exposer dans son propre système. Les SDK Kotlin, Java et TypeScript appellent ce contrat. Je fournis aussi une passerelle pour les API MonCash et NatCash existantes, un simulateur et une suite de conformité. Les adaptateurs traduisent les échanges sans inventer de capacité, d’état terminal ni de renvoi après un résultat indéterminé.
+Je propose un contrat commun que chaque opérateur peut exposer dans son propre système. Les SDK Kotlin, Java et TypeScript appellent ce contrat. Un serveur simulé de référence et une suite de conformité permettent à chacun de l'essayer et de le tester.
 
-Je fais ce choix surtout parce que le nombre d'intégrations passe de `opérateurs × applications` à `opérateurs + applications`, et qu'un opérateur natif n'a besoin d'aucune traduction.
+Je fais ce choix surtout parce que le nombre d'intégrations passe de `opérateurs × applications` à `opérateurs + applications`.
 
-Écartés : bibliothèques par langage sans serveur, spécification sans implémentation de référence, service hébergé multi-locataire, GSMA Mobile Money API telle quelle, Mojaloop.
+Écartés : bibliothèques par langage sans serveur, spécification sans implémentation de référence, service hébergé central, GSMA Mobile Money API telle quelle, Mojaloop.
 
 Régit : [Architecture](/fr/docs/architecture).
 
@@ -19,7 +19,7 @@ Régit : [Architecture](/fr/docs/architecture).
 
 Un montant est un entier en centimes de gourde, sans flottant ni arrondi, borné à ±(2⁵³ - 1) pour rester exact dans les analyseurs JSON en double précision. Le champ `currency` reste, fixé à `"HTG"`. Les numéros de téléphone sont en E.164 uniquement, les horodatages en RFC 3339 UTC avec `Z`, et les identifiants sont opaques (UUIDv7 recommandé). Les champs inconnus sont ignorés en réponse et rejetés en requête.
 
-Tous les autres chapitres reposent sur ces primitives. Quand la passerelle traduit une API existante, son adaptateur convertit une seule fois les données de l'opérateur (montants décimaux, numéros sans `+`, horodatages sans décalage).
+Tous les autres chapitres reposent sur ces primitives.
 
 Écartés : chaîne décimale, flottant, chaîne unique `"HTG 1250.00"`, multi-devise, formats nationaux normalisés côté serveur, horodatage epoch, `camelCase`.
 
@@ -27,7 +27,7 @@ Régit : [Modèle de données](/fr/docs/spec/data-model).
 
 ## 0003. Cycle de vie du paiement
 
-Je retiens cinq états : `pending`, seul non terminal, puis `succeeded`, `failed`, `expired` et `canceled`. Un état terminal n'est atteint que sur information faisant foi et n'est jamais quitté. `pending` couvre aussi l'absence de réponse de l'opérateur, et rien n'expire par horloge. Les sources faisant foi sont, dans l'ordre : rappel signé, consultation, URL de rappel propre au paiement, relevé, attestation de l'exploitant.
+Je retiens cinq états : `pending`, seul non terminal, puis `succeeded`, `failed`, `expired` et `canceled`. Un état terminal n'est atteint que sur information faisant foi et n'est jamais quitté. `pending` couvre aussi une issue pas encore établie, et rien n'expire par horloge sauf garantie de l'opérateur.
 
 Le marchand livre selon l'état ; un statut qui change après avoir paru définitif conduit à livrer contre un paiement échoué ou à débiter deux fois.
 
@@ -37,11 +37,11 @@ Régit : [Cycle de vie](/fr/docs/spec/lifecycle).
 
 ## 0004. API des paiements
 
-L'API passe par HTTPS sous `/v1`, en JSON, avec des erreurs RFC 9457 portant `retryable` et `effect`, et un catalogue fermé de problèmes. La capacité de base `payments` crée, lit par `id` ou par `reference`, et synchronise. Le client nomme l'opérateur. `Idempotency-Key` est obligatoire sur les opérations idempotentes. Quand la passerelle traduit vers une API existante, elle dérive par HMAC de la `reference` l'identifiant de commande transmis à l'opérateur.
+L'API passe par HTTPS sous `/v1`, en JSON, avec des erreurs RFC 9457 portant `retryable` et `effect`, et un catalogue fermé de problèmes. La capacité de base `payments` crée, lit par `id` ou par `reference`, et synchronise. Le client nomme l'opérateur. `Idempotency-Key` est obligatoire sur les opérations idempotentes.
 
 Ces opérations répondent aux besoins réels du marchand (créer, relire après une coupure par sa propre référence, forcer une consultation quand un rappel se perd), et chaque opérateur peut les satisfaire.
 
-Écartés : choix de l'opérateur par la passerelle, `GET ?synchronize=true`, `404` pour une référence inconnue, chemin `/by-reference`, `next_action` réduit à une URL, point d'accès de liste pour l'instant.
+Écartés : choix de l'opérateur par le serveur, `GET ?synchronize=true`, `404` pour une référence inconnue, chemin `/by-reference`, `next_action` réduit à une URL, point d'accès de liste pour l'instant.
 
 Régit : [API des paiements](/fr/docs/spec/payments-api) et [Idempotence](/fr/docs/spec/idempotency).
 
@@ -51,7 +51,7 @@ Une capacité n'est annoncée que si l'opérateur la prend en charge, et une op�
 
 Une interface uniforme qui émule les manques ne révèle l'écart qu'à l'échec d'un paiement réel, et tester par essai peut débiter le payeur.
 
-Écartés : capacités fixes par version, `OPTIONS` HTTP, essayer puis traiter l'erreur, capacités versionnées, capacités dans chaque réponse de paiement, capacités globales à la passerelle, plafonds codés dans l'adaptateur.
+Écartés : capacités fixes par version, `OPTIONS` HTTP, essayer puis traiter l'erreur, capacités versionnées, capacités dans chaque réponse de paiement, capacités globales au serveur, plafonds codés en dur.
 
 Régit : [Capacités](/fr/docs/spec/capabilities).
 
@@ -67,7 +67,7 @@ Régit : [Webhooks](/fr/docs/spec/webhooks).
 
 ## 0007. Authentification et secrets
 
-Le client présente une clé `ofsp_<env>_<secret>` de 128 bits d'entropie, transmise uniquement dans `Authorization: Bearer`. La passerelle stocke un condensé SHA-256, compare en temps constant et renvoie une seule erreur `unauthenticated` pour tout échec. Il existe quatre portées, dont aucune n'en implique une autre ; plusieurs clés par principal, révocation effective en 60 secondes au plus. Les secrets d'opérateur ne sont jamais renvoyés ni journalisés, et sont caviardés dans les champs relayés.
+Le client présente une clé `ofsp_<env>_<secret>` de 128 bits d'entropie, transmise uniquement dans `Authorization: Bearer`. Le serveur stocke un condensé SHA-256, compare en temps constant et renvoie une seule erreur `unauthenticated` pour tout échec. Il existe quatre portées, dont aucune n'en implique une autre ; plusieurs clés par principal, révocation effective en 60 secondes au plus.
 
 Sans règle commune, une implémentation peut comparer en temps variable, stocker les clés en clair ou distinguer clé inconnue et clé révoquée.
 
@@ -77,7 +77,7 @@ Régit : [Authentification](/fr/docs/spec/authentication).
 
 ## 0008. Conformité
 
-La conformité est un triplet : cible (client, passerelle, opérateur natif), niveau et version du protocole. Core est obligatoire, puis un profil par capacité annoncée, sans réussite partielle ni classement. N'importe qui peut exécuter la suite hors ligne, sans modifier l'implémentation ; le serveur simulé joue trois opérateurs, `mock_openfsp`, `mock_moncash` et `mock_natcash`, à travers des scénarios de défaillance déclarés. Le rapport est lisible par machine et indique ses limites.
+La conformité est un triplet : cible (client, serveur), niveau et version du protocole. Core est obligatoire, puis un profil par capacité annoncée, sans réussite partielle ni classement. N'importe qui peut exécuter la suite hors ligne, sans modifier l'implémentation ; le serveur simulé de référence joue un serveur conforme, `mock_openfsp`, à travers des scénarios d'issue déclarés. Le rapport est lisible par machine et indique ses limites.
 
 Je confronte les capacités annoncées au comportement observable par des scénarios en boîte noire. Le rapport indique les obligations non vérifiées.
 

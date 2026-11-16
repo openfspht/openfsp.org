@@ -1,5 +1,5 @@
 ---
-title: Implémenter OpenFSP côté opérateur
+title: Implémenter OpenFSP
 description: Parcours de lecture, surface HTTP et vérification de conformité pour un fournisseur qui veut exposer OpenFSP nativement.
 ---
 
@@ -16,16 +16,14 @@ Cette page donne le plan de travail et les tests. Les obligations elles-mêmes s
 | Exposer les échanges              | Création, lecture, synchronisation, erreurs et reprise après coupure.                                              | [API des paiements](/fr/docs/spec/payments-api), [idempotence](/fr/docs/spec/idempotency)     |
 | Annoncer les possibilités réelles | Découverte, capacités optionnelles et limites, sans émulation de fonction absente.                                 | [Capacités](/fr/docs/spec/capabilities)                                                       |
 | Authentifier et notifier          | Clés, portées, publication des clés de signature, vérification et livraison des événements.                        | [Authentification](/fr/docs/spec/authentication), [webhooks](/fr/docs/spec/webhooks)          |
-| Vérifier le périmètre applicable  | Cible `native-operator`, Core et profils correspondant aux capacités annoncées.                                    | [Conformité 5.7](/fr/docs/spec/conformance#5.7)                                               |
-
-Les chapitres existants nomment souvent la cible passerelle. Pour l'opérateur natif, lisez les exigences à travers la [règle de portée 5.7](/fr/docs/spec/conformance#5.7), et non par remplacement automatique des mots. Les contraintes de traduction d'une API tierce ne deviennent pas des obligations de déployer cette traduction.
+| Vérifier le périmètre applicable  | Cible `server`, Core et profils correspondant aux capacités annoncées.                                             | [Conformité 3](/fr/docs/spec/conformance#3)                                                   |
 
 ## Préparer la surface HTTP
 
 | Surface                                                   | Rôle                                                                                        | Point d'attention pour la cible native                                                                                                    |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `/.well-known/openfsp-configuration`                      | Découverte publique de l'émetteur, des points d'accès, des méthodes et des clés de webhook. | Lisez la [structure de configuration](/fr/docs/spec/capabilities#3.1) et les [clés de signature](/fr/docs/spec/webhooks#6.1.1).           |
-| `GET /v1/capabilities`                                    | Capacités et limites effectivement exposées.                                                | Un opérateur natif annonce un seul opérateur : lui-même, sous son identifiant enregistré ([3.2.6](/fr/docs/spec/capabilities#3.2.6)).     |
+| `/.well-known/openfsp-configuration`                      | Découverte publique de l'émetteur, des points d'accès, des méthodes et des clés de webhook. | Lisez la [structure de configuration](/fr/docs/spec/capabilities#3.1) et les [clés de signature](/fr/docs/spec/webhooks#6.1).           |
+| `GET /v1/capabilities`                                    | Capacités et limites effectivement exposées.                                                | Annoncez chaque opérateur servi sous son identifiant enregistré ([2.6](/fr/docs/spec/capabilities#2.6)).     |
 | `POST /v1/payments`                                       | Création selon le contrat, avec clé d'idempotence.                                          | Respecter le format, les refus, les rejouements et les effets inconnus ; ne pas traiter une création sans réponse comme un échec certain. |
 | `GET /v1/payments/{id}` et `GET /v1/payments?reference=…` | Lecture du paiement et récupération après perte d'une réponse.                              | Le marchand connaît sa référence avant l'appel ; il ne doit pas avoir besoin de reconstruire un identifiant opaque.                       |
 | `POST /v1/payments/{id}/synchronize`                      | Synchronisation de l'état selon le contrat.                                                 | Lire les règles applicables à la cible native avec le cycle de vie et les capacités annoncées.                                            |
@@ -37,11 +35,11 @@ Les URL ci-dessus désignent la surface normative. Les clients devraient lire le
 
 Pour les appels qui utilisent le `callback_url` prévu par le contrat, vérifiez les conditions de l'[API 5.1.8](/fr/docs/spec/payments-api#5.1.8). Les tests natifs contrôlent notamment la livraison d'un `payment.succeeded` signé, les clés Ed25519 publiées et le refus d'un `callback_url` HTTP hors des exceptions de bouclage.
 
-Ne prenez pas le comportement du simulateur pour une extension implicite du protocole. Les événements, leur signature, leur ordre et leur déduplication suivent les [webhooks](/fr/docs/spec/webhooks) ; le détail des tests natifs se trouve en [5.7.1](/fr/docs/spec/conformance#5.7.1).
+Ne prenez pas le comportement du simulateur pour une extension implicite du protocole. Les événements, leur signature, leur ordre et leur déduplication suivent les [webhooks](/fr/docs/spec/webhooks) ; les tests correspondants figurent en [conformité 5.4](/fr/docs/spec/conformance#5.4) et [5.10](/fr/docs/spec/conformance#5.10).
 
 ## Observer une implémentation native simulée
 
-Le dépôt de référence contient `mock_openfsp`, un opérateur fictif qui expose lui-même OpenFSP. Il permet d'étudier et de tester la connexion directe, sans passerelle.
+Le dépôt de référence contient `mock_openfsp`, un opérateur fictif qui expose lui-même OpenFSP.
 
 Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp), avec les prérequis du [démarrage rapide](/fr/docs/quickstart#2), utilisez deux terminaux :
 
@@ -53,7 +51,7 @@ make simulator
 make validate-native
 ```
 
-La cible par défaut est `http://127.0.0.1:8090/mock_openfsp`. Le rapport est écrit dans `backend/validator/infrastructure/build/conformance-report-native.json`. La commande utilise les clés de test publiées par le simulateur et démarre le récepteur de webhooks de la suite sur le port 8098, valeur par défaut du Makefile (`VALIDATE_NATIVE_WEBHOOK_PORT`). Cette exécution ne lance pas la passerelle.
+La cible par défaut est `http://127.0.0.1:8090/mock_openfsp`. Le rapport est écrit dans `backend/validator/infrastructure/build/conformance-report-native.json`. La commande utilise les clés de test publiées par le simulateur et démarre le récepteur de webhooks de la suite sur le port 8098, valeur par défaut du Makefile (`VALIDATE_NATIVE_WEBHOOK_PORT`).
 
 Les [sources de l'opérateur natif simulé](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) et le [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) permettent de vérifier le comportement et la commande.
 
@@ -71,7 +69,7 @@ La commande suivante lance la suite contre votre instance. Remplacez `operator.e
 
 ```bash
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
-  --target native-operator \
+  --target server \
   --base-url https://operator.example \
   --api-key "$OPENFSP_NATIVE_TEST_KEY" \
   --conformance conformance \

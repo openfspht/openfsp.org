@@ -7,7 +7,7 @@ Test an OpenFSP payment without a merchant account or real money with `make demo
 
 To integrate your merchant server, use the [Kotlin and Java SDK](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) or the [TypeScript SDK](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`); both go to Maven Central and npm with release `0.1.0`. Set `OPENFSP_BASE_URL` and `OPENFSP_API_KEY`. Keep the key on your server.
 
-To implement the API at a provider, follow the [provider path](/docs/native-operator). You can also use the [public validator](https://validate.openfsp.org).
+To implement the API, follow the [implementation guide](/docs/native-operator). You can also use the [public validator](https://validate.openfsp.org).
 
 ## 1. Demo with Docker
 
@@ -23,14 +23,14 @@ This runs `docker compose --profile demo up --build` and starts:
 
 | Service      | Address                 |
 | ------------ | ----------------------- |
-| Gateway      | `http://localhost:8080` |
+| OpenFSP server | `http://localhost:8080` |
 | Console      | `http://localhost:5173` |
 | Simulator UI | `http://localhost:5175` |
 | Validator UI | `http://localhost:5176` |
 | Demo shop    | `http://localhost:3000` |
 
 The simulator also listens on `127.0.0.1:8090`. PostgreSQL and the validator service run without fixed host ports. The console asks for the admin token: `demo-admin-token`. Clients
-discover the endpoints at `/.well-known/openfsp-configuration`.
+discover the endpoints at `/.well-known/openfsp-configuration`. The server on port 8080 is the [gateway](/docs/gateway), in front of the simulator's providers.
 
 ### First simulated payment
 
@@ -62,7 +62,7 @@ make dev
 
 | Process      | Port               |
 | ------------ | ------------------ |
-| Gateway      | 8080               |
+| OpenFSP server | 8080             |
 | Simulator    | 8090               |
 | Validator    | 8095               |
 | Console      | 5173               |
@@ -71,47 +71,14 @@ make dev
 
 `make check` builds, lints, typechecks and tests the backend and the frontend.
 
-## 3. Provider sandboxes
-
-`make dev-sandbox` starts the same processes, without the validator, with the gateway on the MonCash and NatCash sandboxes. It reads the credentials from
-`.env.sandbox` at the repository root (ignored by git), one `NAME=value` per line, or from the shell:
-
-```bash
-MONCASH_CLIENT_ID=
-MONCASH_CLIENT_SECRET=
-NATCASH_USERNAME=
-NATCASH_PASSWORD=
-NATCASH_PARTNER_CODE=
-NATCASH_PRIVATE_KEY=
-NATCASH_FUNCTION_CODE=
-```
-
-The gateway refuses to start when one of them is empty. Completing a payment needs a sandbox wallet, and provider callbacks need a gateway reachable from the
-Internet.
-
-## 4. Conformance of a gateway
-
-Start the simulator and the gateway with its `conformance` profile, which adds the test-only providers `mock_no_source`, `mock_statement_only` and
-`mock_unreachable`, then run the suite:
-
-```bash
-make simulator             # terminal 1, port 8090
-make gateway-conformance   # terminal 2, port 8080
-make validate              # terminal 3
-```
-
-`make validate` issues the keys the scenarios need through the admin API, registers a webhook receiver on port 8099 for the run, then revokes and removes them.
-The report is written to `backend/validator/infrastructure/build/conformance-report.json`. Against a gateway started with `make gateway`, it warns that the test-only providers
-are missing and skips their scenarios.
-
-## 5. Conformance of a native provider
+## 3. Conformance of an implementation
 
 ```bash
 make simulator         # terminal 1
 make validate-native   # terminal 2
 ```
 
-`make validate-native` runs the suite with the `native-operator` target against the simulator's `mock_openfsp` at `http://127.0.0.1:8090/mock_openfsp`
+`make validate-native` runs the suite with the `server` target against the simulator's `mock_openfsp` at `http://127.0.0.1:8090/mock_openfsp`
 (`VALIDATE_NATIVE_BASE_URL`), with the keys it publishes. The report is written to `backend/validator/infrastructure/build/conformance-report-native.json`.
 
-The [provider guide](/docs/native-operator) explains how to read the report.
+The [implementation guide](/docs/native-operator) explains how to read the report.

@@ -14,7 +14,6 @@ I use integer amounts, explicit currencies and opaque identifiers throughout the
 | `PhoneNumber`       | string, E.164                 | `"+50934567890"`                                                        |
 | `ResourceId`        | opaque string                 | `"pay_01J9ZK3QF8XN2M7VYB4C6D8E0G"`                                      |
 | `Reference`         | string chosen by the merchant | `"INV-2026-00184"`                                                      |
-| `ProviderReference` | opaque string                 | `"MC-8837291"`                                                          |
 | `Timestamp`         | string, RFC 3339 UTC          | `"2026-08-17T14:32:07.412Z"`                                            |
 | `Date`              | string, RFC 3339 `full-date`  | `"2026-09-28"` ([lifecycle 10.1](/docs/spec/lifecycle#10.1))            |
 | `Fee`               | object                        | `{"amount": {"amount": 1250, "currency": "HTG"}, "bearer": "merchant"}` |
@@ -54,8 +53,6 @@ I use integer amounts, explicit currencies and opaque identifiers throughout the
 
 **3.8.** An implementation MUST NOT round an amount.
 
-**3.9.** An amount received from the provider MUST be converted from its textual decimal form, without going through a float. If an amount is not exact to the cent, the gateway MUST treat the response as unusable (`provider-error`).
-
 ## 4. Currency
 
 **4.1.** The only currency is the gourde: `currency` MUST be `"HTG"` (ISO 4217, exponent 2). Any other value MUST be rejected with `invalid-field`.
@@ -68,17 +65,15 @@ I use integer amounts, explicit currencies and opaque identifiers throughout the
 
 **5.2.** Valid: `"+50934567890"`. Invalid: `"34567890"`, `"+509 34 56 78 90"`, `"+509-3456-7890"`, `"050934567890"`.
 
-**5.3.** A gateway MUST NOT infer a country code from a national number and MUST reject any value that does not conform to 5.1. An SDK MAY convert local input to E.164. A merchant interface MAY display a Haitian number as `+509 40 00 0000`; the exchanged value stays E.164 (`+50940000000`).
+**5.3.** A server MUST NOT infer a country code from a national number and MUST reject any value that does not conform to 5.1. An SDK MAY convert local input to E.164. A merchant interface MAY display a Haitian number as `+509 40 00 0000`; the exchanged value stays E.164 (`+50940000000`).
 
 **5.4.** A syntactically valid number MUST NOT be treated as verified.
-
-**5.5.** A number received from the provider MUST be converted to E.164 according to that provider's documented format (`50937007294` becomes `"+50937007294"`). A number whose conversion is not determined by that format MUST be omitted.
 
 ## 6. Identifiers
 
 ### 6.1. `ResourceId`
 
-**6.1.1.** 1 to 64 characters from `A-Za-z0-9_-`, assigned by the gateway at creation, immutable.
+**6.1.1.** 1 to 64 characters from `A-Za-z0-9_-`, assigned by the server at creation, immutable.
 
 **6.1.2.** Opaque: a client MUST NOT parse it, infer an order from it, or construct one.
 
@@ -92,25 +87,17 @@ I use integer amounts, explicit currencies and opaque identifiers throughout the
 
 **6.2.1.** 1 to 128 characters from `A-Za-z0-9._:/-`, supplied by the merchant at creation, immutable.
 
-**6.2.2.** A `Reference` MUST be unique among resources of the same type on the same gateway, whichever principal created it. The gateway MUST reject a creation whose reference is already in use.
+**6.2.2.** A `Reference` MUST be unique among resources of the same type in the same merchant account, whichever principal created it. The server MUST reject a creation whose reference is already in use.
 
 **6.2.3.** The `Reference` is the primary correlation key, in particular to find a payment whose creation received no response.
 
-**6.2.4.** The gateway MUST NOT send the `Reference` to the provider; it sends the order identifier derived from it ([idempotency 7.2](/docs/spec/idempotency#7.2)). The `Reference` MUST NOT contain personal data or a secret identifier.
+**6.2.4.** The `Reference` MUST NOT contain personal data or a secret identifier.
 
 **6.2.5.** How it relates to `Idempotency-Key` is in [idempotency 6](/docs/spec/idempotency#6).
 
-### 6.3. `ProviderReference`
+### 6.3. `IdempotencyKey`
 
-**6.3.1.** Opaque string of at most 255 characters, assigned by the provider.
-
-**6.3.2.** OPTIONAL: absent before the provider responds, or permanently if the provider never supplied one.
-
-**6.3.3.** A client MUST NOT use it as the primary correlation key nor assume it is unique across providers.
-
-### 6.4. `IdempotencyKey`
-
-**6.4.1.** 1 to 255 characters from `A-Za-z0-9_-`, carried by the `Idempotency-Key` header. Semantics: [idempotency](/docs/spec/idempotency).
+**6.3.1.** 1 to 255 characters from `A-Za-z0-9_-`, carried by the `Idempotency-Key` header. Semantics: [idempotency](/docs/spec/idempotency).
 
 ## 7. Timestamp
 
@@ -121,8 +108,6 @@ I use integer amounts, explicit currencies and opaque identifiers throughout the
 **7.3.** Seconds are REQUIRED; fractions, down to the millisecond, are OPTIONAL. A client MUST accept them; a server MUST NOT require them.
 
 **7.4.** Timestamps MUST NOT serve as a total order between events. A client MUST NOT derive a sequence from them.
-
-**7.5.** A timestamp received from the provider without an offset MUST be interpreted in the time zone of the gateway's business day: `America/Port-au-Prince` by default, configurable by the operator. An ambiguous time (return to standard time) MUST be resolved to the later instant. A relative duration (`expiredAt: 300`) MUST run from receipt of the response.
 
 ## 8. `Fee`
 
@@ -135,26 +120,26 @@ I use integer amounts, explicit currencies and opaque identifiers throughout the
 
 **8.2.** An absent `Fee` means "unknown"; zero fees are a zero amount. A client MUST NOT display absent fees as zero nor derive them by subtraction.
 
-**8.3.** `bearer` reports who bore the fees according to the provider. The gateway MUST NOT let a client set it.
+**8.3.** `bearer` reports who bore the fees according to the provider. The server MUST NOT let a client set it.
 
-**8.4.** The gateway MUST NOT delay a terminal transition while waiting for the fees, nor guess them.
+**8.4.** The server MUST NOT delay a terminal transition while waiting for the fees, nor guess them.
 
-**8.5.** A gateway whose provider never reports fees MUST NOT advertise `payments.fee`.
+**8.5.** A server that cannot report a provider's fees MUST NOT advertise `payments.fee` for that provider.
 
 ## 9. `Metadata`
 
-**9.1.** OPTIONAL object of strings to strings, supplied by the merchant, returned wherever the resource is returned.
+**9.1.** OPTIONAL object of strings to strings, returned wherever the resource is returned. The client supplies it at creation; the server MAY add its own keys (9.4).
 
 **9.2.** At most 20 keys; keys of 1 to 40 characters from `A-Za-z0-9_.-`; values of at most 500 characters. Any value other than a string is invalid.
 
-**9.3.** The gateway MUST store and return metadata unaltered, and MUST NOT interpret it.
+**9.3.** The server MUST store and return the client's keys unaltered, MUST NOT remove them, and MUST NOT interpret them.
 
-**9.4.** The gateway MUST NOT send metadata to the provider, unless a specification explicitly requires it for a named operation.
+**9.4.** The server documents the keys it adds. It MUST NOT add a key the client set. Its keys do not count toward the limits of 9.2.
 
 **9.5.** Merchants SHOULD NOT put personal data in it and MUST NOT put secret identifiers in it.
 
 ## 10. Security
 
-**10.1.** Phone numbers MUST NOT appear in logs other than the audit log ([authentication 10](/docs/spec/authentication#10)), in error messages, or in telemetry.
+**10.1.** Phone numbers MUST NOT appear in logs other than the audit log ([authentication 9](/docs/spec/authentication#9)), in error messages, or in telemetry.
 
-**10.2.** The gateway SHOULD document that metadata is not encrypted at rest, unless the operator encrypts it.
+**10.2.** The server SHOULD document that metadata is not encrypted at rest, unless the operator encrypts it.

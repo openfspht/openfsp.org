@@ -22,16 +22,15 @@ OpenFSP couvre le dialogue entre une application marchande et un opérateur. La 
 
 - **Développeur marchand.** Utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) ou le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript), ou appelez [l'API](/fr/docs/spec/payments-api) en HTTP. Le [démarrage rapide](/fr/docs/quickstart) fait tourner un paiement complet sur votre machine.
 - **Opérateur de paiement.** [Implémentez OpenFSP](/fr/docs/native-operator) dans votre propre système et testez-le avec la [suite de conformité](/fr/docs/spec/conformance).
-- **MonCash ou NatCash aujourd'hui.** Aucun des deux ne parle encore OpenFSP. La [passerelle](/fr/docs/gateway), que vous hébergez, traduit le contrat vers leurs API actuelles.
+- **MonCash ou NatCash aujourd'hui.** Aucun des deux n'implémente encore OpenFSP ; hébergez la [passerelle](/fr/docs/gateway) devant leurs API actuelles.
 - **Relecteur.** Lisez la [spécification](/fr/docs/spec), les [décisions](/fr/docs/decisions) qui la fondent et [l'état du projet](/fr/docs/status).
 
 ## Ce qui existe
 
 - La spécification, version `0.1.0`, en anglais et en français.
 - Des SDK pour Kotlin, Java et TypeScript, chacun avec son module de test.
-- Un simulateur de MonCash, de NatCash et d'un opérateur OpenFSP natif, pannes comprises.
+- Un serveur simulé de référence, `mock_openfsp`, pannes comprises.
 - Une suite de conformité, un validateur public et des attestations signées de chaque exécution.
-- La passerelle pour MonCash et NatCash.
 
 Tout est sous licence Apache-2.0. [L'état du projet](/fr/docs/status) donne le détail.
 

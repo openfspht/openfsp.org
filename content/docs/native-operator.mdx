@@ -1,5 +1,5 @@
 ---
-title: Implement OpenFSP as a provider
+title: Implement OpenFSP
 description: Reading path, HTTP surface and conformance checks for a payment service provider implementing OpenFSP natively.
 ---
 
@@ -16,16 +16,14 @@ This page is the work plan and the tests. The requirements themselves are in the
 | Expose exchanges          | Creation, retrieval, synchronization, errors and recovery after connection loss.                          | [Payments API](/docs/spec/payments-api), [idempotency](/docs/spec/idempotency)        |
 | Announce actual functions | Discovery, optional capabilities and limits, without emulating missing functions.                         | [Capabilities](/docs/spec/capabilities)                                               |
 | Authenticate and notify   | Keys, scopes, signing-key publication, event verification and delivery.                                   | [Authentication](/docs/spec/authentication), [webhooks](/docs/spec/webhooks)          |
-| Check applicable scope    | Target `native-operator`, Core and profiles matching announced capabilities.                              | [Conformance 5.7](/docs/spec/conformance#5.7)                                         |
-
-Existing chapters often name the gateway target. For a native provider, read requirements through the [scope rule in 5.7](/docs/spec/conformance#5.7), rather than automatically replacing words. Constraints on translating a third-party API do not create an obligation to deploy that translation.
+| Check applicable scope    | Target `server`, Core and profiles matching announced capabilities.                                       | [Conformance 3](/docs/spec/conformance#3)                                             |
 
 ## Prepare the HTTP surface
 
 | Surface                                                    | Role                                                                 | Native-target consideration                                                                                                      |
 | ---------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `/.well-known/openfsp-configuration`                       | Public discovery of the issuer, endpoints, methods and webhook keys. | Read the [configuration structure](/docs/spec/capabilities#3.1) and [signing keys](/docs/spec/webhooks#6.1.1).                   |
-| `GET /v1/capabilities`                                     | Actual capabilities and limits.                                      | A native provider announces a single provider: itself, using its registered identifier ([3.2.6](/docs/spec/capabilities#3.2.6)). |
+| `/.well-known/openfsp-configuration`                       | Public discovery of the issuer, endpoints, methods and webhook keys. | Read the [configuration structure](/docs/spec/capabilities#3.1) and [signing keys](/docs/spec/webhooks#6.1).                   |
+| `GET /v1/capabilities`                                     | Actual capabilities and limits.                                      | Announce each provider you serve under its registered identifier ([2.6](/docs/spec/capabilities#2.6)). |
 | `POST /v1/payments`                                        | Contract-defined creation, with an idempotency key.                  | Follow formats, refusals, replay and unknown-effect rules; a creation without a response is not a certain failure.               |
 | `GET /v1/payments/{id}` and `GET /v1/payments?reference=…` | Retrieve a payment and recover after a lost response.                | The merchant knows its reference before the call; it must not need to reconstruct an opaque identifier.                          |
 | `POST /v1/payments/{id}/synchronize`                       | Synchronize state according to the contract.                         | Read native-target requirements alongside lifecycle rules and announced capabilities.                                            |
@@ -37,11 +35,11 @@ These URLs identify the normative surface. Clients should read published URLs fr
 
 For calls using the contract's `callback_url`, check [API 5.1.8](/docs/spec/payments-api#5.1.8). Native tests check, in particular, delivery of a signed `payment.succeeded`, published Ed25519 keys, and rejection of an HTTP `callback_url` outside the loopback exceptions.
 
-Do not treat simulator behavior as an implicit protocol extension. Events, signatures, ordering and deduplication follow the [webhook contract](/docs/spec/webhooks); native-specific tests are detailed in [5.7.1](/docs/spec/conformance#5.7.1).
+Do not treat simulator behavior as an implicit protocol extension. Events, signatures, ordering and deduplication follow the [webhook contract](/docs/spec/webhooks); the matching tests are in [conformance 5.4](/docs/spec/conformance#5.4) and [5.10](/docs/spec/conformance#5.10).
 
 ## Observe a simulated native implementation
 
-The reference repository contains `mock_openfsp`, a fictitious provider exposing OpenFSP itself. It demonstrates and tests a direct connection without a gateway.
+The reference repository contains `mock_openfsp`, a fictitious provider exposing OpenFSP itself.
 
 From the [openfsp](https://github.com/openfspht/openfsp) repository, with the [quickstart prerequisites](/docs/quickstart#2), use two terminals:
 
@@ -53,7 +51,7 @@ make simulator
 make validate-native
 ```
 
-The default target is `http://127.0.0.1:8090/mock_openfsp`. The report is written to `backend/validator/infrastructure/build/conformance-report-native.json`. The command uses the simulator's published test keys and starts the suite's webhook receiver on port 8098, a Makefile default (`VALIDATE_NATIVE_WEBHOOK_PORT`). This run does not start the gateway.
+The default target is `http://127.0.0.1:8090/mock_openfsp`. The report is written to `backend/validator/infrastructure/build/conformance-report-native.json`. The command uses the simulator's published test keys and starts the suite's webhook receiver on port 8098, a Makefile default (`VALIDATE_NATIVE_WEBHOOK_PORT`).
 
 The [simulated native provider sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) let you inspect behavior and the command.
 
@@ -71,7 +69,7 @@ The following runs the suite against your instance. Replace `operator.example`, 
 
 ```bash
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
-  --target native-operator \
+  --target server \
   --base-url https://operator.example \
   --api-key "$OPENFSP_NATIVE_TEST_KEY" \
   --conformance conformance \

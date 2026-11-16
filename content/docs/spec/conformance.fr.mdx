@@ -1,6 +1,6 @@
 ---
 title: Conformité
-description: Ce qu'énonce une affirmation de conformité, les cibles et niveaux testés par la suite, le contenu de la suite et de son rapport, et la façon dont le serveur simulé remplace les opérateurs.
+description: Ce qu'énonce une affirmation de conformité, les cibles et niveaux testés par la suite, le contenu de la suite et de son rapport, et le serveur simulé de référence.
 ---
 
 Je distingue la conformité par cible, version du protocole et capacités. Le rapport consigne les contrôles et leurs limites. Je motive ces choix dans la [décision 0008](/fr/docs/decisions#0008).
@@ -24,28 +24,25 @@ même configuration DOIVENT donner le même résultat (9.6).
 
 **2.1.**
 
-| Cible           | Testé                                          | Remplacé par                           |
-| --------------- | ---------------------------------------------- | -------------------------------------- |
-| Client          | Application ou SDK qui appelle une passerelle. | Une passerelle de référence conforme.  |
-| Passerelle      | Serveur implémentant le protocole.             | Le serveur simulé (9) comme opérateur. |
-| Opérateur natif | Opérateur implémentant OpenFSP directement.    | Rien.                                  |
+| Cible   | Testé                                       | Remplacé par            |
+| ------- | ------------------------------------------- | ----------------------- |
+| Client  | Application ou SDK qui appelle un serveur.  | Le serveur simulé (9).  |
+| Serveur | Implémentation de l'API.                    | Rien.                   |
 
 **2.2.** La conformité client porte sur l'usage des réponses : récupération par référence,
 URL de retour non probante, réutilisation de la clé d'idempotence, paiement durablement
 `pending`.
 
-**2.3.** La section 5 définit les tests de la cible passerelle.
+**2.3.** La section 5 définit les tests de la cible serveur.
 
-**2.4.** Tests de la cible opérateur natif : 5.7.
-
-**2.5.** Une exécution vise une seule cible.
+**2.4.** Une exécution vise une seule cible.
 
 ## 3. Niveaux
 
 **3.1.** **Core** : la capacité de base ([API 2](/fr/docs/spec/payments-api#2)) et tout ce qui est
 obligatoire quelle que soit la capacité : modèle de données, cycle de vie, idempotence, erreurs,
 authentification, découverte de capacités, plafonds lorsqu'ils sont déclarés, tests de refus
-du 5.4 hors ceux du 5.4.1.
+du 5.4.
 
 **3.2.** Une implémentation qui ne satisfait pas Core n'est pas conforme.
 
@@ -55,10 +52,9 @@ une capacité non annoncée.
 | Profil                     | Capacité                         | Spécification                                                                          |
 | -------------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
 | `payments.lookup`          | Consultation faisant foi         | [capacités 5](/fr/docs/spec/capabilities#5)                                            |
-| `payments.statement`       | Relevé de l'opérateur            | [cycle de vie 6.7](/fr/docs/spec/lifecycle#6.7), [relevés](/fr/docs/spec/lifecycle#10) |
+| `payments.statement`       | Relevé de l'opérateur            | [relevés](/fr/docs/spec/lifecycle#10)                                                  |
 | `payments.fee`             | Frais rapportés par l'opérateur  | [modèle de données 8](/fr/docs/spec/data-model#8)                                      |
-| `webhooks.verify`          | Rappels signés par l'opérateur   | [cycle de vie 6.5](/fr/docs/spec/lifecycle#6.5) (a)                                    |
-| `webhooks.per_payment_url` | URL de rappel propre au paiement | [cycle de vie 6.6](/fr/docs/spec/lifecycle#6.6)                                        |
+| `webhooks.per_payment_url` | Événements livrés à `callback_url` | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)                                        |
 | `webhooks.emit`            | Événements signés                | [webhooks](/fr/docs/spec/webhooks)                                                     |
 
 **3.4.** La spécification d'une capacité DOIT définir les tests de son profil.
@@ -73,25 +69,23 @@ rapporter Core comme réussi lorsqu'un test Core a échoué, ni rapporter un tau
 **4.1.** Toute partie peut exécuter la suite, contre l'implémentation de son choix ; elle
 produit le rapport du 7.
 
-**4.2.** Pour une passerelle, la suite joue le client et le serveur simulé joue les opérateurs.
+**4.2.** Pour un serveur, la suite joue le client.
 
 **4.3.** La suite NE DOIT PAS exiger de modification, d'instrumentation ou de mode de test de
 l'implémentation.
 
-**4.4.** Seule la configuration est permise : pointer la passerelle vers le serveur simulé, fournir
-des identifiants de test et la clé de dérivation des identifiants de commande
-([idempotence 7.2](/fr/docs/spec/idempotency#7.2)), une clé de portée `statements:read` pour les tests du 5.11,
-et l'URL de rappel partagée de l'opérateur pour le test « Rappel non signé, hors URL propre » du
-5.4.
+**4.4.** Seule la configuration est permise : des identifiants de test, une clé de portée
+`statements:read` pour les tests du 5.9, et les entrées des tests assistés (4.7).
 
-**4.5.** La suite pilote directement la surface de contrôle du serveur simulé (9.5).
+**4.5.** Contre le serveur simulé, la suite pilote sa surface de contrôle (9.5). Contre tout
+autre serveur, un test qui exige une issue choisie est assisté (4.7).
 
 **4.6.** La suite DOIT être exécutable hors ligne, en intégration continue, sans compte.
 
-**4.7.** Un test qui exige une action d'exploitant (attestation, révocation de clé, déclaration
-de bornes, adaptateur pointé vers un port fermé) est marqué assisté : la suite décrit l'action,
-un exploitant l'exécute par l'administration ou la configuration de la passerelle, et le rapport
-signale le test comme assisté. Ce n'est pas une modification au sens du 4.3.
+**4.7.** Un test qui exige une action d'exploitant (révocation de clé, déclaration de bornes,
+issue choisie par la suite) est marqué assisté : la suite décrit l'action, un exploitant
+l'exécute par l'administration ou la configuration du serveur, et le rapport signale le test
+comme assisté. Ce n'est pas une modification au sens du 4.3.
 
 ## 5. Contenu
 
@@ -102,10 +96,8 @@ horodatages UTC ([modèle de données 7](/fr/docs/spec/data-model#7)), requêtes
 tolérantes ([modèle de données 2.3, 2.4](/fr/docs/spec/data-model#2.4)).
 
 **5.2. Cycle de vie.** Chaque transition du [cycle de vie 2](/fr/docs/spec/lifecycle#2) est atteignable,
-hors `pending` vers `canceled`, qu'aucun opérateur simulé ne rapporte ;
-aucun état terminal n'est quitté ; un rapport contradictoire du serveur simulé produit un conflit, pas
-une transition ([cycle de vie 2.2](/fr/docs/spec/lifecycle#2.2)) ; `failure_reason` est présent si et
-seulement si `status` vaut `failed`.
+hors `pending` vers `canceled` ; aucun état terminal n'est quitté ; `failure_reason` est présent
+si et seulement si `status` vaut `failed`.
 
 **5.3. Idempotence.** Rejeu de la réponse enregistrée ([idempotence 3.2](/fr/docs/spec/idempotency#3.2)) ; même
 clé, autre corps rejeté ([idempotence 3.3](/fr/docs/spec/idempotency#3.3)) ; doublon concurrent jamais
@@ -115,101 +107,67 @@ exécuté en parallèle, mis en attente ou rejeté en `idempotency-request-in-pr
 
 **5.4. Refus.** Chaque test vérifie un refus ou une absence d'effet :
 
-| Test                                                               | Attendu                                                                                             | Règle                                                         | Serveur simulé                                               |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
-| Synchroniser sans `payments.lookup`                                | `capability-not-supported`, pas d'état stocké présenté comme relu                                   | [capacités 5.3](/fr/docs/spec/capabilities#5.3)               | profil de test à relevé seul (9.3.5), `PENDING_FOREVER`      |
-| Synchroniser un paiement terminal sans `payments.lookup`           | paiement inchangé, `200`                                                                            | [capacités 5.3.1](/fr/docs/spec/capabilities#5.3.1)           | profil de test à relevé seul (9.3.5), `SUCCESS`              |
-| Opération d'une capacité non annoncée                              | `capability-not-supported`                                                                          | [capacités 4.4](/fr/docs/spec/capabilities#4.4)               | profil de test sans source (9.3.5), `SUCCESS`                |
-| `POST` sans `Idempotency-Key`                                      | `idempotency-key-required`                                                                          | [idempotence 1.3](/fr/docs/spec/idempotency#1.3)              | aucun                                                        |
-| Dénouement indéterminé, opérateur sans idempotence ni consultation | paiement `pending` ; aucun renvoi au journal (9.5.5) pendant au moins 40 s, durée portée au rapport | [idempotence 7.3](/fr/docs/spec/idempotency#7.3)              | profil de test sans source (9.3.5), `TIMEOUT`                |
-| Statut d'opérateur inconnu                                         | paiement `pending`                                                                                  | [cycle de vie 1.1](/fr/docs/spec/lifecycle#1.1)               | `mock_openfsp`, `UNKNOWN_STATUS`                             |
-| Rappel non signé, hors URL propre, annonçant un succès             | aucune transition                                                                                   | [cycle de vie 6.3](/fr/docs/spec/lifecycle#6.3)               | `mock_openfsp`, `PENDING_FOREVER`, rappel forgé par la suite |
-| Rappel sur URL propre avec jeton erroné                            | rejet sans effet                                                                                    | [cycle de vie 6.6](/fr/docs/spec/lifecycle#6.6)               | `mock_natcash`, `PENDING_FOREVER`, rappel forgé par la suite |
-| Relevé sans le paiement, `expires_at` non écoulé                   | paiement `pending`, pas d'`expired`                                                                 | [cycle de vie 5.3, 6.7](/fr/docs/spec/lifecycle#6.7)          | profil de test à relevé seul (9.3.5), `PENDING_FOREVER`      |
-| Requête de l'API tentant de fixer l'état d'un paiement             | état inchangé                                                                                       | [cycle de vie 6.8](/fr/docs/spec/lifecycle#6.8)               | `mock_moncash`, `PENDING_FOREVER`                            |
-| Opérateur renvoyant des identifiants dans une erreur               | `[REDACTED]` dans `provider_detail`                                                                 | [authentification 9.5, 9.6](/fr/docs/spec/authentication#9.6) | `mock_openfsp`, `CREDENTIAL_ECHO`                            |
-| Clé inconnue, révoquée, d'un autre environnement                   | trois `unauthenticated` indiscernables                                                              | [authentification 4.7](/fr/docs/spec/authentication#4.7)      | aucun ; assisté (4.7)                                        |
+| Test                                                     | Attendu                                                           | Règle                                                    | Serveur simulé                                          |
+| -------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
+| Synchroniser sans `payments.lookup`                      | `capability-not-supported`, pas d'état stocké présenté comme relu | [capacités 5.3](/fr/docs/spec/capabilities#5.3)          | opérateur de test à relevé seul (9.3.5), `PENDING_FOREVER` |
+| Synchroniser un paiement terminal sans `payments.lookup` | paiement inchangé, `200`                                          | [capacités 5.3.1](/fr/docs/spec/capabilities#5.3.1)      | opérateur de test à relevé seul (9.3.5), `SUCCESS`      |
+| Opération d'une capacité non annoncée                    | `capability-not-supported`                                        | [capacités 4.4](/fr/docs/spec/capabilities#4.4)          | opérateur de test de base (9.3.5), `SUCCESS`            |
+| Relevés d'un opérateur sans `payments.statement`         | une collection vide                                               | [cycle de vie 10.5.4](/fr/docs/spec/lifecycle#10.5.4)    | opérateur de test de base (9.3.5)                       |
+| `POST` sans `Idempotency-Key`                            | `idempotency-key-required`                                        | [idempotence 1.3](/fr/docs/spec/idempotency#1.3)         | aucun                                                   |
+| `callback_url` en `http` hors bouclage                   | création rejetée                                                  | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)            | `mock_openfsp`                                          |
+| Requête de l'API tentant de fixer l'état d'un paiement   | état inchangé                                                     | [cycle de vie 6.1](/fr/docs/spec/lifecycle#6.1)          | `mock_openfsp`, `PENDING_FOREVER`                       |
+| Clé inconnue, révoquée, d'un autre environnement         | trois `unauthenticated` indiscernables                            | [authentification 4.7](/fr/docs/spec/authentication#4.7) | aucun ; assisté (4.7)                                   |
 
-**5.4.1.** Le test « Rappel sur URL propre avec jeton erroné » relève du profil
-`webhooks.per_payment_url` ; une passerelle qui n'annonce pas cette capacité n'y est pas soumise.
+**5.5.** Chaque test qui dépend d'une issue nomme le scénario du serveur simulé qui la produit
+(9.4.3).
 
-**5.5.** Chaque test qui dépend d'un comportement d'opérateur nomme son scénario du serveur simulé
-(9.4.3) ; tout scénario a au moins un test. Le rapport contradictoire du 5.2 utilise `CONTRADICT`, l'écart de montant du [cycle de vie 6.3.2](/fr/docs/spec/lifecycle#6.3.2) utilise `AMOUNT_MISMATCH`.
-
-**5.6.** Limite : une passerelle qui annonce `webhooks.verify` sans vérifier passe tous les tests
-fonctionnels. La suite DOIT le signaler (7.4).
-
-**5.7.** Opérateur natif : tests passerelle moins les lignes du 5.4 portant sur le comportement
-de l'opérateur ; les refus sur ses propres capacités s'appliquent. Un test qui exige une issue
-choisie par la suite (refus, échéance, transition) est assisté (4.7) : le déclarant produit
-l'issue, la suite vérifie la réponse. Les requêtes de la suite étant celles reçues par
-l'opérateur, une création unique se vérifie par lecture par référence, pas au journal (9.5.5).
-
-**5.7.1.** Tests propres à l'opérateur natif :
-
-| Test                                   | Attendu                                                  | Règle                                                 |
-| -------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
-| Opérateur annoncé                      | un seul opérateur, son propre identifiant                | [capacités 3.2.6](/fr/docs/spec/capabilities#3.2.6)   |
-| Clés publiées                          | `webhook_keys` du document de configuration, JWK Ed25519 | [webhooks 6.1.1](/fr/docs/spec/webhooks#6.1.1)        |
-| Événement livré à `callback_url`       | `payment.succeeded` signé, vérifié avec `webhook_keys`   | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)         |
-| `callback_url` en `http` hors bouclage | création rejetée                                         | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)         |
-| Relevé sans `payments.statement`       | une collection vide                                      | [cycle de vie 10.6.4](/fr/docs/spec/lifecycle#10.6.4) |
-
-**5.8.** Tests client : réutilisation de la clé ([idempotence 8.1](/fr/docs/spec/idempotency#8.1)), pas de renvoi
-d'un `4xx` non rejouable ([idempotence 8.2](/fr/docs/spec/idempotency#8.2)), récupération par référence
+**5.6.** Tests client : réutilisation de la clé ([idempotence 7.1](/fr/docs/spec/idempotency#7.1)), pas de renvoi
+d'un `4xx` non rejouable ([idempotence 7.2](/fr/docs/spec/idempotency#7.2)), récupération par référence
 ([API 5.2.3](/fr/docs/spec/payments-api#5.2.3)), URL de retour non probante ([API 7.3](/fr/docs/spec/payments-api#7.3)),
 tolérance aux membres inconnus, paiement durablement `pending`, et pour les abonnés, vérification
 avant action ([webhooks 5.9](/fr/docs/spec/webhooks#5.9)) avec sondage fonctionnel quand tout événement est
 retenu ([webhooks 10.2](/fr/docs/spec/webhooks#10.2)).
 
-**5.9.** La suite DOIT couvrir chaque exigence observable par au moins un test, et le rapport DOIT
+**5.7.** La suite DOIT couvrir chaque exigence observable par au moins un test, et le rapport DOIT
 expliciter la correspondance test-exigence.
 
-**5.10. Défaillances d'opérateur.** Chaque test exerce un scénario du 9.4.3 ; le journal est
-celui du 9.5.5 :
+**5.8. Issues de paiement.** Chaque test exerce un scénario du 9.4.3 :
 
-| Test                                                                        | Attendu                                                                                                                                                                                     | Règle                                                                                                 | Serveur simulé                                                                          |
-| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Refus de l'opérateur                                                        | synchronisation `200`, `failed`, `failure_reason` `declined`, `failure_detail` portant le code et le message de l'opérateur inaltérés                                                       | [cycle de vie 7.2, 7.4](/fr/docs/spec/lifecycle#7.4), [API 10.2.2](/fr/docs/spec/payments-api#10.2.2) | `mock_openfsp`, `DECLINE`                                                               |
-| Fonds insuffisants                                                          | synchronisation `200`, `failed`, `failure_reason` `insufficient_funds`                                                                                                                      | [cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)                                                       | `mock_openfsp`, `INSUFFICIENT`                                                          |
-| Création sans réponse, paiement réussi chez l'opérateur, renvoi de même clé | `504 provider-timeout`, `effect` `unknown` ; une seule création au journal ; `succeeded` après synchronisation                                                                              | [API 5.1.6](/fr/docs/spec/payments-api#5.1.6), [idempotence 7.1, 7.2](/fr/docs/spec/idempotency#7.2)  | `mock_openfsp`, `TIMEOUT_THEN_SUCCESS`                                                  |
-| Création sans réponse, aucun paiement chez l'opérateur, renvoi de même clé  | `504 provider-timeout`, `effect` `unknown` ; au journal, une consultation précède toute seconde création ; aucun état terminal sans source faisant foi                                      | [idempotence 7.1](/fr/docs/spec/idempotency#7.1), [cycle de vie 3.2](/fr/docs/spec/lifecycle#3.2)     | `mock_openfsp`, `TIMEOUT_THEN_NOTHING`                                                  |
-| Échéance atteinte chez l'opérateur                                          | `expired` après synchronisation, `completed_at` présent                                                                                                                                     | [cycle de vie 4, 5.3](/fr/docs/spec/lifecycle#5.3) (a)                                                | `mock_openfsp`, `EXPIRE`, synchronisation après l'échéance d'une minute                 |
-| Dénouement sans rappel, opérateur avec consultation                         | état rapporté par la consultation, après synchronisation                                                                                                                                    | [capacités 5.2](/fr/docs/spec/capabilities#5.2)                                                       | `mock_openfsp`, `NO_CALLBACK`                                                           |
-| Dénouement sans rappel, relevé seul                                         | état terminal correspondant à la mention du relevé                                                                                                                                          | [cycle de vie 6.5, 6.7](/fr/docs/spec/lifecycle#6.7)                                                  | profil de test à relevé seul (9.3.5), `NO_CALLBACK`                                     |
-| Rappel tardif sur un paiement terminal                                      | paiement inchangé ; aucun événement si `webhooks.emit` est annoncée                                                                                                                         | [cycle de vie 3.1](/fr/docs/spec/lifecycle#3.1), [webhooks 11.1](/fr/docs/spec/webhooks#11.1)         | `mock_openfsp`, `LATE_CALLBACK`, terminal par synchronisation puis rappel livré (9.5.1) |
-| Même rappel signé reçu plusieurs fois                                       | une seule transition, `completed_at` inchangé ; un seul événement de transition si `webhooks.emit` est annoncée                                                                             | [cycle de vie 3.1, 4.3](/fr/docs/spec/lifecycle#4.3), [webhooks 11.1](/fr/docs/spec/webhooks#11.1)    | `mock_openfsp`, `DUPLICATE_CALLBACK`                                                    |
-| Erreur de l'opérateur à la création                                         | `502 provider-error`, `retryable` `true`, `effect` `unknown` ; `provider_detail`, s'il est présent, égal au code et au message de l'opérateur ; renvoi de même clé sans `Idempotent-Replay` | [API 10.6.5, 10.8.2, 10.9.6](/fr/docs/spec/payments-api#10.9.6)                                       | `mock_openfsp`, `PROVIDER_ERROR`                                                        |
-| Connexion refusée à la création                                             | `503 provider-unavailable`, `retryable` `true`, `effect` `none`                                                                                                                             | [API 10.9.6, 10.9.6.1](/fr/docs/spec/payments-api#10.9.6.1)                                           | aucun ; adaptateur pointé vers un port fermé, assisté (4.7)                             |
-| Succès rapporté pour un autre montant                                       | paiement `pending`, jamais `succeeded` ; le signalement à l'exploitant n'est pas observable par l'API                                                                                       | [cycle de vie 6.3.2, 6.4](/fr/docs/spec/lifecycle#6.4)                                                | `mock_openfsp`, `AMOUNT_MISMATCH`                                                       |
+| Test                                              | Attendu                                                                                                                               | Règle                                                                                                 | Serveur simulé                                                          |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Refus de l'opérateur                              | synchronisation `200`, `failed`, `failure_reason` `declined`, `failure_detail` portant le code et le message de l'opérateur inaltérés | [cycle de vie 7.2, 7.4](/fr/docs/spec/lifecycle#7.4), [API 10.2.2](/fr/docs/spec/payments-api#10.2.2) | `mock_openfsp`, `DECLINE`                                               |
+| Fonds insuffisants                                | synchronisation `200`, `failed`, `failure_reason` `insufficient_funds`                                                                | [cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)                                                       | `mock_openfsp`, `INSUFFICIENT`                                          |
+| Échéance atteinte chez l'opérateur                | `expired` après synchronisation, `completed_at` présent                                                                               | [cycle de vie 4, 5.3](/fr/docs/spec/lifecycle#5.3) (a)                                                | `mock_openfsp`, `EXPIRE`, synchronisation après l'échéance d'une minute |
+| Dénouement sans événement, opérateur avec consultation | état rapporté par la consultation, après synchronisation                                                                         | [capacités 5.2](/fr/docs/spec/capabilities#5.2)                                                       | `mock_openfsp`, `NO_CALLBACK`                                           |
+| Erreur de l'opérateur à la création               | `502 provider-error`, `retryable` `true`, `effect` `unknown` ; renvoi de même clé sans `Idempotent-Replay`                            | [API 10.6.5, 10.8.6](/fr/docs/spec/payments-api#10.8.6)                                               | `mock_openfsp`, `PROVIDER_ERROR`                                        |
 
-**5.11. Relevés.** Tests du [cycle de vie 10.7.1](/fr/docs/spec/lifecycle#10.7.1) :
+**5.9. Relevés.** Tests du [cycle de vie 10.6.1](/fr/docs/spec/lifecycle#10.6.1) :
 
 | Test                                                                  | Attendu                                                                                                                                                                           | Règle                                                         | Serveur simulé                                                         |
 | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Ligne d'un paiement de la passerelle                                  | `match` `matched`, `payment` égal à l'`id` du paiement                                                                                                                            | [cycle de vie 10.4.1, 10.4.2](/fr/docs/spec/lifecycle#10.4.2) | `mock_openfsp`, `SUCCESS`                                              |
-| Ligne sans paiement correspondant                                     | `match` `unmatched`, ligne listée par `GET /v1/statement_entries?match=unmatched` ; l'absence de paiement créé et le signalement à l'exploitant ne sont pas observables par l'API | [cycle de vie 10.4.3, 10.6.2](/fr/docs/spec/lifecycle#10.6.2) | `mock_openfsp`                                                         |
-| Paiement `succeeded` absent d'un relevé clos                          | paiement listé dans `missing_payments`                                                                                                                                            | [cycle de vie 10.4.4](/fr/docs/spec/lifecycle#10.4.4)         | `mock_openfsp`, `PENDING_FOREVER`, `succeeded` attesté ; assisté (4.7) |
+| Ligne d'un paiement                                                   | `match` `matched`, `payment` égal à l'`id` du paiement                                                                                                                            | [cycle de vie 10.4.1, 10.4.2](/fr/docs/spec/lifecycle#10.4.2) | `mock_openfsp`, `SUCCESS`                                              |
+| Ligne sans paiement correspondant                                     | `match` `unmatched`, ligne listée par `GET /v1/statement_entries?match=unmatched` ; l'absence de paiement créé et le signalement à l'exploitant ne sont pas observables par l'API | [cycle de vie 10.4.3, 10.5.2](/fr/docs/spec/lifecycle#10.5.2) | `mock_openfsp`                                                         |
+| Paiement `succeeded` absent d'un relevé clos                          | paiement listé dans `missing_payments`                                                                                                                                            | [cycle de vie 10.4.4](/fr/docs/spec/lifecycle#10.4.4)         | `mock_openfsp`, `PENDING_FOREVER`, puis `succeeded` ; assisté (4.7)    |
 | Ligne comptabilisée après minuit UTC et avant minuit à Port-au-Prince | `business_date` égale à la date de `booked_at` dans le fuseau de la journée comptable                                                                                             | [cycle de vie 10.1.2, 10.1.3](/fr/docs/spec/lifecycle#10.1.3) | `mock_openfsp`, `SUCCESS`                                              |
 
-**5.12. Capacités et identifiant de commande.**
+**5.10. Capacités.**
 
-| Test                                                                                                                | Attendu                                                                                                                                                                          | Règle                                                     | Serveur simulé                                              |
-| ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
-| Capacités annoncées pour chaque opérateur simulé                                                                    | aucun nom réservé ; aucune capacité hors de celles du 9.3.1                                                                                                                      | [capacités 1.3, 2.2, 7.2](/fr/docs/spec/capabilities#7.2) | `mock_openfsp`, `mock_moncash`, `mock_natcash`              |
-| Montant égal à `min_amount`, puis à `max_amount`                                                                    | paiement créé (`201`)                                                                                                                                                            | [capacités 6.7, 7.3](/fr/docs/spec/capabilities#7.3)      | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
-| Montant inférieur d'un centime à `min_amount`, supérieur d'un centime à `max_amount`, non multiple de `amount_step` | `amount-out-of-range` portant les bornes déclarées ; aucune requête au journal (9.5.5)                                                                                           | [capacités 6.7, 7.3](/fr/docs/spec/capabilities#7.3)      | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
-| Identifiant de commande                                                                                             | `provider_order_id` égal à l'identifiant calculé par la suite avec la clé de dérivation et à celui reçu au journal (9.5.5) ; le scénario déclaré sous cet identifiant s'applique | [idempotence 7.2](/fr/docs/spec/idempotency#7.2)          | `mock_openfsp`, `DECLINE`                                   |
+| Test                                                                                                                | Attendu                                                               | Règle                                                  | Serveur simulé                                              |
+| ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
+| Capacités annoncées pour chaque opérateur simulé                                                                    | aucun nom réservé ou retiré                                           | [capacités 2.2, 7.2](/fr/docs/spec/capabilities#7.2)   | `mock_openfsp` et les opérateurs de test (9.3.5)            |
+| Montant égal à `min_amount`, puis à `max_amount`                                                                    | paiement créé (`201`)                                                 | [capacités 6.7, 7.3](/fr/docs/spec/capabilities#7.3)   | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
+| Montant inférieur d'un centime à `min_amount`, supérieur d'un centime à `max_amount`, non multiple de `amount_step` | `amount-out-of-range` portant les bornes déclarées ; aucun paiement créé | [capacités 6.7, 7.3](/fr/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
+| Événement livré à `callback_url`                                                                                    | `payment.succeeded` signé, vérifié avec `webhook_keys`                | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)          | `mock_openfsp`, `SUCCESS`                                   |
 
-**5.13. Authentification.**
+**5.11. Authentification.**
 
 | Test                                                                           | Attendu                                                                                                         | Règle                                                              | Serveur simulé        |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------- |
 | Clé absente, mal formée, inconnue, révoquée, expirée, d'un autre environnement | six `unauthenticated` au même `title`, sans `detail` distinctif ; `WWW-Authenticate: Bearer` sur la clé absente | [authentification 3.3, 4.7, 7.6](/fr/docs/spec/authentication#7.6) | aucun ; assisté (4.7) |
 
-**5.14.** Les tests du 5.11 et le test « Dénouement sans rappel, relevé seul » du 5.10 relèvent
-du profil `payments.statement` ; une passerelle qui n'annonce pas cette capacité n'y est pas
-soumise.
+**5.12.** Les tests du 5.9 relèvent du profil `payments.statement`, et le test « Événement
+livré à `callback_url` » du 5.10 du profil `webhooks.per_payment_url` ; un serveur qui n'annonce
+pas une capacité n'est pas soumis aux tests de son profil.
 
 ## 6. Versions
 
@@ -219,8 +177,8 @@ majeure qu'elle ne connaît pas.
 **6.2.** Un résultat nomme la version de la suite, la version du protocole, la cible, le niveau,
 les profils, la date et la configuration.
 
-**6.3.** Un résultat ne vaut que pour la configuration qui l'a produit : obtenu avec le
-serveur simulé, il ne vaut pas pour un opérateur réel (9.8).
+**6.3.** Un résultat ne vaut que pour la configuration qui l'a produit ; obtenu contre le
+serveur simulé, il ne dit rien d'un opérateur réel (9.8).
 
 **6.4.** Un résultat devient périmé quand l'implémentation ou la version du protocole change.
 La partie qui cite un résultat DOIT citer la version de l'implémentation testée.
@@ -237,7 +195,7 @@ résultat par test et l'exigence correspondante.
 
 **7.3.** Un test échoué indique l'attendu et l'observé.
 
-**7.4.** Le rapport DOIT mentionner les limites du 5.6 à chaque exécution, même réussie.
+**7.4.** Le rapport DOIT mentionner les limites de la suite (8.1) à chaque exécution, même réussie.
 
 **7.5.** La partie qui publie un rapport DEVRAIT publier la configuration permettant de le
 reproduire.
@@ -247,50 +205,39 @@ reproduire.
 
 ## 8. Sécurité
 
-**8.1.** Un rapport de conformité n'est pas un audit de sécurité (5.6, 7.4).
+**8.1.** Un rapport de conformité n'est pas un audit de sécurité (7.4).
 
-**8.2.** La suite NE DOIT PAS exiger de secret d'opérateur réel ; elle s'exécute contre le
-serveur simulé (9) avec des identifiants de test.
+**8.2.** La suite NE DOIT PAS exiger d'identifiants de production ; elle s'exécute contre un
+environnement de test ou le serveur simulé (9).
 
 ## 9. Serveur simulé
 
-Les règles du 9 obligent le serveur simulé. La dernière phrase du 9.4.2, le 9.7.3 et le
-9.7.6 obligent aussi la passerelle.
+Les règles du 9 obligent le serveur simulé.
 
 ### 9.1. Rôle
 
-**9.1.1.** Le serveur simulé remplace les opérateurs. Une passerelle configurée contre lui exécute
-ses adaptateurs, sa machine à états et son traitement des rappels ordinaires.
+**9.1.1.** Le serveur simulé est un serveur de référence : il implémente l'API pour des
+opérateurs simulés, afin que les clients et la suite se testent sans opérateur réel.
 
-**9.1.2.** Il teste la passerelle et le client (limites : 9.8).
+**9.1.2.** Il teste le client et la suite (limites : 9.8).
 
 **9.1.3.** Il ne simule que les capacités spécifiées ([capacités 2.2](/fr/docs/spec/capabilities#2.2)).
 
 ### 9.2. Règle directrice
 
-**9.2.1.** Pour chaque comportement où les opérateurs documentés diffèrent
-([passerelle 8](/fr/docs/gateway#8)), `mock_openfsp` et les profils de test
-(9.3.5) reproduisent celui qui impose le plus de contraintes à la passerelle. `mock_moncash` et
-`mock_natcash` reproduisent le dialecte de leur opérateur, tel que le documente l'opérateur et
-tel qu'observé dans son bac à sable.
-
-**9.2.2.** Il n'invente pas de capacité, et chaque capacité facultative manque à au moins un
-opérateur simulé, profils de test du 9.3.5 compris.
+**9.2.1.** Il n'invente pas de capacité, et chaque capacité facultative manque à au moins un
+opérateur simulé, opérateurs de test du 9.3.5 compris.
 
 ### 9.3. Opérateurs simulés
 
 **9.3.1.**
 
-| Opérateur      | Capacités                                                                                          | Cas exercé                                                                  |
-| -------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `webhooks.verify`, `webhooks.per_payment_url` | Opérateur natif (9.3.2) : rappels signés, consultation, URL propre, relevé. |
-| `mock_moncash` | `payments`, `payments.lookup`                                                                      | Dialecte MonCash : URL de retour fixe, aucun rappel.                        |
-| `mock_natcash` | `payments`, `payments.lookup`, `webhooks.verify`, `webhooks.per_payment_url`                       | Dialecte NatCash : rappels signés, URL propre.                              |
+| Opérateur      | Capacités                                                                       | Cas exercé                                                                  |
+| -------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `webhooks.per_payment_url` | Serveur de référence (9.3.2) : consultation, relevé, événements à `callback_url`. |
 
-**9.3.2.** `mock_openfsp` est un opérateur natif (2.4, 5.7) : il expose lui-même l'API OpenFSP
-et signe ses rappels selon les [webhooks](/fr/docs/spec/webhooks) (RFC 9421). Seul l'adaptateur OpenFSP
-générique le sert. `mock_moncash` et `mock_natcash` imitent le dialecte de leur opérateur
-(9.7.5).
+**9.3.2.** `mock_openfsp` expose lui-même l'API et signe ses livraisons selon les
+[webhooks](/fr/docs/spec/webhooks) (RFC 9421).
 
 **9.3.3.** Le paiement au comptoir est reporté : aucun opérateur simulé n'en annonce les
 capacités.
@@ -298,14 +245,13 @@ capacités.
 **9.3.4.** Les identifiants des opérateurs simulés utilisent le préfixe `mock_`, réservé par le
 [registre](/fr/docs/registry). Aucun opérateur réel n'y reçoit d'identifiant.
 
-**9.3.5.** Le serveur simulé accepte aussi, dans sa configuration, des profils d'opérateur
-réservés aux tests, définis par des indicateurs de capacité (consultation, rappels, relevés,
-idempotence par identifiant de commande). La suite s'en sert pour les cas que les trois opérateurs du 9.3.1 n'isolent pas :
+**9.3.5.** Le serveur simulé sert aussi des opérateurs simulés réservés aux tests, définis par
+des indicateurs de capacité. La suite s'en sert pour les cas que `mock_openfsp` n'isole pas :
 
-| Profil      | Sources du [cycle de vie 6.5](/fr/docs/spec/lifecycle#6.5) | Cas exercé                                                                                                                                                              |
-| ----------- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sans source | (e) seule, sans idempotence                                | Chaque paiement attend une attestation ([cycle de vie 6.8](/fr/docs/spec/lifecycle#6.8)) ; aucun renvoi automatique ([idempotence 7.3](/fr/docs/spec/idempotency#7.3)). |
-| Relevé seul | (d), (e)                                                   | Synchronisation sans `payments.lookup` ; avec `NO_CALLBACK`, la passerelle ne dispose que du relevé.                                                                    |
+| Opérateur de test | Capacités                        | Cas exercé                                                                                         |
+| ----------------- | -------------------------------- | -------------------------------------------------------------------------------------------------- |
+| De base           | `payments`                       | Opération d'une capacité non annoncée ; relevés d'un opérateur sans `payments.statement`.          |
+| Relevé seul       | `payments`, `payments.statement` | Synchronisation sans `payments.lookup`.                                                            |
 
 **9.3.6.** `mock_openfsp` ne livre à `callback_url` ([API 5.1.8](/fr/docs/spec/payments-api#5.1.8)) que les
 événements de transition vers un état terminal, jamais `payment.created`. `sequence` croît par
@@ -313,8 +259,8 @@ paiement et compte la création non livrée : la transition porte `2`
 ([webhooks 8.1](/fr/docs/spec/webhooks#8.1)).
 
 **9.3.7.** Outre sa clé active, `mock_openfsp` publie une clé révoquée, une clé expirée et la clé
-d'un second principal, pour que les tests du 5.3 et du 5.13 s'exercent sans action d'exploitant
-contre la cible opérateur natif.
+d'un second principal, pour que les tests du 5.3 et du 5.11 s'exercent contre lui sans action
+d'exploitant.
 
 ### 9.4. Défaillances
 
@@ -322,75 +268,47 @@ contre la cible opérateur natif.
 survient sans avoir été demandé.
 
 **9.4.2.** Sélecteur : avant la création, la suite déclare le scénario d'un paiement sur la
-surface de contrôle (9.5), sous l'identifiant de commande qu'elle calcule avec la clé de
-dérivation fournie en configuration ([idempotence 7.2](/fr/docs/spec/idempotency#7.2),
-4.4). La passerelle n'a aucun chemin de code propre au serveur simulé.
+surface de contrôle (9.5), sous sa référence.
 
 **9.4.3.** Scénarios :
 
-| Scénario               | Comportement                                                  | Règle exercée                                            |
-| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
-| `SUCCESS`              | Succès sans délai ajouté ; scénario par défaut (9.4.5).       | Chemin nominal.                                          |
-| `DECLINE`              | Échec, refusé.                                                | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)          |
-| `INSUFFICIENT`         | Échec, fonds insuffisants.                                    | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)          |
-| `TIMEOUT`              | Requête acceptée, aucune réponse.                             | [Idempotence 5.2, 7.1](/fr/docs/spec/idempotency#7.1)    |
-| `TIMEOUT_THEN_SUCCESS` | Aucune réponse, paiement réussi chez l'opérateur.             | [Idempotence 7.1](/fr/docs/spec/idempotency#7.1)         |
-| `TIMEOUT_THEN_NOTHING` | Aucune réponse ; aucun paiement créé chez l'opérateur.        | [Idempotence 7.1](/fr/docs/spec/idempotency#7.1)         |
-| `PENDING_FOREVER`      | Reste en attente jusqu'à instruction (9.5).                   | [Cycle de vie 1.1](/fr/docs/spec/lifecycle#1.1)          |
-| `EXPIRE`               | Expire à l'échéance, fixée à une minute après la création.    | [Cycle de vie 5](/fr/docs/spec/lifecycle#5)              |
-| `NO_CALLBACK`          | Dénouement sans rappel.                                       | [Cycle de vie 6.2, 6.5](/fr/docs/spec/lifecycle#6.5)     |
-| `LATE_CALLBACK`        | Rappel très tardif.                                           | Ordre, abonnés inattentifs.                              |
-| `DUPLICATE_CALLBACK`   | Même rappel plusieurs fois.                                   | [Cycle de vie 3.1](/fr/docs/spec/lifecycle#3.1)          |
-| `UNKNOWN_STATUS`       | Statut jamais vu.                                             | [Cycle de vie 1.1](/fr/docs/spec/lifecycle#1.1)          |
-| `PROVIDER_ERROR`       | Erreur côté opérateur.                                        | [API 10.9.6](/fr/docs/spec/payments-api#10.9.6)          |
-| `CREDENTIAL_ECHO`      | Renvoie les identifiants reçus dans l'erreur.                 | [Authentification 9.5](/fr/docs/spec/authentication#9.5) |
-| `CONTRADICT`           | Rapporte un succès, puis un échec à la consultation suivante. | [Cycle de vie 6.4](/fr/docs/spec/lifecycle#6.4)          |
-| `AMOUNT_MISMATCH`      | Rapporte le succès d'un montant différent.                    | [Cycle de vie 6.3.2](/fr/docs/spec/lifecycle#6.3.2)      |
+| Scénario             | Comportement                                                          | Règle exercée                                   |
+| -------------------- | --------------------------------------------------------------------- | ----------------------------------------------- |
+| `SUCCESS`            | Succès sans délai ajouté ; scénario par défaut (9.4.5).               | Chemin nominal.                                 |
+| `DECLINE`            | Échec, refusé.                                                        | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2) |
+| `INSUFFICIENT`       | Échec, fonds insuffisants.                                            | [Cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2) |
+| `TIMEOUT`            | Requête acceptée, pas de réponse à temps : `504 provider-timeout`.    | [API 5.1.6](/fr/docs/spec/payments-api#5.1.6)   |
+| `PENDING_FOREVER`    | Reste en attente jusqu'à instruction (9.5).                           | [Cycle de vie 1.1](/fr/docs/spec/lifecycle#1.1) |
+| `EXPIRE`             | Expire à l'échéance, fixée à une minute après la création.            | [Cycle de vie 5](/fr/docs/spec/lifecycle#5)     |
+| `NO_CALLBACK`        | Dénouement atteint, aucun événement livré à `callback_url`.           | [Webhooks 10.2](/fr/docs/spec/webhooks#10.2)    |
+| `LATE_CALLBACK`      | Événement livré très tard à `callback_url`.                           | [Webhooks 8.3](/fr/docs/spec/webhooks#8.3)      |
+| `DUPLICATE_CALLBACK` | Même événement livré plusieurs fois à `callback_url`.                 | [Webhooks 8.4](/fr/docs/spec/webhooks#8.4)      |
+| `UNKNOWN_STATUS`     | Valeur de `status` jamais vue.                                        | [Cycle de vie 1.2](/fr/docs/spec/lifecycle#1.2) |
+| `PROVIDER_ERROR`     | Erreur côté opérateur.                                                | [API 10.8.6](/fr/docs/spec/payments-api#10.8.6) |
 
 **9.4.4.** Un scénario n'est ajouté que si une spécification définit un comportement impossible à
 provoquer autrement.
 
-**9.4.5.** Hors mode automatique (9.4.9), un paiement sans scénario déclaré se comporte comme
+**9.4.5.** Hors mode automatique (9.4.8), un paiement sans scénario déclaré se comporte comme
 `SUCCESS`.
 
 **9.4.6.** Le serveur simulé répond après un court délai fixe, jamais instantanément.
 
-**9.4.7.** Un opérateur simulé n'offre que les scénarios que son homologue réel peut produire :
+**9.4.7.** La surface de contrôle refuse avec `422` un scénario que l'opérateur visé n'offre pas.
 
-| Opérateur      | Scénarios                                                                                                           |
-| -------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `mock_moncash` | `SUCCESS`, `PENDING_FOREVER`, `EXPIRE`, `TIMEOUT`, `TIMEOUT_THEN_SUCCESS`, `TIMEOUT_THEN_NOTHING`, `PROVIDER_ERROR` |
-| `mock_natcash` | ceux de `mock_moncash`, `DECLINE`, `NO_CALLBACK`, `DUPLICATE_CALLBACK`, `LATE_CALLBACK`                             |
-| `mock_openfsp` | tous ceux du 9.4.3                                                                                                  |
-
-Un profil de test (9.3.5) offre les scénarios du 9.4.3 compatibles avec ses indicateurs.
-
-**9.4.8.** La surface de contrôle refuse avec `422` un scénario que l'opérateur visé n'offre pas.
-
-**9.4.9.** La surface de contrôle offre un mode automatique : chaque nouvelle commande reçoit, à
-tour de rôle, le scénario suivant de son opérateur (9.4.7).
-
-**9.4.10.** Le serveur simulé ne refuse pas la connexion pour un seul paiement. La connexion
-refusée ([API 10.9.6.1](/fr/docs/spec/payments-api#10.9.6.1)) se teste en pointant l'adaptateur vers un port fermé,
-test assisté (4.7).
+**9.4.8.** La surface de contrôle offre un mode automatique : chaque nouveau paiement reçoit, à
+tour de rôle, le scénario suivant parmi ceux qu'offre son opérateur (9.4.7).
 
 ### 9.5. Contrôle
 
-**9.5.1.** Une surface de contrôle, distincte de l'interface vue par la passerelle, permet de
-déclarer le scénario d'un paiement à venir, de résoudre un paiement en attente et de livrer un
-rappel retenu. Elle n'offre aucun contrôle de l'horloge : l'expiration s'exerce avec `EXPIRE`
-(9.4.3).
+**9.5.1.** Une surface de contrôle, distincte de l'API, permet de déclarer le scénario d'un
+paiement à venir, de résoudre un paiement en attente et de livrer un événement retenu. Elle
+n'offre aucun contrôle de l'horloge : l'expiration s'exerce avec `EXPIRE` (9.4.3).
 
-**9.5.2.** Elle est pilotée par la suite de tests, jamais par la passerelle.
+**9.5.2.** Elle est pilotée par la suite de tests, jamais par le serveur testé.
 
-**9.5.3.** Réservé.
-
-**9.5.4.** Elle est liée à l'interface de bouclage ou placée derrière l'authentification de
+**9.5.3.** Elle est liée à l'interface de bouclage ou placée derrière l'authentification de
 l'environnement de test.
-
-**9.5.5.** La surface de contrôle DOIT exposer à la suite le journal des requêtes reçues de la
-passerelle, par opérateur simulé : méthode, chemin et corps tels que reçus. La suite y vérifie
-un appel à l'opérateur ou son absence sans instrumenter la passerelle (4.3).
 
 ### 9.6. Déterminisme
 
@@ -403,28 +321,13 @@ séquence de réponses.
 
 **9.7.1.** Tout paiement simulé porte un identifiant `mock_` (9.3.4).
 
-**9.7.2.** Réservé.
-
-**9.7.3.** Une passerelle configurée contre le serveur simulé l'indique dans son journal de démarrage.
-
-**9.7.4.** Le serveur simulé ne rapporte jamais l'identifiant d'un opérateur réel et ne produit aucun
+**9.7.2.** Le serveur simulé ne rapporte jamais l'identifiant d'un opérateur réel et ne produit aucun
 artefact assimilable à un règlement.
-
-**9.7.5.** Un opérateur simulé PEUT imiter le dialecte d'un opérateur réel si son identifiant porte
-le préfixe `mock_` et son nom affiché la mention « (mock) ». Il ne s'annonce jamais comme
-l'opérateur réel.
-
-**9.7.6.** Un déploiement pointé vers le serveur simulé est en environnement `test` ; une clé `live`
-y est refusée ([authentification 2.3](/fr/docs/spec/authentication#2.3)).
 
 ### 9.8. Limites
 
-**9.8.1.** Le serveur simulé ne prouve pas qu'un adaptateur correspond à son opérateur.
+**9.8.1.** Il ne prouve pas qu'un opérateur se comporte comme le dit sa documentation.
 
-**9.8.2.** Il ne prouve pas qu'un opérateur se comporte comme le dit sa documentation.
+**9.8.2.** Il ne mesure pas la tenue en charge.
 
-**9.8.3.** Il ne mesure pas la tenue en charge.
-
-**9.8.4.** Ses scénarios sont dérivés des règles de la spécification. Les dialectes de
-`mock_moncash` et `mock_natcash` suivent la documentation de l'opérateur et les observations de
-son bac à sable, qui ne prouvent rien de la production (9.8.1, 9.8.2).
+**9.8.3.** Ses scénarios sont dérivés des règles de la spécification.

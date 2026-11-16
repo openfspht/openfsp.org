@@ -22,16 +22,15 @@ OpenFSP covers how a merchant application talks to a provider. It does not move,
 
 - **Merchant developer.** Use the [Kotlin and Java SDK](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) or the [TypeScript SDK](https://github.com/openfspht/openfsp/tree/main/sdks/typescript), or call the [API](/docs/spec/payments-api) over HTTP. The [quickstart](/docs/quickstart) runs a full payment on your machine.
 - **Payment provider.** [Implement OpenFSP](/docs/native-operator) in your own system and test it with the [conformance suite](/docs/spec/conformance).
-- **MonCash or NatCash today.** Neither speaks OpenFSP yet. The [gateway](/docs/gateway), which you host, translates the contract to their current APIs.
+- **MonCash or NatCash today.** Neither implements OpenFSP yet; host the [gateway](/docs/gateway) in front of their current APIs.
 - **Reviewer.** Read the [specification](/docs/spec), the [decisions](/docs/decisions) behind it and the [project status](/docs/status).
 
 ## What exists
 
 - The specification, version `0.1.0`, in English and French.
 - SDKs for Kotlin, Java and TypeScript, each with a testing module.
-- A simulator for MonCash, NatCash and a native OpenFSP provider, failures included.
+- A reference mock server, `mock_openfsp`, failures included.
 - A conformance suite, a public validator and signed attestations of each run.
-- The gateway for MonCash and NatCash.
 
 Everything is under the Apache-2.0 license. The [project status](/docs/status) gives the detail.
 
