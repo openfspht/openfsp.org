@@ -248,9 +248,7 @@ function Brand() {
         height={27}
         className="hidden dark:block"
       />
-      <span>
-        OpenFSP<span className="text-fd-primary">.</span>
-      </span>
+      <span>OpenFSP</span>
     </span>
   );
 }
