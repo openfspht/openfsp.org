@@ -42,7 +42,7 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 
 ## Brand Commitments
 
-- `~/workspace/oss/openfsp/art/BRAND.md`: ring mark with three gaps, Ink `#0B3B36`, Accent `#E8A33D` (one arc only, never carries meaning alone), Accent deep `#C07E1B`, Chalk `#EEF5F4`; Space Grotesk for headings; no Haitian flag colours (not a government project).
+- `~/workspace/oss/openfsp/art/BRAND.md`: ring mark with three gaps, Ink `#0B3B36`, Accent `#E8A33D` (one arc only, never carries meaning alone), Accent deep `#C07E1B`, Chalk `#EEF5F4`; Space Grotesk for the wordmark and share cards only, Inter everywhere else; no Haitian flag colours (not a government project).
 - Voice: first person of the author, proposals rather than verdicts ("je propose", never "accepté" or "validé"); short, dry, technical; no pedagogy; French written as French, not translated English.
 - Licence Apache-2.0, carried by Karako Systems; the commercial product built on top is never named.
 - No em dash and no typographic minus anywhere.
