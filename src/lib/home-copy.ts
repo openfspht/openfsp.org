@@ -37,7 +37,7 @@ export const homeCopy = {
       contractDetail: "HTTP et webhooks signés",
       providers: "Opérateurs qui adoptent la norme",
       api: "API OpenFSP natives",
-      note: "Connexion directe aux opérateurs compatibles, sans passerelle de traduction.",
+      note: "Connexion directe à chaque opérateur compatible.",
       action: "Implémenter la norme côté opérateur",
       steps: [
         {
@@ -50,7 +50,7 @@ export const homeCopy = {
         },
         {
           title: "La connexion devient directe",
-          body: "L’application parle directement à l’API de chaque opérateur. Ces connexions n’ont plus besoin de passerelle de traduction.",
+          body: "L’application parle directement à l’API de chaque opérateur.",
         },
       ],
     },
@@ -85,7 +85,7 @@ export const homeCopy = {
     },
     start: {
       title: "Lancer un premier paiement en local.",
-      body: "La démo démarre une boutique, la passerelle et des opérateurs simulés. La suite de conformité peut aussi tester un opérateur natif simulé, sans passerelle.",
+      body: "La démo lance une boutique et des opérateurs simulés. La suite de conformité teste aussi un opérateur natif simulé.",
       action: "Ouvrir le guide de démarrage",
       requirements: "Git, Make et Docker Compose",
       copy: "Copier les commandes",
@@ -160,7 +160,7 @@ export const homeCopy = {
       contractDetail: "HTTP and signed webhooks",
       providers: "Providers adopting the standard",
       api: "Native OpenFSP APIs",
-      note: "Direct connections to compatible providers, with no translation gateway.",
+      note: "A direct connection to each compatible provider.",
       action: "Implement the standard as a provider",
       steps: [
         {
@@ -173,7 +173,7 @@ export const homeCopy = {
         },
         {
           title: "The connection becomes direct",
-          body: "The application talks to each provider’s API directly. Those connections no longer need a translation gateway.",
+          body: "The application talks to each provider’s API directly.",
         },
       ],
     },
@@ -208,7 +208,7 @@ export const homeCopy = {
     },
     start: {
       title: "Run a first payment locally.",
-      body: "The demo starts a shop, the gateway and simulated providers. The conformance suite can also test a simulated native provider, with no gateway.",
+      body: "The demo starts a shop and simulated providers. The conformance suite also tests a simulated native provider.",
       action: "Open the quickstart guide",
       requirements: "Git, Make and Docker Compose",
       copy: "Copy commands",
