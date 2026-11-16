@@ -1,89 +1,89 @@
 ---
 title: Decisions
-description: The design choices behind the OpenFSP specification, the reason for each and the alternatives I set aside.
+description: OpenFSP design choices, rationale, alternatives considered and implementation consequences.
 ---
 
-I propose these choices for discussion. The numbered proposals link to the rules they govern.
+The following decisions document the choices adopted for the specification version described here. They remain open to discussion and revision through the project’s change process. Each entry sets out the choice, rationale and alternatives considered, then links to the relevant chapters. Numbered requirements remain the normative reference.
 
 ## 0001. Architecture and scope
 
-I propose a shared contract that each provider can expose in its own system. The Kotlin, Java and TypeScript SDKs call that contract. A reference mock server and a conformance suite let anyone try and test it.
+**Decision.** Define a common interface contract that each provider can expose within its payment system. Merchant applications use this interface directly or through client libraries. A reference mock server and a conformance suite accompany the specification.
 
-I chose this mainly because integrations drop from `providers × applications` to `providers + applications`.
+**Rationale.** Sharing the contract aims to reduce the multiplication of service-specific interfaces. In a fully connected integration model, work can be organised around `providers + applications` implementations rather than `providers × applications` service-specific integrations. This reasoning assumes adoption and compatible capabilities; it is not an empirical cost measurement or a guarantee that no adaptation will be required.
 
-Set aside: per-language libraries without a server, a specification without a reference implementation, a central hosted service, the GSMA Mobile Money API as is, and Mojaloop.
+**Alternatives considered.** Language-specific libraries without a shared server contract; a specification without a reference implementation; a central hosted service; direct adoption of the GSMA Mobile Money API; use of Mojaloop. The selected approach prioritises the definition and distributed implementation of the merchant interface. The comparison concerns this scope and is not a general assessment of these solutions.
 
-Governs: [Architecture](/docs/architecture).
+**Reference.** [Architecture](/docs/architecture).
 
 ## 0002. Data model
 
-Amounts are integers in HTG cents, with no floats and no rounding, bounded to ±(2⁵³ - 1) so double-precision JSON parsers stay exact. The `currency` field stays, fixed to `"HTG"`. Phone numbers are E.164 only, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque (UUIDv7 recommended). Unknown fields are ignored in responses and rejected in requests.
+**Decision.** Represent amounts as integer HTG cents, bounded to ±(2⁵³ - 1), with an explicit currency fixed to `"HTG"`. Storage and calculations must preserve exactness without rounding; binary64 remains permitted for integer cents under the data model’s conditions. Phone numbers use E.164, timestamps use RFC 3339 in UTC with `Z`, and identifiers are opaque, with UUIDv7 recommended. Unknown fields are ignored in responses and rejected in requests.
 
-Every other chapter depends on these primitives.
+**Rationale.** These representations establish shared primitives for the other chapters. The amount bound permits exact representation of integer cents in JSON environments using double precision. Treating requests and responses differently addresses input errors while allowing response formats to evolve.
 
-Set aside: decimal strings, floats, a combined `"HTG 1250.00"` string, multi-currency, server-side national phone formats, epoch timestamps and `camelCase`.
+**Alternatives considered.** Decimal-string amounts, fractional floating-point amounts, combined currency-and-amount strings (`"HTG 1250.00"`), multi-currency support in this version, server-side conversion of national phone formats, epoch timestamps and `camelCase` field names.
 
-Governs: [Data model](/docs/spec/data-model).
+**Reference.** [Data model](/docs/spec/data-model).
 
 ## 0003. Payment lifecycle
 
-I chose five states: `pending`, the only non-terminal one, and `succeeded`, `failed`, `expired`, `canceled`. A terminal state is reached only on authoritative information and is never left. `pending` also covers an outcome not yet established, and nothing expires by clock unless the provider guarantees it.
+**Decision.** Define five states: `pending`, the only non-terminal state, and `succeeded`, `failed`, `expired`, `canceled`. A terminal transition relies on authoritative evidence and cannot be reversed. The `pending` state includes indeterminate outcomes. Elapsed time alone does not establish expiry, except under the provider guarantees and conditions specified in the lifecycle.
 
-A merchant delivers goods based on the state, so a status that changes after looking final leads to delivering against a failed payment or charging twice.
+**Rationale.** A merchant application may trigger delivery of goods or services based on payment state. Stable terminal states provide a consistent basis for that decision. Contradictory information received later must be handled through the specified mechanisms without rewriting the terminal state.
 
-Set aside: revisable terminal states, `unknown`, `processing`, provider-shaped states, clock expiry, `refunded` and a single `closed` state.
+**Alternatives considered.** Revisable terminal states; additional `unknown` and `processing` states; state machines reproducing each service’s specific behaviour; clock-only expiry; a `refunded` payment state; a single terminal `closed` state.
 
-Governs: [Lifecycle](/docs/spec/lifecycle).
+**Reference.** [Lifecycle](/docs/spec/lifecycle).
 
 ## 0004. Payments API
 
-The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed problem catalogue. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations.
+**Decision.** Expose the API over HTTPS under `/v1`, using JSON representations and a closed RFC 9457 error catalogue extended with `retryable` and `effect`. The base `payments` capability covers creation, retrieval by `id` or `reference`, and synchronisation. The client selects the payment service. `Idempotency-Key` is required for operations subject to idempotency.
 
-These operations are what a merchant actually needs (create, read back after an outage by its own reference, force a lookup when a callback is lost), and each provider can implement them.
+**Rationale.** These operations cover payment creation, recovery through a reference already known to the merchant after a lost response, and state retrieval when a notification is missing. The `retryable` and `effect` properties distinguish whether another attempt is appropriate from uncertainty about the initial operation’s effects. Synchronisation remains subject to supported capabilities.
 
-Set aside: routing by the server, `GET ?synchronize=true`, `404` for an unknown reference, a `/by-reference` path, a URL-only `next_action` and a list endpoint for now.
+**Alternatives considered.** Server-side service selection; synchronisation through `GET ?synchronize=true`; `404` for an unknown reference; a `/by-reference` path; a URL-only `next_action`; a general payment-listing endpoint in this version.
 
-Governs: [Payments API](/docs/spec/payments-api) and [Idempotency](/docs/spec/idempotency).
+**References.** [Payments API](/docs/spec/payments-api) and [Idempotency](/docs/spec/idempotency).
 
 ## 0005. Capability discovery
 
-A capability is announced only when the provider supports it, and an operation not announced is refused. Discovery has two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per provider. Provider-specific behaviour and the merchant account limits (`limits`) are machine-readable fields.
+**Decision.** Declare only capabilities supported by the service and reject unannounced operations. Discovery uses two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per service. Service-specific behaviour and merchant account limits (`limits`) are represented in machine-readable fields.
 
-A uniform interface that emulates missing features hides the gap until a real payment fails, and probing by trial can charge the payer.
+**Rationale.** Explicit capability declarations allow the application to identify available operations before creating a payment. Emulating an unsupported function would conceal a behavioural difference; checking availability by attempting a payment could have financial effects.
 
-Set aside: fixed capabilities per version, HTTP `OPTIONS`, try and handle the error, versioned capabilities, capabilities in every payment response, server-wide capabilities, and hard-coded limits.
+**Alternatives considered.** Fixed capabilities per version; HTTP `OPTIONS`; discovery by attempting an operation and handling its error; separately versioned capabilities; capabilities repeated in every payment response; server-wide capabilities; hard-coded limits.
 
-Governs: [Capabilities](/docs/spec/capabilities).
+**Reference.** [Capabilities](/docs/spec/capabilities).
 
 ## 0006. Webhooks and event delivery
 
-Delivery is at least once and unordered, with a per-resource `sequence` and an `id` for deduplication. Each event is signed with RFC 9421 HTTP Message Signatures over Ed25519, with a 300 second freshness window and a nonce. The body is a full snapshot of the resource, there are five event types, and retries follow a minimum schedule with jitter. Polling stays the recovery path.
+**Decision.** Use at-least-once delivery without guaranteed arrival order, with a per-resource `sequence` and an `id` for deduplication. Events are signed under RFC 9421 using Ed25519, a 300-second freshness window and a nonce. The body contains a complete resource snapshot. Five event types are defined; retries follow a minimum schedule with jitter. Polling provides recovery for missed changes.
 
-I chose a public-key signature because it lets a subscriber reject a forgery with a standard library and proves to a third party what the sender stated.
+**Rationale.** Public-key signatures allow event integrity and cryptographic origin to be checked using published keys, including by a third party with the required evidence. This verification concerns the signed message; it does not by itself establish the financial accuracy of its contents. Sequence numbers and identifiers support handling of out-of-order arrival and duplicates.
 
-Set aside: shared-secret HMAC, a custom signature header, mutual TLS alone, exactly-once delivery, thin events, batches and guaranteed ordering.
+**Alternatives considered.** Shared-secret HMAC; project-specific signature headers; mutual TLS alone; exactly-once delivery; reference-only events; batch delivery; guaranteed ordering.
 
-Governs: [Webhooks](/docs/spec/webhooks).
+**Reference.** [Webhooks](/docs/spec/webhooks).
 
 ## 0007. Authentication and credentials
 
-Clients use a bearer key `ofsp_<env>_<secret>` with 128 bits of entropy, sent only in `Authorization: Bearer`. The server stores a SHA-256 digest, compares in constant time and returns a single `unauthenticated` error for every failure. There are four scopes, none implying another; several keys per principal, revocation effective within 60 seconds.
+**Decision.** Authenticate clients using an `ofsp_<env>_<secret>` key with at least 128 bits of entropy, transmitted exclusively in `Authorization: Bearer`. The server stores a SHA-256 digest, compares values in constant time and returns the single `unauthenticated` error for authentication failures. Four independent scopes are defined. Multiple keys may belong to a principal; revocation takes effect within 60 seconds.
 
-Without a shared rule, an implementation may compare in variable time, store keys in clear or tell unknown keys from revoked ones.
+**Rationale.** Shared requirements govern key storage, comparisons and authentication responses. They address cleartext storage and disclosure of differences between unknown and revoked keys.
 
-Set aside: OAuth 2.0 client credentials, self-issued JWT, HMAC request signing, mutual TLS as the main credential, a single unscoped key, slow hashing and per-provider scopes.
+**Alternatives considered.** OAuth 2.0 client credentials; self-issued JWTs; HMAC request signing; mutual TLS as the primary identity mechanism; a single unscoped key; slow key hashing; per-service scopes. These options are not selected for this version’s authentication mechanism.
 
-Governs: [Authentication](/docs/spec/authentication).
+**Reference.** [Authentication](/docs/spec/authentication).
 
 ## 0008. Conformance
 
-Conformance is a triple: target (client, server), level and protocol version. Core is mandatory, then one profile per announced capability, with no partial pass and no ranking. Anyone can run the suite offline without modifying the implementation; the reference mock server plays a conforming server, `mock_openfsp`, through declared outcome scenarios. The report is machine-readable and states its limits.
+**Decision.** Define conformance by a target (`client` or `server`), a level and a protocol version. Core is mandatory; a profile applies to each announced capability. Scores and rankings do not replace satisfaction of the requirements. The suite can run locally, offline and without modifying the implementation. The `mock_openfsp` reference server reproduces declared scenarios; the report is machine-readable and explicitly states verification limits.
 
-I use black-box scenarios to compare announced capabilities with observable behaviour. The report keeps untested obligations visible.
+**Rationale.** Black-box scenarios compare declared capabilities with observable behaviour in the assessed environment. The report retains the list of unverified obligations, distinguishing test results from general claims about an implementation.
 
-Set aside: paid certification by the project, bronze to gold levels, a percentage score, provider sandboxes, scenarios chosen by amount, random failures and instrumentation.
+**Alternatives considered.** Paid certification by the project; bronze-to-gold rankings; percentage scores; dependence on provider sandboxes for the reference suite; amount-selected scenarios; random failures; implementation instrumentation.
 
-Governs: [Conformance](/docs/spec/conformance).
+**Reference.** [Conformance](/docs/spec/conformance).
 
 ## References
 

@@ -1,81 +1,71 @@
 ---
 title: Idempotency
-description: "Request keys, replay and indeterminate outcomes: idempotency rules for the payment contract."
+description: Operation keys, retries, response retention and handling of indeterminate outcomes.
 ---
 
-I require a stable request key so a lost response does not cause a second payment. Recovery after an unknown outcome follows [decision 0004](/docs/decisions#0004).
+Idempotency associates a stable key with each logical operation to prevent a retry after a lost response from producing a second payment. [Decision 0004](/docs/decisions#0004) sets out the recovery principles for indeterminate outcomes.
 
 ## 1. Covered operations
 
-**1.1.** Every `POST`, `PATCH` or `DELETE` on the client API is subject to idempotency, unless exempted (1.4). Endpoints outside the client API are not covered.
+**1.1.** Every `POST`, `PATCH` or `DELETE` request on the client API is subject to idempotency unless exempted under 1.4. Endpoints outside that API are outside this rule’s scope.
 
-**1.2.** `GET` and `HEAD` are not covered. A client MAY resend them freely.
+**1.2.** Requests using `GET` and `HEAD` are not subject to these rules. The client MAY repeat them freely.
 
-**1.3.** A client MUST send `Idempotency-Key` on every covered operation. The server MUST reject such a request without the header, without executing it,
-with `idempotency-key-required`.
+**1.3.** The client MUST send `Idempotency-Key` for every operation subject to idempotency. If the header is absent, the server MUST reject the request with `idempotency-key-required` without executing the operation.
 
-**1.4.** A decision record MAY exempt a named operation when both hold: running it twice has no effect, and a stored response served in its place would report a
-state older than the execution. For an exempted operation, the server MUST NOT require the key, MUST NOT store a response, and MUST ignore the header if present.
+**1.4.** A decision record MAY exempt a named operation if repeating it adds no effect and returning a stored response would report a state preceding execution. For an exempted operation, the server MUST NOT require the key, MUST NOT store a response and MUST ignore the header when present.
 
 ## 2. Key
 
-**2.1.** The value is an `IdempotencyKey`: 1 to 255 characters from `A-Za-z0-9_-`. The server MUST reject a request with a malformed key, without executing
-it, with `invalid-field` ([API 10.8.1](/docs/spec/payments-api#10.8.1)) and no `errors`: `field` only points into the body
-([API 10.7.1](/docs/spec/payments-api#10.7.1)).
+**2.1.** The value is an `IdempotencyKey` containing 1 to 255 characters from `A-Za-z0-9_-`. The server MUST reject a malformed key without executing the request, using `invalid-field` ([API 10.8.1](/docs/spec/payments-api#10.8.1)) without `errors`: `field` identifies locations only within the body ([API 10.7.1](/docs/spec/payments-api#10.7.1)).
 
-**2.2.** A client SHOULD generate the key as a UUID (RFC 9562) or from at least 128 bits of cryptographic randomness, and SHOULD NOT derive it from business data.
+**2.2.** The client SHOULD generate the key as a UUID (RFC 9562) or from at least 128 bits of cryptographic randomness, and SHOULD NOT derive it from business data.
 
-**2.3.** A record is identified by the triple (principal, operation, key). The server MUST NOT serve a stored response to a principal other than the one that
-created it.
+**2.3.** Each record is identified by the triple (principal, operation, key). The server MUST NOT return a stored response to any principal other than the one that created the record.
 
 ## 3. Processing
 
-_P_ is the principal, _O_ the operation, _K_ the key and _F_ the fingerprint from 4.
+In the following rules, _P_ denotes the principal, _O_ the operation, _K_ the key and _F_ the fingerprint defined in section 4.
 
-**3.1. First request.** With no record for (_P_, _O_, _K_), the server runs the operation, then, once the outcome is settled (5), stores _F_, the status and
-the response body.
+**3.1. First request.** If no record exists for (_P_, _O_, _K_), the server executes the operation. Once its outcome is established under section 5, it stores _F_, the status and the response body.
 
-**3.2. Replay.** If the record exists with the same fingerprint, the server MUST NOT run the operation. It MUST return the stored status and body, byte for
-byte, with `Idempotent-Replay: true`.
+**3.2. Replay.** If a record has the same fingerprint, the server MUST NOT execute the operation again. It MUST return the stored status and body byte for byte, with `Idempotent-Replay: true`.
 
-**3.3. Conflict.** If the fingerprint differs, the server MUST reject the request without running it, with `idempotency-key-reused` (`422`).
+**3.3. Conflict.** If the fingerprint differs, the server MUST reject the request with `idempotency-key-reused` (`422`) without executing the operation.
 
-**3.4. In progress.** If the first request has no settled outcome yet, the server MUST NOT run the second one in parallel. It MUST either hold it or reject it
-with `idempotency-request-in-progress` (`409`) and `Retry-After`.
+**3.4. In progress.** If the first request’s outcome remains indeterminate, the server MUST NOT execute the second in parallel. It MUST either hold the second request or reject it with `idempotency-request-in-progress` (`409`) and `Retry-After`.
 
-**3.5.** Creating the record and running the operation MUST be mutually exclusive (conditional insert, lock or equivalent). A read-then-write check MUST NOT be
-used.
+**3.5.** Record creation and operation execution MUST be protected by mutual exclusion, such as a conditional insert, lock or equivalent mechanism. A read-then-write check MUST NOT be used.
 
 ## 4. Fingerprint
 
-**4.1.** _F_ is the SHA-256 digest of the parsed JSON body with object members sorted. Amounts are integers: a floating-point number is rejected before the
-fingerprint is computed. An empty body has the fingerprint of `{}`.
+**4.1.** Fingerprint _F_ is the SHA-256 digest of the parsed JSON body with object members sorted. Amounts are integers, so floating-point numbers are rejected before the fingerprint is computed. An empty body has the fingerprint of `{}`.
 
-**4.2.** Only the body goes into the fingerprint. Path, query parameters and headers are excluded.
+**4.2.** Fingerprint computation covers only the body. The path, query parameters and headers are excluded.
 
 ## 5. Storage
 
-**5.1.** The server MUST store the response only once the outcome is settled:
+**5.1.** The server MUST store the response only when the operation’s outcome is established:
 
-- a success, including a `failed` payment;
-- an error caused by the request itself: validation, unknown field, `reference-conflict`.
+- a successful response, including one containing a `failed` payment;
+- an error directly attributable to the request: validation, an unknown field or `reference-conflict`.
 
-**5.2.** The server MUST NOT store:
+**5.2.** The server MUST NOT store the following cases:
 
-- an internal error whose effect is unknown;
-- a timeout or failure of a system the operation depends on, whose effect is unknown;
-- a stop before the outcome is persisted;
+- an internal error with unknown effects;
+- a timeout or failure in a system required by the operation, with unknown effects;
+- an interruption before the outcome is persisted;
 - an `idempotency-request-in-progress` response.
 
-**5.3.** The server MUST NOT modify a stored response.
+**5.3.** The server MUST NOT alter a response already stored.
 
 ## 6. Retention and reference
 
-**6.1.** The server MUST keep records for at least 24 hours, SHOULD keep them for 7 days, and MUST publish its retention period.
+**6.1.** The server MUST retain records for at least 24 hours, SHOULD retain them for 7 days and MUST publish the retention period applied.
 
-**6.2.** After that period, the same key is treated as a first request. The server MUST enforce `reference` uniqueness independently of idempotency records.
+**6.2.** After the retention period expires, the same key is treated as a first request. The server MUST enforce `reference` uniqueness independently of idempotency record retention.
 
-**6.3.** Payment creation:
+**6.3.** Payment creation follows the cases in the table below:
 
 | Key               | Body      | Reference | Result                         |
 | ----------------- | --------- | --------- | ------------------------------ |
@@ -87,22 +77,20 @@ fingerprint is computed. An empty body has the fingerprint of `{}`.
 
 ## 7. Client
 
-**7.1.** A client MUST use one key per logical operation and the same key for every resend of that operation.
+**7.1.** The client MUST assign one key to each logical operation and reuse it for every retry of that operation.
 
-**7.2.** A client MUST NOT resend a request that received a `4xx`, except `idempotency-request-in-progress` and `rate-limited`.
+**7.2.** The client MUST NOT repeat a request that received a `4xx` response, except for `idempotency-request-in-progress` and `rate-limited`.
 
-**7.3.** After resends, a client MUST read the resource to learn the outcome, and MUST NOT infer it from the last response received.
+**7.3.** After retries, the client MUST retrieve the resource to establish the outcome and MUST NOT infer it solely from the last response received.
 
-**7.4.** A client MUST space its resends and honour `Retry-After`. It SHOULD use exponential backoff with jitter.
+**7.4.** The client MUST space retries and honour `Retry-After`. It SHOULD apply exponential backoff with jitter.
 
-**7.5.** A client SHOULD persist the key before sending the request.
+**7.5.** The client SHOULD store the key durably before sending the request.
 
 ## 8. Security
 
-**8.1.** The key alone MUST NOT be used as a lookup identifier: records are scoped per principal (2.3). The key is not a secret and MUST NOT grant any
-authorization.
+**8.1.** The key alone MUST NOT permit record lookup: records are isolated by principal (2.3). The key is not secret and MUST NOT grant any authorisation.
 
-**8.2.** The server MUST rate-limit creation per principal and SHOULD cap the number of records per principal, rejecting excess requests rather than deleting
-records.
+**8.2.** The server MUST rate-limit creation per principal and SHOULD cap the number of records per principal. Excess requests are rejected rather than records deleted.
 
-**8.3.** Stored responses MAY contain personal data and MUST be protected like the resources they come from.
+**8.3.** Stored responses MAY contain personal data and MUST receive the same protection as the corresponding resources.

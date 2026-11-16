@@ -1,12 +1,12 @@
 ---
 title: Verify an attestation
-description: Check the signature of a conformance attestation, and optionally the digest of its report, in your browser.
+description: Local verification of an attestation signature and, optionally, the digest of its associated report.
 ---
 
-The validator can sign the results of a completed run as an attestation: a compact JWS (EdDSA) whose payload records the target, the suite version and the verdicts. The signature is checked here, in your browser, against the key the validator publishes at `/.well-known/openfsp-validator`. The report file is optional: when given, its SHA-256 digest (RFC 8785 canonical JSON) is compared with the one in the attestation.
+After an execution, the validator can produce a signed attestation in compact JWS format (EdDSA). Its payload contains the target, suite version and verdicts. Verification takes place in the browser using the key published by the validator at `/.well-known/openfsp-validator`. If the report is supplied, its SHA-256 digest, computed from its RFC 8785 canonical JSON representation, is compared with the digest recorded in the attestation.
 
-The form checks against the public validator, [validate.openfsp.org](https://validate.openfsp.org). For an attestation from another validator, enter its HTTPS address.
+The form uses the public validator [validate.openfsp.org](https://validate.openfsp.org) by default. To verify an attestation issued by another validator, enter that validator’s HTTPS address.
 
 <AttestationVerifier locale="en" />
 
-An attestation records one run, failures included. It does not certify an implementation ([conformance 7.6](/docs/spec/conformance#7.6)).
+The attestation records execution results, including failures. It allows their origin and integrity to be verified in the context of the key used; it does not certify the implementation ([conformance 7.6](/docs/spec/conformance#7.6)).

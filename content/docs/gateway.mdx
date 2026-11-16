@@ -1,11 +1,11 @@
 ---
 title: Transition gateway
-description: Why this implementation exists, its deployment, and how it puts the OpenFSP API in front of the existing MonCash and NatCash APIs.
+description: Role, architecture and limitations of the reference gateway for the existing MonCash and NatCash APIs.
 ---
 
-The gateway is an OpenFSP server that sits in front of the existing MonCash and NatCash APIs, so merchants can use the standard today, before providers implement it themselves. It runs on Kotlin, Spring Boot and PostgreSQL.
+The reference gateway is an OpenFSP server that adapts exchanges to the existing MonCash and NatCash APIs. It provides a transitional integration method where these services have no native implementation. Its availability and verification limits are described in the project status.
 
-Towards its clients, it follows the [specification](/docs/spec) like any other server. This page describes what it does behind that API: translating each provider's dialect is a property of this tool, not a rule of the standard.
+The client-facing interface follows the [specification](/docs/spec). The mechanisms below concern this implementation’s internal operation. Translation of service-specific formats and behaviour belongs to the gateway and is not a general OpenFSP requirement.
 
 ## Components
 
@@ -16,7 +16,7 @@ Towards its clients, it follows the [specification](/docs/spec) like any other s
 | SDKs              | Client libraries and testing tools.                     | Kotlin, Java and TypeScript, in the `openfsp` repository. |
 | Conformance suite | Reproducible tests and reports.                         | Kotlin engine and CLI, YAML scenarios and JSON schemas.   |
 
-The [project status](/docs/status) gives the state of each component.
+The [project status](/docs/status) specifies each component’s availability and testing scope.
 
 ## Request path
 
@@ -34,32 +34,32 @@ flowchart TD
     AD2 -- "provider API" --> P2
 ```
 
-The application names the provider; the gateway never picks one. The gateway holds the payment record, the idempotency store, the state transitions and the audit, and hands each provider call to that provider's adapter. Callbacks, lookups and statements come back through the same adapter. A provider that already exposes OpenFSP is reached through one generic adapter, with no dialect translation; the gateway then sends `create-<order identifier>` as its `Idempotency-Key`.
+The application explicitly selects the payment service. The gateway maintains payments, idempotency records, state transitions and audit data. It delegates external calls to the selected service’s adapter; notifications, lookups and statements pass through the same adapter. When a service already exposes OpenFSP, a generic adapter is used without format translation. The gateway then sends `create-<order identifier>` as the `Idempotency-Key` value.
 
 ## Deployment and trust
 
-The operator (the merchant or its agent) deploys the gateway and holds its provider secrets; the project never holds them. The relationship between the merchant and its provider is unchanged. The merchant has an account with each accepted provider, so no value moves between providers and no clearing is needed. Each deployment serves a single merchant account, so a compromised gateway exposes only that merchant. Each release publishes multi-platform container images with build provenance and an SBOM.
+The operator, either the merchant or its representative, deploys the gateway and manages the secrets required by the payment service APIs. These secrets are not entrusted to the project. The merchant retains its contractual relationship and account with each accepted provider. This architecture transfers no value between services and introduces no clearing operation. Each deployment serves a single merchant account, limiting the scope of credentials and data exposed by gateway compromise to that account. Each version provides multi-platform container images with build provenance and a software bill of materials (SBOM).
 
 ## Adapters [#adapters]
 
-An adapter translates an OpenFSP operation into a provider's API and the response back. It holds neither the payment record, nor the idempotency store, nor the state transitions, nor the audit, and it is the only component that holds a provider secret.
+An adapter translates an OpenFSP operation into the relevant service API and converts the response. Payment persistence, idempotency, state transitions and audit remain the gateway’s responsibility. The adapter is the only application component that holds the service secret.
 
-- **Operations.** Creation is required; lookup, callback ingestion and statement reading exist only if the provider offers them. An operation the provider cannot perform is neither implemented nor declared ([capabilities 1.3](/docs/spec/capabilities#1.3)).
-- **Declaration.** The adapter declares the capabilities and payment profile the provider supports (`next_action` types, required `payer`, required `return_url`, guaranteed expiry). The gateway removes a suspended capability ([capabilities 4.5](/docs/spec/capabilities#4.5)). Amount limits come from the gateway configuration, per provider.
-- **Statuses.** The mapping goes from the provider to OpenFSP, never the reverse. An unknown or ambiguous status maps to nothing and the payment stays `pending`; an uncertain reason gives `unspecified` ([lifecycle 7.3](/docs/spec/lifecycle#7.3)).
-- **Data.** Decimal amounts are read from their text form, without a float; an amount not exact to the cent makes the response unusable (`provider-error`). Numbers are converted to E.164 by the provider's documented format, or omitted. A timestamp without offset is read in the business-day time zone (`America/Port-au-Prince` by default), an ambiguous time resolves to the later instant, and a relative duration runs from receipt. `failure_detail` carries the provider's code and message, redacted; a provider timestamp never replaces `completed_at`.
-- **What is sent.** The adapter sends neither the `reference` nor the `metadata` to the provider.
-- **Published document.** Each adapter publishes its capabilities and payment profile, its status and `failure_reason` mappings, its idempotency strategy, whether callbacks are signed, its known losses, the secrets it needs and how they are supplied, and its [registry](/docs/registry) identifier.
+- **Operations.** Creation is mandatory. Lookup, notification reception and statement retrieval are exposed only when supported by the service. An unavailable operation is neither implemented nor declared ([capabilities 1.3](/docs/spec/capabilities#1.3)).
+- **Declaration.** The adapter describes supported capabilities and the payment profile: `next_action` types, whether `payer` and `return_url` are required, and expiry guarantees. The gateway removes suspended capabilities ([capabilities 4.5](/docs/spec/capabilities#4.5)). Amount limits come from its per-service configuration.
+- **States.** State mapping proceeds from the service to OpenFSP. An unknown or ambiguous state establishes no transition: the payment remains `pending`. An unestablished failure reason is represented by `unspecified` ([lifecycle 7.3](/docs/spec/lifecycle#7.3)).
+- **Data.** Decimal amounts are parsed from their textual representation without conversion to fractional floating-point values. An amount that cannot be represented exactly in cents makes the response unusable (`provider-error`). Phone numbers are converted to E.164 according to the service’s documented format, or omitted. A timestamp without an offset uses the business-day time zone, `America/Port-au-Prince` by default; an ambiguous local time resolves to the later instant. A relative duration is measured from receipt. The service code and message are retained in `failure_detail` after secrets are redacted. An external timestamp never replaces `completed_at`.
+- **Transmitted data.** The adapter sends neither the merchant’s `reference` nor its `metadata` to the service.
+- **Documentation.** Each adapter documents its capabilities, payment profile, state and `failure_reason` mappings, idempotency strategy, notification properties, known information losses, required secrets and how they are supplied, and the service identifier in the [registry](/docs/registry).
 
 ## Order identifier and unknown outcomes [#order-identifier]
 
-The gateway sends the provider an order identifier derived from the `reference` by HMAC-SHA256 under a derivation key of the deployment, encoded as 26 lowercase base32 characters (128 bits). It is stored with the payment, stays valid after a key change (the new key serves new payments only), and is derived the same way for the `mock_*` providers. A provider that caps the identifier below 128 bits is documented as a known loss.
+The order identifier sent to the service is derived from `reference` using HMAC-SHA256 with a deployment-specific key. It is encoded as 26 lowercase base32 characters and represents 128 bits. Stored with the payment, it remains valid after key rotation; the new key applies only to new payments. The same derivation is used for `mock_*` services. Any service restriction reducing the identifier below 128 bits is documented as a known loss.
 
-Before resending an operation whose outcome is unknown, the gateway tries to settle it from the provider: by its idempotency or by lookup on the order identifier. A per-call identifier such as NatCash's `requestId` is not idempotency. If the provider offers neither, the gateway never resends automatically: the payment stays `pending` and the operator is told. Until the creation call has answered, the gateway may withhold the payment.
+Before retrying an operation with an indeterminate outcome, the gateway attempts to establish the result through the service’s idempotency mechanism or lookup by order identifier. A per-call identifier such as NatCash’s `requestId` does not constitute an idempotency guarantee. If neither mechanism exists, no automatic retry occurs: the payment remains `pending` and the operator is notified. Until the creation call has returned, the gateway may defer exposing the payment.
 
 ## Establishing the outcome [#outcome]
 
-The gateway records a terminal state only from one of these sources, in this order of preference, and keeps at least one for every pending payment:
+The gateway records a terminal state only from one of the following sources, listed in order of preference. At least one source remains available for each pending payment:
 
 | Source                                                     | How the provider offers it   |
 | ---------------------------------------------------------- | ---------------------------- |
@@ -69,33 +69,33 @@ The gateway records a terminal state only from one of these sources, in this ord
 | **(d)** provider statement over an authenticated channel   | `payments.statement`         |
 | **(e)** operator attestation                               | always available             |
 
-- **Callbacks.** A signed callback counts as (a) only if the signature covers at least the payment identifier and its outcome. Any other callback is a signal to query another source, and its content is ignored. A replayed callback cannot change a terminal state; NatCash signatures carry neither timestamp nor nonce.
-- **Payment-specific URL.** For (c), each payment gets a token of at least 128 random bits in the path of its callback URL, compared in constant time, never logged, and excluded from the reverse proxy access logs. A token matching no pending payment is rejected without effect; a URL shared by several payments is not (c).
-- **Conflicts.** A report that contradicts a recorded terminal state, or an amount different from the payment's, never changes the payment: the gateway records the conflict durably, reports it to the operator and leaves it to a person. A payment with a mismatched amount stays `pending`.
-- **Background reconciliation.** The gateway re-reads pending payments periodically, without being asked.
-- **Expiry.** `expired` is recorded when the provider reports the payment expired, when a lookup after `expires_at` shows it incomplete, when the provider guarantees expiry, when a statement covering a period after `expires_at` does not list it as complete, or on attestation.
-- **Attestation.** Source (e) belongs to the gateway's administration API, never to the OpenFSP API. It records the attester, the time, the state and the evidence reference; a shared administration token may protect it, the attester then being named in the request. A deployment should require a second approval above an amount it sets.
+- **Service notifications.** A notification qualifies as source (a) only if its signature covers at least the payment identifier and outcome. Otherwise, it triggers consultation of another source and its contents are not used to establish the state. Replay cannot change a terminal state. NatCash signatures contain neither a timestamp nor a nonce.
+- **Payment-specific URL.** For source (c), the URL path contains a payment-specific token with at least 128 random bits. Comparison is performed in constant time. The token is excluded from all logs, including reverse proxy access logs. A token matching no pending payment is rejected without effect. A URL shared by multiple payments does not satisfy this mechanism.
+- **Conflicts.** Information contradicting a terminal state or reporting a different amount does not modify the payment. The conflict is stored durably and reported to the operator for human resolution. A payment with a mismatched amount remains `pending`.
+- **Background reconciliation.** The gateway periodically queries pending payments without a prior client request.
+- **Expiry.** The `expired` state is recorded when the service confirms expiry, when lookup after `expires_at` establishes that the payment is incomplete, when the service guarantees expiry, when a statement covering a period after `expires_at` does not show the payment as complete, or on attestation.
+- **Operator attestation.** Source (e) uses the gateway’s administration API, separate from the OpenFSP API. It records the attester’s identity, time, state and evidence reference. A shared administration token may protect access; the attester’s identity is then supplied in the request. A second approval is recommended above a threshold defined by the deployment.
 
 ## Return relay [#return-relay]
 
-MonCash takes no return URL per payment. The gateway exposes one return endpoint per provider, registered by the operator with that provider. It finds the payment by the order identifier it receives, triggers a synchronization, redirects with `303` to the payment's recorded `return_url` (never to a URL from the request), and answers `404` without redirection for an unknown or malformed identifier. It is unauthenticated and rate-limited.
+MonCash provides no per-payment return URL. The gateway therefore exposes one return endpoint per service, registered with the provider by the operator. On receipt, it looks up the payment by order identifier, triggers synchronisation and returns a `303` redirect to the `return_url` stored with the payment. A URL supplied in the request is never used as the destination. Unknown or malformed identifiers produce `404` without redirection. This endpoint is unauthenticated and rate-limited.
 
 ## Members and endpoints beyond the standard [#extensions]
 
-- **Upstream data in `metadata`.** The gateway adds its own keys to each payment's `metadata` ([data model 9](/docs/spec/data-model#9)), next to the client's: `gateway.order_id`, the order identifier it sends the provider, and `gateway.provider_reference`, the provider's transaction identifier once known. They do not count toward the client's limits and never overwrite a client key.
-- **Upstream errors.** On an error that comes from the provider, the provider's code and message appear in the problem's `detail`, never parsed into `type`, `retryable` or `effect`. For a provider that speaks OpenFSP, they are the last segment of its problem `type` and its `detail`, or failing that its `title`. Secrets and tokens are redacted. Clients should not base a decision on `detail` and should escape it when displayed.
-- **Gateway statement** at `GET /gateway/statements?provider=…&business_date=…`, outside `/v1` and absent from the configuration document, with the `statements:read` scope. The console reads the same statement through the administration API. Built from the gateway's own records for every provider and business day, by the date of `completed_at`: `payments` sorted by `completed_at`, `totals` per terminal state, and `final` once the day has ended. It serves the merchant's accounting; it never grounds a transition, and only a provider statement shows what the gateway did not see.
-- **Health check** at `/actuator/health`, unauthenticated, outside `/v1`.
+- **Service metadata.** The gateway adds its own `metadata` keys to each payment under [data model 9](/docs/spec/data-model#9): `gateway.order_id` for the order identifier sent to the service, and `gateway.provider_reference` for the transaction identifier once known. These keys do not count towards client limits and never replace a client-supplied key.
+- **Service errors.** The external code and message are placed in the RFC 9457 error object’s `detail`; they are not used to derive `type`, `retryable` or `effect`. For a service exposing OpenFSP, the code is the last segment of its `type` and the message is its `detail`, or its `title` if unavailable. Secrets and tokens are redacted. Clients should avoid decisions based on `detail` and escape this content when displaying it.
+- **Gateway statement.** The `GET /gateway/statements?provider=…&business_date=…` endpoint is outside `/v1`, absent from the configuration document and protected by the `statements:read` scope. The console retrieves the same statement through the administration API. For each service and business day, it is built from internal records using the date of `completed_at`. It contains `payments`, sorted by `completed_at`, `totals` per terminal state and `final` after the day ends. It supports merchant accounting and does not justify state transitions. Only a service statement can reveal operations not observed by the gateway.
+- **Health check.** The `/actuator/health` endpoint is unauthenticated and outside `/v1`.
 
-The gateway uses per-payment callback URLs and signed callbacks only towards providers. It does not deliver events to a client's `callback_url`, so it announces neither `webhooks.per_payment_url` nor the withdrawn `webhooks.verify`.
+Payment-specific notification URLs and signed callbacks apply only to exchanges between the gateway and external services. The gateway does not deliver events to the client’s `callback_url`. It therefore declares neither `webhooks.per_payment_url` nor the withdrawn `webhooks.verify` capability.
 
 ## Provider secrets [#secrets]
 
-The gateway loads provider secrets from environment variables or a secrets manager, never only from a configuration file, and can reload them without a restart. No endpoint returns them, even partially; a health check may only say a provider is reachable. They never reach a log, trace, metric, error report or memory dump. Any value held as a provider secret is replaced by `[REDACTED]` in the problem `detail` and in `failure_detail`, by comparison with the held values rather than by pattern. Audit records never contain them.
+Service secrets are loaded from environment variables or a secrets manager, not exclusively from a configuration file. The gateway supports reloading them without a restart. No endpoint returns a secret, even partially; the health check reports only whether a service is reachable. Secrets are excluded from logs, traces, metrics, error reports, memory dumps and audit records. In error `detail` and `failure_detail`, values held as secrets are replaced with `[REDACTED]` by comparison with their actual values rather than by pattern matching.
 
 ## Observed profiles [#profiles]
 
-I built these profiles from the providers' documentation (MonCash REST API, NatCash Merchant Online Integration 2.0) and from my own integrations of both providers. Unconfirmed points are listed under [To check in the sandbox](#sandbox-checks).
+These profiles draw on the service documentation (MonCash REST API and NatCash Merchant Online Integration 2.0) and on integration work carried out by the author. Observations are presented with their limitations. Items requiring confirmation are listed under [To check in the sandbox](#sandbox-checks).
 
 ### Mapping [#mapping]
 
@@ -119,7 +119,7 @@ I built these profiles from the providers' documentation (MonCash REST API, NatC
 | Signed callbacks         | no                                        | yes, source (a)               |
 | Per-payment callback URL | no                                        | yes, source (c)               |
 
-Idempotency strategy for both: lookup by [order identifier](#order-identifier).
+For both services, the recovery strategy uses lookup by [order identifier](#order-identifier).
 
 ### Statuses [#statuses]
 
@@ -138,29 +138,29 @@ Idempotency strategy for both: lookup by [order identifier](#order-identifier).
 
 ### Known losses [#losses]
 
-- No failure reason: `failure_reason` is `unspecified`.
-- MonCash `cost` is the payment amount: it feeds the amount check, never `fee`.
-- NatCash may write an amount with a thousands separator (`3,162.00`) and a `responseCode` as a number or a string.
-- No fees: `fee` stays absent.
-- Refusal of cents not confirmed: `amount_step` stays absent until the operator has observed it ([capabilities 6.3](/docs/spec/capabilities#6.3)).
+- Without an established failure reason, `failure_reason` is `unspecified`.
+- The MonCash `cost` field represents the payment amount. It is used for amount verification and never populates `fee`.
+- NatCash may represent amounts with a thousands separator (`3,162.00`) and `responseCode` as either a number or a string.
+- Without fee data, `fee` remains absent; absence does not mean zero fees.
+- Rejection of cents has not been confirmed. The `amount_step` field remains absent until observed by the operator ([capabilities 6.3](/docs/spec/capabilities#6.3)).
 
 ### To check in the sandbox [#sandbox-checks]
 
-1. Alphabet and length of the MonCash `orderId`.
-2. Response of `RetrieveOrderPayment` for a missing or unfinished payment.
-3. MonCash failure responses.
-4. Refusal of cents by either provider.
-5. MonCash callback and parameters sent to the return URL (`orderId` or `transactionId`).
-6. Unit of NatCash `expiredAt`.
-7. Scope of `ERR_TRANSACTION_EXPIRED`: token or payment.
+1. Permitted character set and length of MonCash `orderId`.
+2. `RetrieveOrderPayment` response for a missing or incomplete payment.
+3. Formats of MonCash failure responses.
+4. Acceptance or rejection of cents by each service.
+5. Availability of MonCash callbacks and parameters sent to the return URL (`orderId` or `transactionId`).
+6. Unit of the NatCash `expiredAt` duration.
+7. Object addressed by `ERR_TRANSACTION_EXPIRED`: token or payment.
 
 ## Testing the gateway [#testing]
 
-The gateway is tested as an OpenFSP server ([conformance](/docs/spec/conformance)). Its adapters are tested against the simulator, which also plays `mock_moncash` and `mock_natcash`: their dialects follow each provider's documentation and sandbox observations, carry the `mock_` prefix and the "(mock)" display name, and offer only the scenarios the real provider can produce. For these runs the simulator also reproduces upstream timeouts (`TIMEOUT_THEN_SUCCESS`, `TIMEOUT_THEN_NOTHING`), contradictions (`CONTRADICT`), amount mismatches (`AMOUNT_MISMATCH`) and credential echoes (`CREDENTIAL_ECHO`), selects scenarios by the order identifier computed with the derivation key, and journals the requests it receives so a test can check a call or its absence. A gateway pointed at the simulator says so in its startup log and runs in the `test` environment. Connection refused is tested with a provider on a closed port.
+The gateway is assessed as an OpenFSP server ([conformance](/docs/spec/conformance)). Its adapters are tested against the simulator, which also exposes `mock_moncash` and `mock_natcash`. These services reproduce documented formats and sandbox observations; their identifiers carry the `mock_` prefix and their display names include “(mock)”. Their scenarios are limited to behaviours attributed to the real services. For gateway assessment, the simulator reproduces timeouts (`TIMEOUT_THEN_SUCCESS`, `TIMEOUT_THEN_NOTHING`), contradictions (`CONTRADICT`), amount mismatches (`AMOUNT_MISMATCH`) and responses containing credentials (`CREDENTIAL_ECHO`). It selects scenarios from the order identifier computed with the derivation key and logs requests to verify that a call occurred or was withheld. A gateway connected to the simulator reports this at startup and uses the `test` environment. Connection refusal is reproduced by targeting a service on a closed port.
 
-None of this proves that an adapter matches its provider, nor that a provider behaves as documented. Without access to the provider, mappings are tested on data and refusals on recorded responses.
+These tests assess adapter behaviour against simulated representations and failures. They do not establish compatibility with the real service or the accuracy of external documentation. Without service access, mappings are checked against datasets and rejections against recorded responses.
 
-From the [openfsp](https://github.com/openfspht/openfsp) repository:
+From the [openfsp](https://github.com/openfspht/openfsp) repository, run the following commands in three terminals:
 
 ```bash
 make simulator             # terminal 1, port 8090
@@ -168,9 +168,9 @@ make gateway-conformance   # terminal 2, port 8080
 make validate              # terminal 3
 ```
 
-The `conformance` profile adds the test-only providers `mock_no_source`, `mock_statement_only` and `mock_unreachable`. `make validate` issues the keys the scenarios need through the admin API, registers a webhook receiver on port 8099 for the run, then revokes and removes them. The report is written to `backend/validator/infrastructure/build/conformance-report.json`.
+The `conformance` profile adds the test services `mock_no_source`, `mock_statement_only` and `mock_unreachable`. The `make validate` command creates the required keys through the administration API and registers a webhook receiver on port 8099 for the execution. It then revokes the keys and removes the receiver. The report is saved to `backend/validator/infrastructure/build/conformance-report.json`.
 
-`make dev-sandbox` starts the gateway on the MonCash and NatCash sandboxes. It reads the credentials from `.env.sandbox` at the repository root (ignored by git), one `NAME=value` per line, or from the shell:
+`make dev-sandbox` connects the gateway to the MonCash and NatCash sandboxes. Credentials are read from shell variables or from `.env.sandbox`, located at the repository root and excluded from Git tracking, with one `NAME=value` per line:
 
 ```bash
 MONCASH_CLIENT_ID=
@@ -182,4 +182,4 @@ NATCASH_PRIVATE_KEY=
 NATCASH_FUNCTION_CODE=
 ```
 
-The gateway refuses to start when one of them is empty. Completing a payment needs a sandbox wallet, and provider callbacks need a gateway reachable from the Internet.
+Startup fails if any of these variables is empty. Completing a payment requires a sandbox wallet. Receiving external callbacks requires a gateway accessible from the Internet.

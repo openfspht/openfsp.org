@@ -1,36 +1,37 @@
 ---
 title: Conventions
-description: Keywords, vocabulary and the documents that make up the specification.
+description: Requirement scope, normative conventions, terminology and specification structure.
 ---
 
-The normative rules of OpenFSP. The [decisions](/docs/decisions) explain why each one exists.
+This section defines the conventions for reading OpenFSP’s normative requirements. The [design decisions](/docs/decisions) document their rationale.
 
 ## Scope of terms
 
-The rules bind a server, which implements the API, and a client, which calls it. They do not say how a server is built or which systems it relies on.
+Requirements apply to the server exposing the API and the client using it, according to the subject of each rule. They specify expected interface behaviour; the server’s internal architecture and underlying systems remain implementation choices.
 
 ## Keywords
 
-MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED and OPTIONAL are read as in RFC 2119 and RFC 8174 when written in capitals.
+The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED and OPTIONAL have the meanings defined in RFC 2119 and RFC 8174 when written in capitals.
 
-Each rule has a number. Link to it with its anchor, for example [`/docs/spec/idempotency#3.2`](/docs/spec/idempotency#3.2).
+Each rule has a numeric identifier within its document. Cross-references use its anchor, for example [`/docs/spec/idempotency#3.2`](/docs/spec/idempotency#3.2).
 
 ## Implementation path
 
-The [implementation guide](/docs/native-operator) connects chapters to implementation tasks and tests. The [project status](/docs/status) gives the state of each component. These guides are informative; numbered obligations are authoritative.
+The [implementation guide](/docs/native-operator) links chapters to development tasks and test scenarios. The [project status](/docs/status) describes component availability. These documents are informative; numbered requirements form the normative reference.
 
 ## Vocabulary
 
-| Term             | Meaning                                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------------------- |
-| provider         | Payment service identified in the [registry](/docs/registry), such as MonCash or NatCash. Called FSP in BRH circulars. |
-| server           | Implementation of the OpenFSP API. It serves one or more providers.                                       |
-| merchant account | The resources, principals and webhook endpoints of one merchant on a server. A server may hold several.   |
-| operator         | Whoever deploys and runs a server.                                                                        |
-| client           | Application that calls an OpenFSP API.                                                                    |
-| subscriber       | Endpoint that receives OpenFSP events.                                                                    |
-| verifier         | Party that checks an event signature: subscriber, auditor or library.                                     |
-| principal        | Authenticated identity of a client. It belongs to one merchant account.                                   |
+| Term | Definition |
+| --- | --- |
+| payment service provider | Organisation providing one or more payment services. Distinct from the service identified by `provider` and from the technical operator of a server. |
+| provider / payment service | Service identified in the [registry](/docs/registry), such as MonCash or NatCash. In existing rules, “provider” denotes this service. |
+| server | Implementation exposing the OpenFSP API for one or more payment services. |
+| merchant account | Set of resources, principals and webhook endpoints belonging to a merchant on a server. A server may manage several merchant accounts. |
+| operator | Party responsible for deploying and administering a server. |
+| client | Application calling an OpenFSP API. This technical role is distinct from the payer. |
+| subscriber | Endpoint receiving OpenFSP events. |
+| verifier | Party verifying an event signature: subscriber, auditor or library. |
+| principal | Authenticated client identity associated with a merchant account. |
 
 ## Documents
 

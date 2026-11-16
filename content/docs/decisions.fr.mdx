@@ -1,89 +1,89 @@
 ---
 title: Décisions
-description: Les choix de conception de la spécification OpenFSP, la raison de chacun et les solutions que j'ai écartées.
+description: Choix de conception d’OpenFSP, justifications, alternatives examinées et conséquences pour l’implémentation.
 ---
 
-Je propose ces choix à la discussion. Les propositions numérotées renvoient aux règles concernées.
+Les décisions suivantes documentent les choix retenus pour la version décrite de la spécification. Elles sont ouvertes à la discussion et à l’évolution selon le processus de modification du projet. Chaque entrée précise le choix, sa justification et les alternatives examinées, puis renvoie aux chapitres concernés. Les exigences numérotées restent la référence normative.
 
 ## 0001. Architecture et périmètre
 
-Je propose un contrat commun que chaque opérateur peut exposer dans son propre système. Les SDK Kotlin, Java et TypeScript appellent ce contrat. Un serveur simulé de référence et une suite de conformité permettent à chacun de l'essayer et de le tester.
+**Choix.** Définir un contrat d’interface commun que chaque fournisseur peut exposer dans son système de paiement. Les applications marchandes utilisent cette interface directement ou au moyen de bibliothèques clientes. Un serveur simulé de référence et une suite de conformité accompagnent la spécification.
 
-Je fais ce choix surtout parce que le nombre d'intégrations passe de `opérateurs × applications` à `opérateurs + applications`.
+**Justification.** La mutualisation du contrat vise à réduire la multiplication des interfaces spécifiques. Dans le modèle d’intégration complète, le travail peut être organisé autour de `opérateurs + applications` implémentations plutôt que de `opérateurs × applications` intégrations spécifiques. Ce raisonnement suppose une adoption et des capacités compatibles ; il ne constitue pas une mesure empirique des coûts ni une garantie d’absence d’adaptation.
 
-Écartés : bibliothèques par langage sans serveur, spécification sans implémentation de référence, service hébergé central, GSMA Mobile Money API telle quelle, Mojaloop.
+**Alternatives examinées.** Bibliothèques propres à chaque langage sans contrat serveur commun ; spécification sans implémentation de référence ; service central hébergé ; adoption directe de GSMA Mobile Money API ; utilisation de Mojaloop. Le choix retenu privilégie la définition et l’implémentation distribuée de l’interface marchande. La comparaison porte sur ce périmètre : elle ne constitue pas une évaluation générale de ces solutions.
 
-Régit : [Architecture](/fr/docs/architecture).
+**Référence.** [Architecture](/fr/docs/architecture).
 
 ## 0002. Modèle de données
 
-Un montant est un entier en centimes de gourde, sans flottant ni arrondi, borné à ±(2⁵³ - 1) pour rester exact dans les analyseurs JSON en double précision. Le champ `currency` reste, fixé à `"HTG"`. Les numéros de téléphone sont en E.164 uniquement, les horodatages en RFC 3339 UTC avec `Z`, et les identifiants sont opaques (UUIDv7 recommandé). Les champs inconnus sont ignorés en réponse et rejetés en requête.
+**Choix.** Représenter les montants par un nombre entier de centimes de gourde, borné à ±(2⁵³ - 1), avec une devise explicite fixée à `"HTG"`. L’exactitude doit être conservée pendant le stockage et les calculs, sans arrondi ; le type binary64 reste admis pour les centimes entiers selon les conditions du modèle de données. Les numéros de téléphone utilisent E.164, les horodatages RFC 3339 en UTC avec `Z`, et les identifiants sont opaques, avec UUIDv7 recommandé. Les champs inconnus sont ignorés dans les réponses et rejetés dans les requêtes.
 
-Tous les autres chapitres reposent sur ces primitives.
+**Justification.** Ces représentations établissent les primitives communes aux autres chapitres. La borne des montants permet leur représentation exacte en centimes entiers dans les environnements JSON utilisant la double précision. La distinction entre requêtes et réponses encadre les erreurs de saisie et l’évolution des formats.
 
-Écartés : chaîne décimale, flottant, chaîne unique `"HTG 1250.00"`, multi-devise, formats nationaux normalisés côté serveur, horodatage epoch, `camelCase`.
+**Alternatives examinées.** Montants en chaînes décimales, montants fractionnaires en virgule flottante, chaîne combinant devise et montant (`"HTG 1250.00"`), prise en charge multidevise dans cette version, conversion des formats téléphoniques nationaux par le serveur, horodatages epoch et noms de champs en `camelCase`.
 
-Régit : [Modèle de données](/fr/docs/spec/data-model).
+**Référence.** [Modèle de données](/fr/docs/spec/data-model).
 
 ## 0003. Cycle de vie du paiement
 
-Je retiens cinq états : `pending`, seul non terminal, puis `succeeded`, `failed`, `expired` et `canceled`. Un état terminal n'est atteint que sur information faisant foi et n'est jamais quitté. `pending` couvre aussi une issue pas encore établie, et rien n'expire par horloge sauf garantie de l'opérateur.
+**Choix.** Définir cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Le seul écoulement du temps ne suffit pas à établir une expiration, sauf dans les conditions garanties par l’opérateur et précisées dans le cycle de vie.
 
-Le marchand livre selon l'état ; un statut qui change après avoir paru définitif conduit à livrer contre un paiement échoué ou à débiter deux fois.
+**Justification.** L’application marchande peut déclencher la livraison d’un bien ou d’un service à partir de l’état du paiement. La stabilité des états terminaux fournit une base cohérente à cette décision. Une information contradictoire reçue ultérieurement doit être traitée selon les mécanismes prévus, sans réécrire l’état terminal.
 
-Écartés : terminal révisable, états `unknown` et `processing`, machine calquée sur les opérateurs, expiration par horloge, état `refunded`, état unique `closed`.
+**Alternatives examinées.** États terminaux révisables ; états supplémentaires `unknown` et `processing` ; machine à états reproduisant les particularités de chaque service ; expiration fondée uniquement sur l’horloge ; état `refunded` pour le paiement ; état terminal unique `closed`.
 
-Régit : [Cycle de vie](/fr/docs/spec/lifecycle).
+**Référence.** [Cycle de vie](/fr/docs/spec/lifecycle).
 
 ## 0004. API des paiements
 
-L'API passe par HTTPS sous `/v1`, en JSON, avec des erreurs RFC 9457 portant `retryable` et `effect`, et un catalogue fermé de problèmes. La capacité de base `payments` crée, lit par `id` ou par `reference`, et synchronise. Le client nomme l'opérateur. `Idempotency-Key` est obligatoire sur les opérations idempotentes.
+**Choix.** Exposer l’API en HTTPS sous `/v1`, avec des représentations JSON et un catalogue fermé d’erreurs conforme au format RFC 9457, enrichi de `retryable` et `effect`. La capacité de base `payments` couvre la création, la consultation par `id` ou `reference` et la synchronisation. Le client sélectionne le service de paiement. L’en-tête `Idempotency-Key` est obligatoire pour les opérations soumises à idempotence.
 
-Ces opérations répondent aux besoins réels du marchand (créer, relire après une coupure par sa propre référence, forcer une consultation quand un rappel se perd), et chaque opérateur peut les satisfaire.
+**Justification.** Ces opérations couvrent la création du paiement, sa récupération par une référence connue du marchand après la perte d’une réponse et la consultation de son état lorsqu’une notification manque. Les propriétés `retryable` et `effect` distinguent la possibilité d’une nouvelle tentative de l’incertitude sur les effets de l’opération initiale. La synchronisation reste soumise aux capacités effectivement prises en charge.
 
-Écartés : choix de l'opérateur par le serveur, `GET ?synchronize=true`, `404` pour une référence inconnue, chemin `/by-reference`, `next_action` réduit à une URL, point d'accès de liste pour l'instant.
+**Alternatives examinées.** Sélection du service par le serveur ; synchronisation par `GET ?synchronize=true` ; réponse `404` pour une référence inconnue ; chemin `/by-reference` ; champ `next_action` limité à une URL ; point d’accès de liste générale des paiements dans cette version.
 
-Régit : [API des paiements](/fr/docs/spec/payments-api) et [Idempotence](/fr/docs/spec/idempotency).
+**Références.** [API des paiements](/fr/docs/spec/payments-api) et [Idempotence](/fr/docs/spec/idempotency).
 
 ## 0005. Découverte de capacités
 
-Une capacité n'est annoncée que si l'opérateur la prend en charge, et une opération non annoncée est refusée. La découverte passe par deux points d'accès : `/.well-known/openfsp-configuration`, public et calqué sur la découverte OpenID Connect, et `/v1/capabilities`, authentifié et détaillé par opérateur. Les comportements propres à un opérateur et les plafonds du compte marchand (`limits`) sont des champs lisibles par machine.
+**Choix.** Déclarer uniquement les capacités prises en charge par le service et refuser les opérations non annoncées. La découverte utilise deux points d’accès : `/.well-known/openfsp-configuration`, public et inspiré de la découverte OpenID Connect, puis `/v1/capabilities`, authentifié et détaillé par service. Les comportements propres au service et les limites du compte marchand (`limits`) sont représentés par des champs lisibles par machine.
 
-Une interface uniforme qui émule les manques ne révèle l'écart qu'à l'échec d'un paiement réel, et tester par essai peut débiter le payeur.
+**Justification.** La déclaration explicite des capacités permet à l’application d’identifier les opérations disponibles avant de créer un paiement. L’émulation d’une fonction absente masquerait une différence de comportement ; une vérification par tentative de paiement pourrait avoir des effets financiers.
 
-Écartés : capacités fixes par version, `OPTIONS` HTTP, essayer puis traiter l'erreur, capacités versionnées, capacités dans chaque réponse de paiement, capacités globales au serveur, plafonds codés en dur.
+**Alternatives examinées.** Capacités fixes par version ; méthode HTTP `OPTIONS` ; découverte par tentative suivie du traitement d’une erreur ; versionnement séparé des capacités ; répétition des capacités dans chaque réponse de paiement ; capacités globales au serveur ; limites codées en dur.
 
-Régit : [Capacités](/fr/docs/spec/capabilities).
+**Référence.** [Capacités](/fr/docs/spec/capabilities).
 
 ## 0006. Webhooks et livraison des événements
 
-La livraison se fait au moins une fois, sans ordre, avec une `sequence` par ressource et un `id` de déduplication. Chaque événement est signé selon la RFC 9421 sur Ed25519, avec une fenêtre de fraîcheur de 300 secondes et un nonce. Le corps est un instantané complet de la ressource, il existe cinq types d'événement et les renvois suivent un calendrier minimal avec une variation aléatoire. L'interrogation périodique reste le moyen de rattrapage.
+**Choix.** Utiliser une livraison au moins une fois, sans garantie d’ordre de réception, avec une `sequence` par ressource et un `id` pour la déduplication. Les événements sont signés selon la RFC 9421 avec Ed25519, une fenêtre de fraîcheur de 300 secondes et un nonce. Le corps contient un instantané complet de la ressource. Cinq types d’événement sont définis ; les nouvelles tentatives suivent un calendrier minimal avec variation aléatoire. L’interrogation périodique permet de récupérer les changements non reçus.
 
-J'ai retenu une signature à clé publique parce qu'elle permet à l'abonné de rejeter une contrefaçon avec une bibliothèque standard et prouve à un tiers ce que l'émetteur a affirmé.
+**Justification.** La signature à clé publique permet de vérifier l’intégrité et l’origine cryptographique d’un événement avec les clés publiées, y compris par un tiers disposant des éléments nécessaires. Cette vérification concerne le message signé ; elle ne démontre pas, à elle seule, l’exactitude financière de son contenu. La séquence et l’identifiant permettent de traiter les réceptions désordonnées et les doublons.
 
-Écartés : HMAC à secret partagé, en-tête de signature maison, TLS mutuel seul, livraison exactement une fois, événements minces, lots, ordre garanti.
+**Alternatives examinées.** HMAC à secret partagé ; en-tête de signature spécifique au projet ; TLS mutuel utilisé seul ; livraison exactement une fois ; événements ne contenant qu’une référence ; livraison par lots ; garantie d’ordre.
 
-Régit : [Webhooks](/fr/docs/spec/webhooks).
+**Référence.** [Webhooks](/fr/docs/spec/webhooks).
 
 ## 0007. Authentification et secrets
 
-Le client présente une clé `ofsp_<env>_<secret>` de 128 bits d'entropie, transmise uniquement dans `Authorization: Bearer`. Le serveur stocke un condensé SHA-256, compare en temps constant et renvoie une seule erreur `unauthenticated` pour tout échec. Il existe quatre portées, dont aucune n'en implique une autre ; plusieurs clés par principal, révocation effective en 60 secondes au plus.
+**Choix.** Authentifier le client au moyen d’une clé `ofsp_<env>_<secret>` offrant au moins 128 bits d’entropie, transmise exclusivement dans `Authorization: Bearer`. Le serveur conserve un condensé SHA-256, effectue les comparaisons en temps constant et renvoie l’erreur unique `unauthenticated` pour les échecs d’authentification. Quatre portées indépendantes sont définies. Plusieurs clés peuvent être associées à un principal ; une révocation prend effet dans un délai maximal de 60 secondes.
 
-Sans règle commune, une implémentation peut comparer en temps variable, stocker les clés en clair ou distinguer clé inconnue et clé révoquée.
+**Justification.** Des exigences communes encadrent le stockage des clés, les comparaisons et les réponses d’authentification. Elles visent notamment à éviter le stockage en clair et la divulgation de différences entre une clé inconnue et une clé révoquée.
 
-Écartés : OAuth 2.0 client credentials, JWT autoémis, signature HMAC des requêtes, TLS mutuel comme identifiant principal, clé unique sans portée, hachage lent, portées par opérateur.
+**Alternatives examinées.** OAuth 2.0 client credentials ; JWT autoémis ; signature HMAC des requêtes ; TLS mutuel comme mécanisme principal d’identification ; clé unique sans portée ; hachage lent des clés ; portées propres à chaque service. Ces options ne sont pas retenues pour le mécanisme d’authentification de cette version.
 
-Régit : [Authentification](/fr/docs/spec/authentication).
+**Référence.** [Authentification](/fr/docs/spec/authentication).
 
 ## 0008. Conformité
 
-La conformité est un triplet : cible (client, serveur), niveau et version du protocole. Core est obligatoire, puis un profil par capacité annoncée, sans réussite partielle ni classement. N'importe qui peut exécuter la suite hors ligne, sans modifier l'implémentation ; le serveur simulé de référence joue un serveur conforme, `mock_openfsp`, à travers des scénarios d'issue déclarés. Le rapport est lisible par machine et indique ses limites.
+**Choix.** Définir la conformité par une cible (`client` ou `server`), un niveau et une version du protocole. Le niveau Core est obligatoire ; un profil s’applique à chaque capacité annoncée. Aucun score ni classement ne remplace la satisfaction des exigences. La suite peut être exécutée localement, hors ligne et sans modification de l’implémentation. Le serveur de référence `mock_openfsp` reproduit les scénarios déclarés ; le rapport est lisible par machine et explicite les limites des vérifications.
 
-Je confronte les capacités annoncées au comportement observable par des scénarios en boîte noire. Le rapport indique les obligations non vérifiées.
+**Justification.** Les scénarios en boîte noire comparent les capacités déclarées aux comportements observables dans l’environnement évalué. Le rapport conserve la liste des obligations non vérifiées, afin de distinguer un résultat de test d’une affirmation générale sur l’implémentation.
 
-Écartés : certification payante par le projet, niveaux bronze à or, score en pourcentage, bacs à sable des opérateurs, scénario choisi par le montant, défaillances aléatoires, instrumentation.
+**Alternatives examinées.** Certification payante par le projet ; niveaux de classement bronze à or ; score en pourcentage ; dépendance aux bacs à sable des fournisseurs pour la suite de référence ; scénario sélectionné par le montant ; défaillances aléatoires ; instrumentation de l’implémentation.
 
-Régit : [Conformité](/fr/docs/spec/conformance).
+**Référence.** [Conformité](/fr/docs/spec/conformance).
 
 ## Références
 

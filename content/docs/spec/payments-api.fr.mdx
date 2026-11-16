@@ -1,56 +1,43 @@
 ---
 title: API des paiements
-description: "Le contrat HTTP des paiements : ressource Payment, création, lecture, synchronisation et catalogue d'erreurs."
+description: "Interface HTTP des paiements : ressources, opérations, réponses et modèle d’erreur."
 ---
 
-Je définis la création, la lecture et la synchronisation autour de la référence du marchand. Les erreurs distinguent un refus d’un effet inconnu, selon la [décision 0004](/fr/docs/decisions#0004).
+L’API définit la création, la consultation et la synchronisation des paiements, avec la référence du marchand comme moyen de corrélation. Le modèle d’erreur distingue le refus d’une opération de l’incertitude sur ses effets, conformément à la [décision 0004](/fr/docs/decisions#0004).
 
 ## 1. Conventions HTTP
 
-Ces conventions valent pour tout point d'accès OpenFSP.
+Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
-**1.1.** HTTPS uniquement. Le serveur NE DOIT PAS servir l'API en HTTP clair hors d'un mode
-de développement explicite, qui DOIT être annoncé dans le journal de démarrage.
+**1.1.** L’API utilise HTTPS. Le serveur NE DOIT PAS l’exposer en HTTP clair, sauf dans un mode de développement explicite qui DOIT être signalé dans le journal de démarrage.
 
-**1.2.** Tous les points d'accès sont sous `/v1`. La version majeure ne change qu'en cas de
-rupture de compatibilité.
+**1.2.** Tous les points d’accès relèvent du chemin `/v1`. Un changement de version majeure intervient uniquement en cas de rupture de compatibilité.
 
-**1.3.** Les versions mineures ne figurent pas dans le chemin ; les ajouts se découvrent par la
-[découverte de capacités](/fr/docs/spec/capabilities).
+**1.3.** Les versions mineures sont absentes du chemin. Les ajouts disponibles sont exposés par la [découverte des capacités](/fr/docs/spec/capabilities).
 
-**1.4.** Requêtes et réponses de succès en `application/json` ; erreurs en
-`application/problem+json` (10.1.1).
+**1.4.** Les requêtes et les réponses de succès utilisent `application/json` ; les réponses d’erreur utilisent `application/problem+json` (10.1.1).
 
-**1.5.** Un corps présent avec un `Content-Type` non pris en charge DOIT être rejeté avec
-`malformed-request`.
+**1.5.** Un corps dont le `Content-Type` n’est pas pris en charge DOIT être rejeté avec `malformed-request`.
 
-**1.6.** `POST` crée ou agit, `GET` lit. `PATCH` et `DELETE` ne sont pas utilisés ici. Une
-méthode non implémentée sur un chemin connu DOIT recevoir `405` avec `Allow`.
+**1.6.** `POST` crée une ressource ou exécute une action ; `GET` consulte une ressource. Les méthodes `PATCH` et `DELETE` ne sont pas utilisées dans cette version. Une méthode non implémentée pour un chemin connu DOIT produire `405` avec l’en-tête `Allow`.
 
-**1.7.** Portée de l'idempotence : [idempotence 1](/fr/docs/spec/idempotency#1). Seule la synchronisation (5.3) en est exemptée ; le
-serveur NE DOIT PAS étendre l'exemption.
+**1.7.** Le périmètre de l’idempotence est défini en [idempotence 1](/fr/docs/spec/idempotency#1). Seule la synchronisation (5.3) en est exemptée ; le serveur NE DOIT PAS étendre cette exemption.
 
-**1.8.** Toute réponse, succès ou erreur, porte l'en-tête `Request-Id` égal au `request_id`
-(10.1.6).
+**1.8.** Chaque réponse, de succès ou d’erreur, contient l’en-tête `Request-Id`, dont la valeur est égale à `request_id` (10.1.6).
 
-**1.9.** Champs inconnus : rejet en requête, tolérance en réponse ([modèle de données 2.3](/fr/docs/spec/data-model#2.3), [2.4](/fr/docs/spec/data-model#2.4)).
+**1.9.** Les champs inconnus sont rejetés dans les requêtes et tolérés dans les réponses ([modèle de données 2.3](/fr/docs/spec/data-model#2.3), [2.4](/fr/docs/spec/data-model#2.4)).
 
-**1.10.** Les chemins sont canoniques sans barre oblique finale ; `/v1/payments/` DOIT être
-traité comme `/v1/payments`.
+**1.10.** Les chemins canoniques ne comportent pas de barre oblique finale. Le chemin `/v1/payments/` DOIT être traité comme `/v1/payments`.
 
-**1.11.** Tout horodatage est un `Timestamp` ([modèle de données 7](/fr/docs/spec/data-model#7)).
+**1.11.** Chaque horodatage utilise le type `Timestamp` ([modèle de données 7](/fr/docs/spec/data-model#7)).
 
-**1.12.** Une collection est un objet à membre OBLIGATOIRE `data`, tableau de ressources, jamais
-un tableau nu : `{ "data": [] }`.
+**1.12.** Une collection est représentée par un objet contenant le membre OBLIGATOIRE `data`, tableau de ressources. Un tableau sans objet englobant n’est pas admis : `{ "data": [] }`.
 
 ## 2. Capacité de base
 
-**2.1.** Les trois opérations du 5 forment la capacité `payments`. Un serveur conforme DOIT
-les implémenter pour chaque opérateur qu'il sert ; sans `payments.lookup`, la
-synchronisation suit la règle [capacités 5.3](/fr/docs/spec/capabilities#5.3).
+**2.1.** Les trois opérations du 5 constituent la capacité `payments`. Le serveur conforme DOIT les implémenter pour chaque opérateur servi. Lorsque `payments.lookup` n’est pas pris en charge, la synchronisation suit les [capacités 5.3](/fr/docs/spec/capabilities#5.3).
 
-**2.2.** Le serveur NE DOIT PAS subordonner ces opérations à une interrogation préalable de
-la découverte de capacités.
+**2.2.** Le serveur NE DOIT PAS conditionner l’exécution de ces opérations à une requête préalable de découverte des capacités.
 
 ## 3. Ressource `Payment`
 
@@ -79,7 +66,7 @@ la découverte de capacités.
 }
 ```
 
-**3.1.** Champs :
+**3.1.** La ressource comporte les champs suivants :
 
 | Champ                | Type                | Présence     | Notes                                                                                                     |
 | -------------------- | ------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
@@ -100,34 +87,25 @@ la découverte de capacités.
 | `fee`                | `Fee`               | FACULTATIF   | Absent signifie non connu (3.5).                                                                          |
 | `metadata`           | `Metadata`          | FACULTATIF   |                                                                                                           |
 
-**3.2.** `provider` correspond à `^[a-z0-9_]{1,32}$` et DOIT être l'identifiant du
-[registre des opérateurs](/fr/docs/registry),
-ou un identifiant `mock_*` du [serveur simulé](/fr/docs/spec/conformance#9). Il est OBLIGATOIRE même si le serveur ne sert qu'un opérateur.
+**3.2.** La valeur de `provider` respecte `^[a-z0-9_]{1,32}$` et DOIT correspondre à un identifiant du [registre des opérateurs](/fr/docs/registry) ou à un identifiant `mock_*` du [serveur simulé](/fr/docs/spec/conformance#9). Ce champ est OBLIGATOIRE même si le serveur ne sert qu’un opérateur.
 
-**3.3.** `payer` porte un seul champ, `phone_number` (`PhoneNumber`).
+**3.3.** L’objet `payer` contient un seul champ : `phone_number`, de type `PhoneNumber`.
 
-**3.4.** `description` PEUT être affichée au payeur. Le client NE DOIT PAS y placer de données
-personnelles.
+**3.4.** La valeur de `description` PEUT être présentée au payeur. Le client NE DOIT PAS y inclure de données personnelles.
 
-**3.5.** `fee` :
+**3.5.** Le champ `fee` suit les règles suivantes :
 
-- une création contenant `fee` DOIT être rejetée ;
-- `fee` PEUT n'apparaître qu'une fois le paiement terminal ; son arrivée change `updated_at`
-  sans changer `status` ;
-- un client NE DOIT PAS afficher son absence comme zéro ([modèle de données 8.2](/fr/docs/spec/data-model#8.2)).
+- toute requête de création contenant `fee` DOIT être rejetée ;
+- le champ `fee` PEUT apparaître uniquement après une transition terminale. Son ajout modifie `updated_at` sans modifier `status` ;
+- le client NE DOIT PAS interpréter l’absence de frais comme un montant nul ([modèle de données 8.2](/fr/docs/spec/data-model#8.2)).
 
 ## 4. `next_action`
 
-**4.1.** OBLIGATOIRE tant que le paiement est `pending`, absent une fois terminal, sauf au 4.1.1.
+**4.1.** Le champ est OBLIGATOIRE tant que le paiement reste `pending` et absent après une transition terminale, sauf dans le cas du 4.1.1.
 
-**4.1.1.** Une création dont l'`effect` vaut `unknown` (10.6) laisse le paiement `pending` sans
-`next_action`. Le serveur DOIT tout de même le renvoyer en lecture (5.2) et en synchronisation
-(5.3), comme le client y est invité (10.6.3), et l'annoncer une seule fois par `payment.created`
-([webhooks 3](/fr/docs/spec/webhooks#3)). Il reçoit `next_action` si un renvoi de la création avec la même clé
-aboutit. Tant que l'issue de la création n'est pas connue, le serveur PEUT ne pas présenter le
-paiement.
+**4.1.1.** Une création dont `effect` vaut `unknown` (10.6) laisse le paiement `pending` sans `next_action`. Le serveur DOIT néanmoins le restituer en consultation (5.2) et en synchronisation (5.3), conformément à la démarche du client définie au 10.6.3, et l’annoncer une seule fois par `payment.created` ([webhooks 3](/fr/docs/spec/webhooks#3)). Le champ `next_action` est renseigné si une nouvelle tentative de création avec la même clé aboutit. Tant que le résultat de la création reste indéterminé, le serveur PEUT différer l’exposition du paiement.
 
-**4.2.** Énumération fermée :
+**4.2.** Les types autorisés constituent l’énumération fermée suivante :
 
 | `type`           | Sens                                                      | Champs                       |
 | ---------------- | --------------------------------------------------------- | ---------------------------- |
@@ -135,21 +113,15 @@ paiement.
 | `payer_approval` | Le payeur approuve sur son appareil (USSD, notification). | aucun                        |
 | `none`           | Rien n'est requis du payeur.                              | aucun                        |
 
-`expires_at` d'un `redirect` est FACULTATIF lorsque l'opérateur annonce `expiry_guaranteed` à
-`false` ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)).
+Pour une action `redirect`, le champ `expires_at` est FACULTATIF lorsque l’opérateur déclare `expiry_guaranteed` à `false` ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)).
 
-**4.3.** Le serveur DOIT indiquer le type exigé par l'opérateur. Si ce type ne
-peut pas être déterminé, la création échoue avec une erreur ; `none` NE DOIT PAS servir de
-valeur par défaut.
+**4.3.** Le serveur DOIT indiquer le type requis par l’opérateur. Si ce type ne peut pas être établi, la création retourne une erreur. La valeur `none` NE DOIT PAS être utilisée par défaut.
 
-**4.4.** Un client DOIT traiter `redirect_url` comme opaque, NE DOIT PAS la réécrire, et NE
-DOIT PAS l'intégrer dans un cadre qui en masque l'origine.
+**4.4.** Le client DOIT traiter `redirect_url` comme une valeur opaque, NE DOIT PAS la modifier et NE DOIT PAS l’intégrer dans un cadre masquant son origine.
 
-**4.5.** `next_action.expires_at` PEUT précéder l'`expires_at` du paiement. Son expiration ne
-rend pas le paiement terminal.
+**4.5.** La valeur de `next_action.expires_at` PEUT précéder l’`expires_at` du paiement. L’expiration de l’action ne rend pas le paiement terminal.
 
-**4.6.** Une capacité PEUT ajouter un type ; il n'est produit que pour un opérateur qui annonce
-cette capacité. Un client qui reçoit un type inconnu NE DOIT PAS le traiter comme `none`.
+**4.6.** Une capacité PEUT introduire un type supplémentaire, produit uniquement pour un opérateur déclarant cette capacité. Le client NE DOIT PAS assimiler un type inconnu à `none`.
 
 ## 5. Points d'accès
 
@@ -185,18 +157,13 @@ POST /v1/payments
 | `metadata`     | FACULTATIF   |                                                                                                                 |
 | `callback_url` | FACULTATIF   | Seulement si l'opérateur annonce `webhooks.per_payment_url` (5.1.8).                                            |
 
-**5.1.1.** Le serveur NE DOIT PAS choisir l'opérateur à la place du client.
+**5.1.1.** Le serveur NE DOIT PAS sélectionner l’opérateur à la place du client.
 
-**5.1.2.** Le serveur DOIT indiquer par le membre `payer_required` de `/v1/capabilities`
-([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)) si `payer` est exigé, et DOIT rejeter avec `missing-field`
-une requête privée d'un champ exigé par l'opérateur.
+**5.1.2.** Le serveur DOIT préciser si `payer` est exigé au moyen de `payer_required` dans `/v1/capabilities` ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)). Il DOIT rejeter avec `missing-field` toute requête omettant un champ exigé par l’opérateur.
 
-**5.1.3.** `return_url` DOIT être une URL `https` absolue ; une URL `http` DOIT être rejetée.
-Exception : en mode de développement, le serveur accepte `http://localhost` et
-`http://127.0.0.1`.
+**5.1.3.** La valeur de `return_url` DOIT être une URL `https` absolue. Une URL `http` DOIT être rejetée, sauf en mode développement, où `http://localhost` et `http://127.0.0.1` sont acceptées.
 
-**5.1.4.** Le serveur fixe l'`expires_at` de la ressource à ce que l'opérateur garantit, qui
-PEUT différer de la demande ou être absent. Un client DOIT relire la valeur.
+**5.1.4.** Le serveur attribue à la ressource l’`expires_at` garanti par l’opérateur. Cette valeur PEUT différer de celle demandée ou être absente. Le client DOIT consulter la valeur effectivement retournée.
 
 | Statut                   | Condition                                 |
 | ------------------------ | ----------------------------------------- |
@@ -205,20 +172,13 @@ PEUT différer de la demande ou être absent. Un client DOIT relire la valeur.
 | `409 reference-conflict` | Référence déjà utilisée (5.1.5).          |
 | `502`, `503`, `504`      | Échec côté opérateur ; lire `effect`.     |
 
-**5.1.5.** Sur `reference-conflict`, le client DEVRAIT lire le paiement existant (5.2).
+**5.1.5.** Après `reference-conflict`, le client DEVRAIT consulter le paiement existant selon le 5.2.
 
-**5.1.6.** Sur `504 provider-timeout` ou `500 internal-error`, `effect` vaut `unknown`
-(10.6.3).
+**5.1.6.** Pour `504 provider-timeout` ou `500 internal-error`, la valeur de `effect` est `unknown` (10.6.3).
 
-**5.1.7.** Le serveur utilise `locale` pour la page du payeur s'il figure dans les `locales` annoncées
-([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)), et l'ignore sinon. Une autre valeur que `fr`, `ht` ou `en`
-DOIT être rejetée avec `invalid-field`.
+**5.1.7.** Le serveur applique `locale` à la page du payeur si cette valeur figure parmi les `locales` déclarées ([capacités 3.2.2](/fr/docs/spec/capabilities#3.2.2)) ; sinon, il l’ignore. Toute valeur autre que `fr`, `ht` ou `en` DOIT être rejetée avec `invalid-field`.
 
-**5.1.8.** `callback_url` est une URL à laquelle le serveur livre les événements de ce paiement,
-signés selon les [webhooks 5](/fr/docs/spec/webhooks#5). URL `https` absolue ; en mode de développement (1.1),
-`http://localhost` et `http://127.0.0.1` sont aussi acceptées, comme au 5.1.3. Une création portant
-`callback_url` pour un opérateur qui n'annonce pas `webhooks.per_payment_url` DOIT être rejetée avec
-`unknown-field`.
+**5.1.8.** Le serveur livre les événements du paiement à `callback_url` avec les signatures définies dans les [webhooks 5](/fr/docs/spec/webhooks#5). Cette valeur est une URL `https` absolue. En mode développement (1.1), `http://localhost` et `http://127.0.0.1` sont également acceptées selon le 5.1.3. Toute création contenant `callback_url` pour un opérateur ne déclarant pas `webhooks.per_payment_url` DOIT être rejetée avec `unknown-field`.
 
 ### 5.2. Lire un paiement
 
@@ -227,15 +187,13 @@ GET /v1/payments/{id}
 GET /v1/payments?reference={reference}
 ```
 
-**5.2.1.** Par `id` : le paiement, ou `404 not-found`.
+**5.2.1.** La recherche par `id` retourne le paiement ou une réponse `404 not-found`.
 
-**5.2.2.** Par `reference` : une collection d'au plus un élément. Une référence inconnue donne
-`200` avec `data` vide.
+**5.2.2.** La recherche par `reference` retourne une collection d’au plus un élément. Une référence inconnue produit `200` avec une collection `data` vide.
 
-**5.2.3.** Les bibliothèques clientes DEVRAIENT exposer la recherche par référence.
+**5.2.3.** Les bibliothèques clientes DEVRAIENT proposer une opération de recherche par référence.
 
-**5.2.4.** Une lecture renvoie l'état enregistré par le serveur ; elle NE DOIT PAS déclencher une
-nouvelle lecture de l'état chez l'opérateur.
+**5.2.4.** La consultation restitue l’état conservé par le serveur et NE DOIT PAS provoquer de nouvelle consultation auprès de l’opérateur.
 
 ### 5.3. Synchroniser un paiement
 
@@ -243,52 +201,41 @@ nouvelle lecture de l'état chez l'opérateur.
 POST /v1/payments/{id}/synchronize
 ```
 
-**5.3.1.** Le serveur relit l'état chez l'opérateur, applique la transition qui en découle
-selon le [cycle de vie](/fr/docs/spec/lifecycle), et renvoie le paiement.
+**5.3.1.** Le serveur consulte l’état auprès de l’opérateur, applique la transition correspondante selon le [cycle de vie](/fr/docs/spec/lifecycle), puis retourne le paiement.
 
-**5.3.2.** Le serveur DOIT implémenter ce point d'accès.
+**5.3.2.** L’implémentation de ce point d’accès est une obligation : le serveur DOIT l’exposer.
 
-**5.3.3.** Sur un paiement terminal, le serveur NE DOIT PAS relire l'état et DOIT
-renvoyer le paiement inchangé en `200`.
+**5.3.3.** Pour un paiement terminal, le serveur NE DOIT PAS consulter de nouveau l’état et DOIT retourner le paiement inchangé avec `200`.
 
-**5.3.3.1.** Ce contrôle précède tout autre, y compris celui de capacité
-([capacités 5.3](/fr/docs/spec/capabilities#5.3)).
+**5.3.3.1.** La vérification de l’état terminal précède tous les autres contrôles, y compris celui des capacités ([capacités 5.3](/fr/docs/spec/capabilities#5.3)).
 
-**5.3.4.** Opérateur injoignable : `503 provider-unavailable` ou `504 provider-timeout` ; le
-paiement reste `pending`.
+**5.3.4.** Si l’opérateur est injoignable ou ne répond pas dans le délai imparti, la réponse est `503 provider-unavailable` ou `504 provider-timeout`. Le paiement reste `pending`.
 
-**5.3.5.** Le serveur DEVRAIT limiter le débit de ce point d'accès par paiement
-(`429 rate-limited` avec `Retry-After`).
+**5.3.5.** Le serveur DEVRAIT appliquer une limitation de débit par paiement à ce point d’accès, avec `429 rate-limited` et `Retry-After`.
 
-**5.3.6.** Ce point d'accès est exempté d'`Idempotency-Key` ([idempotence 1.4](/fr/docs/spec/idempotency#1.4)).
+**5.3.6.** Ce point d’accès bénéficie de l’exemption d’`Idempotency-Key` prévue en [idempotence 1.4](/fr/docs/spec/idempotency#1.4).
 
-**5.3.7.** Une synchronisation qui n'établit aucun nouvel état n'est pas une erreur : la réponse est
-`200` avec le paiement inchangé.
+**5.3.7.** L’absence de nouvel état à l’issue d’une synchronisation ne constitue pas une erreur. Le serveur retourne `200` avec le paiement inchangé.
 
 ## 6. Suivi des changements
 
-**6.1.** Un client apprend un changement d'état par lecture (5.2), synchronisation (5.3) ou
-[webhook](/fr/docs/spec/webhooks).
+**6.1.** Le client prend connaissance d’un changement d’état par consultation (5.2), synchronisation (5.3) ou [webhook](/fr/docs/spec/webhooks).
 
-**6.2.** Un client DEVRAIT interroger à intervalles croissants et DEVRAIT s'arrêter dès que le paiement est
-terminal.
+**6.2.** Le client DEVRAIT augmenter progressivement l’intervalle entre ses consultations et DEVRAIT les arrêter dès que le paiement devient terminal.
 
-**6.3.** Voir [webhooks 10](/fr/docs/spec/webhooks#10).
+**6.3.** Les exigences complémentaires sont définies dans les [webhooks 10](/fr/docs/spec/webhooks#10).
 
 ## 7. URL de retour
 
-**7.1.** Un client NE DOIT PAS traiter le retour du payeur sur `return_url` comme preuve d'un
-dénouement.
+**7.1.** Le retour du payeur sur `return_url` NE DOIT PAS être interprété par le client comme une preuve du résultat du paiement.
 
-**7.2.** Les paramètres ajoutés par l'opérateur à `return_url` sont contrôlables par un
-attaquant.
+**7.2.** Les paramètres ajoutés à `return_url` par l’opérateur peuvent être manipulés par un attaquant.
 
-**7.3.** Au retour, un client DOIT lire le paiement auprès du serveur et afficher le
-résultat de cette seule réponse.
+**7.3.** Au retour du payeur, le client DOIT consulter le paiement auprès du serveur et afficher uniquement le résultat de cette réponse.
 
 ## 8. Flux type
 
-Informatif : je décris le déroulement type d'un paiement par redirection.
+Exemple informatif : déroulement d’un paiement avec redirection du payeur.
 
 ```mermaid
 sequenceDiagram
@@ -309,23 +256,19 @@ sequenceDiagram
 
 ## 9. Sécurité
 
-**9.1.** La recherche par référence porte sur les paiements du compte marchand, que voit tout
-principal autorisé de ce compte ([authentification 5.5](/fr/docs/spec/authentication#5.5)).
+**9.1.** La recherche par référence s’applique aux paiements du compte marchand, accessibles à tous les principaux autorisés de ce compte ([authentification 5.5](/fr/docs/spec/authentication#5.5)).
 
-**9.2.** Une clé sans la portée requise reçoit `forbidden`
-([authentification 6.4](/fr/docs/spec/authentication#6.4)).
+**9.2.** Une clé dépourvue de la portée requise produit `forbidden` ([authentification 6.4](/fr/docs/spec/authentication#6.4)).
 
-**9.3.** La documentation client DEVRAIT préciser que `description` peut être affichée au
-payeur, contrairement à `metadata` (3.4).
+**9.3.** La documentation destinée aux clients DEVRAIT signaler que `description` peut être présentée au payeur, contrairement à `metadata` (3.4).
 
 ## 10. Erreurs
 
 ### 10.1. Format
 
-**10.1.1.** Toute réponse d'erreur DOIT être un problem detail (RFC 9457) de type de média
-`application/problem+json`.
+**10.1.1.** Chaque réponse d’erreur DOIT utiliser un objet d’erreur RFC 9457 (« problem detail »), avec le type de média `application/problem+json`.
 
-**10.1.2.** Exemple :
+**10.1.2.** Exemple de représentation d’une erreur :
 
 ```json
 {
@@ -340,7 +283,7 @@ payeur, contrairement à `metadata` (3.4).
 }
 ```
 
-**10.1.3.** Membres :
+**10.1.3.** L’objet d’erreur possède les membres suivants :
 
 | Membre            | Type            | Présence    | Notes                                           |
 | ----------------- | --------------- | ----------- | ----------------------------------------------- |
@@ -354,100 +297,80 @@ payeur, contrairement à `metadata` (3.4).
 | `request_id`      | chaîne          | OBLIGATOIRE | Corrélation avec les journaux du serveur.       |
 | `errors`          | tableau         | FACULTATIF  | Détail par champ (10.7).                        |
 
-**10.1.4.** Un client DOIT identifier une erreur par son seul `type`. `title` et `detail` PEUVENT
-changer ou être localisés.
+**10.1.4.** Le client DOIT identifier l’erreur exclusivement par `type`. Les valeurs de `title` et `detail` PEUVENT évoluer ou être localisées.
 
-**10.1.5.** `status` DOIT être égal au statut HTTP de la réponse.
+**10.1.5.** Le champ `status` DOIT correspondre au statut HTTP de la réponse.
 
-**10.1.6.** `request_id` DOIT être présent sur toute erreur, y compris `500`.
+**10.1.6.** Le champ `request_id` DOIT figurer dans toutes les réponses d’erreur, y compris `500`.
 
 ### 10.2. Requête échouée et paiement échoué
 
-**10.2.1.** Une réponse d'erreur signale l'échec de la requête ; le dénouement du paiement est
-porté par `status` (10.2.2).
+**10.2.1.** La réponse d’erreur signale l’échec de la requête. Le résultat du paiement est décrit par son champ `status` (10.2.2).
 
-**10.2.2.** Un paiement refusé est renvoyé en `200`, avec `"status": "failed"` et un
-`failure_reason` ([cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)).
+**10.2.2.** Un paiement refusé est représenté dans une réponse `200` par `"status": "failed"` et un champ `failure_reason` ([cycle de vie 7.2](/fr/docs/spec/lifecycle#7.2)).
 
-**10.2.3.** Le serveur NE DOIT PAS signaler un paiement refusé par une réponse d'erreur, ni
-utiliser un statut `4xx` ou `5xx` pour le dénouement d'un paiement.
+**10.2.3.** Le serveur NE DOIT PAS représenter le refus d’un paiement par une réponse d’erreur ni utiliser un statut `4xx` ou `5xx` pour exprimer le résultat du paiement.
 
-**10.2.4.** Un client NE DOIT PAS traiter une réponse non `2xx` comme un paiement échoué. Son
-effet est donné par `effect`.
+**10.2.4.** Le client NE DOIT PAS assimiler une réponse non `2xx` à l’échec du paiement. Les effets de l’opération sont indiqués par `effect`.
 
 ### 10.3. URI de type
 
-**10.3.1.** Forme : `https://openfsp.org/problems/<code>`, `<code>` venant du catalogue du 10.8.
+**10.3.1.** Les URI suivent la forme `https://openfsp.org/problems/<code>`, où `<code>` appartient au catalogue du 10.8.
 
-**10.3.2.** Un client DOIT comparer ces URI comme des chaînes opaques et NE DOIT PAS les
-déréférencer pour interpréter une réponse.
+**10.3.2.** Le client DOIT comparer ces URI comme des chaînes opaques et NE DOIT PAS les déréférencer pour interpréter la réponse.
 
-**10.3.3.** L'éditeur de la spécification DEVRAIT publier une documentation du type à chaque
-URI de type ; cette règle ne lie pas les implémentations.
+**10.3.3.** L’éditeur de la spécification DEVRAIT rendre la documentation de chaque type accessible à son URI. Cette règle ne s’applique pas aux implémentations.
 
-**10.3.4.** Les URI de type DOIVENT conserver l'autorité `openfsp.org` dans toutes les versions.
+**10.3.4.** Dans toutes les versions, les URI de type DOIVENT conserver l’autorité `openfsp.org`.
 
-**10.3.5.** Un serveur PEUT définir des types sous sa propre autorité et NE DOIT PAS en
-définir sous l'autorité OpenFSP.
+**10.3.5.** Le serveur PEUT définir des types sous sa propre autorité et NE DOIT PAS en créer sous l’autorité OpenFSP.
 
-**10.3.6.** Face à un `type` inconnu, un client DOIT se fonder sur `status`, `retryable` et
-`effect`. Un ajout au catalogue n'est pas une rupture de compatibilité.
+**10.3.6.** Pour un `type` inconnu, le client DOIT utiliser `status`, `retryable` et `effect`. L’ajout d’un type au catalogue ne constitue pas une rupture de compatibilité.
 
 ### 10.4. Statuts
 
-**10.4.1.** Le serveur DOIT utiliser le statut assigné par le catalogue.
+**10.4.1.** Le serveur DOIT retourner le statut attribué au type d’erreur dans le catalogue.
 
-**10.4.2.** Les statuts suivent la RFC 9110 : `400` requête illisible ou mal formée, `422`
-contenu invalide, `409` conflit avec un état détenu par le serveur.
+**10.4.2.** Les statuts respectent la RFC 9110 : `400` pour une requête illisible ou mal formée, `422` pour un contenu invalide et `409` pour un conflit avec l’état détenu par le serveur.
 
-**10.4.3.** `idempotency-key-reused` est en `422`, `idempotency-request-in-progress` en `409`,
-comme dans le brouillon IETF `Idempotency-Key`.
+**10.4.3.** Les erreurs `idempotency-key-reused` et `idempotency-request-in-progress` utilisent respectivement `422` et `409`, conformément au projet IETF `Idempotency-Key`.
 
-**10.4.4.** Côté opérateur : `502` réponse invalide ou erreur de l'opérateur, `503` opérateur
-injoignable, `504` pas de réponse à temps.
+**10.4.4.** Pour les erreurs liées à l’opérateur : `502` indique une réponse invalide ou une erreur de l’opérateur, `503` un opérateur injoignable et `504` une absence de réponse dans le délai imparti.
 
 ### 10.5. `retryable`
 
-**10.5.1.** `retryable` indique si répéter la requête inchangée, avec la même `Idempotency-Key`,
-peut réussir.
+**10.5.1.** La propriété `retryable` indique si la répétition de la requête inchangée avec la même `Idempotency-Key` peut réussir.
 
-**10.5.2.** `retryable: true` indique qu'un renvoi avec la même `Idempotency-Key` ne produit pas
-d'effet en double ; il n'en garantit pas le succès.
+**10.5.2.** La valeur `retryable: true` indique qu’une nouvelle tentative avec la même `Idempotency-Key` ne produit aucun effet en double. Elle ne garantit pas la réussite de cette tentative.
 
-**10.5.3.** Un client NE DOIT PAS renvoyer une requête dont l'erreur porte `retryable: false`.
+**10.5.3.** Le client NE DOIT PAS répéter une requête dont l’erreur indique `retryable: false`.
 
-**10.5.4.** Un client qui renvoie DOIT réutiliser la clé d'origine et espacer ses renvois
-([idempotence 7.1](/fr/docs/spec/idempotency#7.1),
-[7.4](/fr/docs/spec/idempotency#7.4)).
+**10.5.4.** Lors d’une nouvelle tentative, le client DOIT réutiliser la clé initiale et espacer les tentatives ([idempotence 7.1](/fr/docs/spec/idempotency#7.1), [7.4](/fr/docs/spec/idempotency#7.4)).
 
-**10.5.5.** Un client DOIT respecter `Retry-After`.
+**10.5.5.** Le client DOIT respecter le délai indiqué par `Retry-After`.
 
-**10.5.6.** `retryable` DOIT correspondre à la valeur du catalogue.
+**10.5.6.** La valeur de `retryable` DOIT correspondre à celle du catalogue.
 
 ### 10.6. `effect`
 
-**10.6.1.** Valeurs :
+**10.6.1.** La propriété accepte les valeurs suivantes :
 
 | Valeur    | Sens                            |
 | --------- | ------------------------------- |
 | `none`    | L'opération n'a pas pris effet. |
 | `unknown` | L'opération a pu prendre effet. |
 
-**10.6.2.** Le serveur DOIT indiquer `none` seulement s'il peut l'établir, `unknown`
-sinon.
+**10.6.2.** Le serveur DOIT indiquer `none` uniquement lorsque l’absence d’effet est établie ; dans les autres cas, il indique `unknown`.
 
-**10.6.3.** Sur `unknown`, un client NE DOIT PAS conclure à l'échec. Il DOIT renvoyer avec la clé
-d'origine ou lire la ressource par sa `reference`
-([modèle de données 6.2.3](/fr/docs/spec/data-model#6.2.3)).
+**10.6.3.** Lorsque la valeur est `unknown`, le client NE DOIT PAS conclure à l’échec. Il DOIT répéter la requête avec la clé initiale ou consulter la ressource par sa `reference` ([modèle de données 6.2.3](/fr/docs/spec/data-model#6.2.3)).
 
-**10.6.4.** `effect` et `retryable` sont indépendants.
+**10.6.4.** Les propriétés `effect` et `retryable` sont indépendantes l’une de l’autre.
 
-**10.6.5.** Le serveur NE DOIT PAS enregistrer au titre de l'[idempotence](/fr/docs/spec/idempotency)
-une erreur portant `effect: unknown` ; un renvoi est traité selon l'[idempotence 3](/fr/docs/spec/idempotency#3).
+**10.6.5.** Le serveur NE DOIT PAS conserver au titre de l’[idempotence](/fr/docs/spec/idempotency) une erreur indiquant `effect: unknown`. Toute nouvelle tentative suit les règles de l’[idempotence 3](/fr/docs/spec/idempotency#3).
 
 ### 10.7. Erreurs par champ
 
-**10.7.1.** Si l'erreur concerne des champs précis, `errors` DEVRAIT être présent :
+**10.7.1.** Si l’erreur concerne des champs identifiables, le membre `errors` DEVRAIT être présent :
 
 | Membre   | Type   | Présence    | Notes                                                |
 | -------- | ------ | ----------- | ---------------------------------------------------- |
@@ -482,13 +405,13 @@ une erreur portant `effect: unknown` ; un renvoi est traité selon l'[idempotenc
 }
 ```
 
-**10.7.2.** Le serveur DEVRAIT signaler tous les champs invalides dans une seule réponse.
+**10.7.2.** Le serveur DEVRAIT regrouper tous les champs invalides dans une même réponse.
 
-**10.7.3.** `field` DOIT désigner la requête telle qu'envoyée par le client.
+**10.7.3.** Le champ `field` DOIT désigner un emplacement de la requête telle qu’elle a été envoyée par le client.
 
 ### 10.8. Catalogue
 
-Fermé ; l'étendre exige une décision écrite.
+Le catalogue est fermé. Son extension nécessite une décision écrite.
 
 #### 10.8.1. Requête
 
@@ -517,10 +440,7 @@ Fermé ; l'étendre exige une décision écrite.
 | ----------- | ------ | ----------- | -------- | ---------------------- |
 | `not-found` | 404    | false       | `none`   | Ressource inexistante. |
 
-**10.8.3.1.** Le serveur DOIT vérifier la portée avant l'existence de la ressource : une clé
-sans la portée requise reçoit `forbidden` que la ressource existe ou non
-([authentification 6.4](/fr/docs/spec/authentication#6.4)), de sorte que la réponse ne révèle pas son
-existence.
+**10.8.3.1.** Le serveur DOIT contrôler la portée avant de vérifier l’existence de la ressource. Une clé sans la portée requise reçoit `forbidden`, que la ressource existe ou non ([authentification 6.4](/fr/docs/spec/authentication#6.4)), afin de ne pas révéler son existence.
 
 #### 10.8.4. Conflits
 
@@ -530,7 +450,7 @@ existence.
 | `idempotency-request-in-progress` | 409    | true        | `unknown` | Requête de même clé en cours ([idempotence 3.4](/fr/docs/spec/idempotency#3.4)).             |
 | `state-conflict`                  | 409    | false       | `none`    | Opération interdite depuis l'état courant ([cycle de vie 2.1](/fr/docs/spec/lifecycle#2.1)). |
 
-**10.8.4.1.** `idempotency-request-in-progress` DEVRAIT porter `Retry-After`.
+**10.8.4.1.** La réponse `idempotency-request-in-progress` DEVRAIT inclure `Retry-After`.
 
 #### 10.8.5. Débit
 
@@ -547,28 +467,22 @@ existence.
 | `provider-unavailable` | 503    | true        | `none`    | Opérateur injoignable.                          |
 | `provider-timeout`     | 504    | true        | `unknown` | Pas de réponse de l'opérateur à temps.          |
 
-**10.8.6.1.** `provider-unavailable` NE DOIT être utilisé que si l'opération n'a pas été engagée
-chez l'opérateur (connexion refusée, échec DNS). Si elle a été engagée sans dénouement
-connu, `provider-timeout` s'applique.
+**10.8.6.1.** L’erreur `provider-unavailable` NE DOIT être utilisée que si l’opération n’a pas été engagée auprès de l’opérateur, par exemple après un refus de connexion ou un échec DNS. Si l’opération a été engagée et son résultat reste inconnu, l’erreur applicable est `provider-timeout`.
 
-**10.8.6.2.** `internal-error` DOIT porter `unknown`, sauf si le serveur établit que l'opération
-n'a eu aucun effet.
+**10.8.6.2.** La réponse `internal-error` DOIT indiquer `unknown`, sauf si le serveur établit l’absence d’effet de l’opération.
 
-**10.8.6.3.** `internal-error` NE DOIT PAS inclure de diagnostic interne (trace, requête, nom
-d'hôte).
+**10.8.6.3.** La réponse `internal-error` NE DOIT PAS exposer de diagnostic interne, notamment une trace d’exécution, une requête ou un nom d’hôte.
 
 ### 10.9. Langue
 
-**10.9.1.** `title` et `detail` DEVRAIENT être en anglais par défaut.
+**10.9.1.** Les valeurs de `title` et `detail` DEVRAIENT être rédigées en anglais par défaut.
 
-**10.9.2.** Un serveur PEUT les localiser et DEVRAIT alors respecter `Accept-Language`.
+**10.9.2.** Le serveur PEUT localiser ces valeurs et DEVRAIT alors respecter `Accept-Language`.
 
-**10.9.3.** La localisation NE DOIT PAS modifier `type`, `retryable`, `effect` ni aucun `code`.
+**10.9.3.** La localisation NE DOIT PAS modifier `type`, `retryable`, `effect` ou un quelconque `code`.
 
 ### 10.10. Sécurité
 
-**10.10.1.** `title`, `detail` et `errors[].detail` NE DOIVENT PAS contenir de numéro de
-téléphone, d'identifiant de payeur ni de montant.
+**10.10.1.** Les champs `title`, `detail` et `errors[].detail` NE DOIVENT PAS inclure de numéro de téléphone, d’identifiant du payeur ou de montant.
 
-**10.10.2.** `unauthenticated` NE DOIT PAS distinguer les causes d'échec énumérées à
-l'[authentification 4.7](/fr/docs/spec/authentication#4.7).
+**10.10.2.** La réponse `unauthenticated` NE DOIT PAS différencier les causes d’échec définies en [authentification 4.7](/fr/docs/spec/authentication#4.7).

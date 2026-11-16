@@ -1,13 +1,13 @@
 ---
 title: Registre des opérateurs
-description: Les identifiants provider du contrat OpenFSP et leur attribution, indépendamment du mode d'intégration.
+description: Attribution et stabilité des identifiants de services de paiement utilisés par le champ provider.
 ---
 
-Ce registre attribue les identifiants `provider` qu'utilise l'[API 3.2](/fr/docs/spec/payments-api#3.2) et qu'annonce la [découverte de capacités 3.2](/fr/docs/spec/capabilities#3.2).
+Ce registre définit les identifiants `provider` utilisés par l’[API 3.2](/fr/docs/spec/payments-api#3.2) et publiés dans la [découverte des capacités 3.2](/fr/docs/spec/capabilities#3.2). Ces identifiants désignent les services indépendamment du mode d’intégration.
 
-L’identifiant reste le même dans toute implémentation ([découverte de capacités 2.6](/fr/docs/spec/capabilities#2.6)). Une graphie locale rendrait les clients non portables d'un déploiement à l'autre.
+Un même service conserve son identifiant dans toutes les implémentations ([découverte des capacités 2.6](/fr/docs/spec/capabilities#2.6)). Cette stabilité permet aux applications de réutiliser les identifiants entre déploiements.
 
-L'inscription d'un identifiant ne dit rien de l'implémentation d'OpenFSP par l'opérateur. Les opérateurs simulés utilisent l'espace `mock_*`.
+L’inscription au registre ne constitue pas une déclaration d’adoption ou de conformité à OpenFSP. L’espace `mock_*` est réservé aux services simulés.
 
 ## Identifiants enregistrés
 
@@ -26,8 +26,8 @@ L'inscription d'un identifiant ne dit rien de l'implémentation d'OpenFSP par l'
 
 ## Enregistrer un identifiant
 
-Ouvrez une pull request sur [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.fr.mdx) qui ajoute une ligne. Je la relis sans ajouter de décision, car un identifiant est une étiquette sans comportement normatif propre ([découverte de capacités 2.7](/fr/docs/spec/capabilities#2.7)).
+Pour demander un identifiant, ajoutez une ligne au registre au moyen d’une pull request sur [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.fr.mdx). La demande fait l’objet d’une revue. L’attribution seule ne nécessite pas de décision de conception, car elle n’introduit aucun comportement normatif ([découverte des capacités 2.7](/fr/docs/spec/capabilities#2.7)).
 
-Un identifiant correspond à `^[a-z0-9_]{1,32}$` ([API 3.2](/fr/docs/spec/payments-api#3.2)). J'accepte celui qui nomme le service de paiement tel que ses utilisateurs le connaissent, et non la société qui l'exploite, et qui ne revendique aucune marque. Lister un opérateur ici n'implique aucune relation avec lui, ni aucun soutien dans un sens ou dans l'autre.
+L’identifiant respecte `^[a-z0-9_]{1,32}$` ([API 3.2](/fr/docs/spec/payments-api#3.2)). Il désigne le service tel que ses utilisateurs le connaissent, plutôt que l’entreprise qui l’exploite, et n’emporte aucune revendication de marque. Son inscription n’établit ni relation contractuelle ni approbation entre le service et le projet.
 
-Les identifiants sont permanents. Un opérateur qui change de nom reçoit un nouvel identifiant, et l'ancienne ligne est conservée avec le nouvel identifiant dans la colonne _Remplacé par_, parce que les déploiements et les enregistrements stockés continuent de porter l'ancienne valeur.
+Les identifiants attribués sont permanents. Lorsqu’un service change de nom, un nouvel identifiant lui est attribué et l’ancienne ligne est conservée avec un renvoi dans la colonne _Remplacé par_. Les déploiements et les données existantes peuvent ainsi continuer à référencer l’ancienne valeur.

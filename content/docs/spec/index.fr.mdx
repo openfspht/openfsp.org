@@ -1,39 +1,37 @@
 ---
 title: Conventions
-description: Mots-clés, vocabulaire et documents de la spécification.
+description: Portée des exigences, conventions normatives, vocabulaire et organisation de la spécification.
 ---
 
-Les règles normatives d'OpenFSP. Les [décisions](/fr/docs/decisions) expliquent la raison de chacune.
+Cette section définit les conventions de lecture des exigences normatives d’OpenFSP. Les [décisions de conception](/fr/docs/decisions) en documentent les justifications.
 
 ## Portée des termes
 
-Les règles engagent un serveur, qui implémente l'API, et un client, qui l'appelle. Elles ne disent pas comment un serveur est construit ni sur quels systèmes il s'appuie.
+Les exigences s’appliquent au serveur qui expose l’API et au client qui l’utilise, selon le sujet de chaque règle. Elles spécifient les comportements attendus de l’interface ; l’architecture interne du serveur et les systèmes sous-jacents restent des choix d’implémentation.
 
 ## Mots-clés
 
-DOIT, NE DOIT PAS, DEVRAIT, NE DEVRAIT PAS, PEUT, OBLIGATOIRE, RECOMMANDÉ et FACULTATIF
-s'interprètent comme MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED et
-OPTIONAL au sens des RFC 2119 et RFC 8174, lorsqu'ils sont en capitales. Leurs formes
-accordées (DOIVENT, DEVRAIENT, PEUVENT, OBLIGATOIRES, FACULTATIVE) ont le même sens.
+Les mots-clés DOIT, NE DOIT PAS, DEVRAIT, NE DEVRAIT PAS, PEUT, OBLIGATOIRE, RECOMMANDÉ et FACULTATIF correspondent respectivement à MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED et OPTIONAL au sens des RFC 2119 et 8174 lorsqu’ils sont écrits en capitales. Leurs formes accordées (DOIVENT, DEVRAIENT, PEUVENT, OBLIGATOIRES, FACULTATIVE) conservent la même portée normative.
 
-Chaque règle porte un numéro. Pour y renvoyer, utilisez son ancre, par exemple [`/fr/docs/spec/idempotency#3.2`](/fr/docs/spec/idempotency#3.2).
+Chaque règle possède un identifiant numérique stable dans le document. Les renvois utilisent son ancre, par exemple [`/fr/docs/spec/idempotency#3.2`](/fr/docs/spec/idempotency#3.2).
 
 ## Parcours d'implémentation
 
-Le [guide d'implémentation](/fr/docs/native-operator) relie les chapitres aux tâches d'implémentation et aux tests. [L'état du projet](/fr/docs/status) donne l'état de chaque composant. Ces guides sont informatifs ; les obligations numérotées font autorité.
+Le [guide d’implémentation](/fr/docs/native-operator) relie les chapitres aux tâches de développement et aux scénarios de test. [L’état du projet](/fr/docs/status) décrit la disponibilité de chaque composant. Ces documents sont informatifs ; les exigences numérotées constituent la référence normative.
 
 ## Vocabulaire
 
-| Terme          | Sens                                                                                                                         |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| opérateur      | Service de paiement inscrit au [registre](/fr/docs/registry), comme MonCash ou NatCash. Appelé « FSP » dans les circulaires de la BRH. |
-| serveur        | Implémentation de l'API OpenFSP. Il sert un ou plusieurs opérateurs.                                                         |
-| compte marchand | Les ressources, principaux et points d'accès webhook d'un marchand sur un serveur. Un serveur peut en tenir plusieurs.      |
-| exploitant     | Qui déploie et administre un serveur.                                                                                        |
-| client       | Application qui appelle une API OpenFSP.                                                                                               |
-| abonné       | Point d’accès qui reçoit les événements OpenFSP.                                                                              |
-| vérificateur | Partie qui vérifie la signature d'un événement : abonné, auditeur ou bibliothèque.                                                   |
-| principal    | Identité authentifiée d'un client. Il appartient à un compte marchand.                                                              |
+| Terme | Définition |
+| --- | --- |
+| fournisseur de services de paiement | Organisation qui fournit un ou plusieurs services de paiement. À distinguer du service identifié par le champ `provider` et de l’exploitant technique d’un serveur. |
+| opérateur / service de paiement | Service identifié dans le [registre](/fr/docs/registry), par exemple MonCash ou NatCash. Dans les règles existantes, « opérateur » désigne ce service. |
+| serveur | Implémentation exposant l’API OpenFSP pour un ou plusieurs services de paiement. |
+| compte marchand | Ensemble des ressources, principaux et points d’accès webhook d’un marchand sur un serveur. Un serveur peut gérer plusieurs comptes marchands. |
+| exploitant | Partie responsable du déploiement et de l’administration d’un serveur. |
+| client | Application qui appelle une API OpenFSP. Ce rôle technique se distingue du payeur. |
+| abonné | Point d’accès destinataire des événements OpenFSP. |
+| vérificateur | Partie qui vérifie la signature d’un événement : abonné, auditeur ou bibliothèque. |
+| principal | Identité authentifiée d’un client, rattachée à un compte marchand. |
 
 ## Documents
 

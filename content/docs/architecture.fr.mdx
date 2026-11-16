@@ -1,15 +1,15 @@
 ---
 title: Architecture de la norme
-description: La couche d'intégration marchande, le contrat commun, l'adoption native et les principes de conception d'OpenFSP.
+description: Positionnement de l’interface marchande, architecture d’intégration native, invariants et limites de la spécification.
 ---
 
-OpenFSP se place entre le serveur marchand et l'opérateur de paiement. Chaque opérateur compatible expose le même contrat HTTP. Le marchand choisit son opérateur et utilise ses propres identifiants, directement ou avec les SDK Kotlin, Java et TypeScript.
+OpenFSP définit l’interface entre le serveur d’une application marchande et un service de paiement. Dans une intégration native, le fournisseur expose le contrat HTTP commun dans son propre système. L’application utilise les identifiants du marchand et peut effectuer les échanges directement en HTTP ou au moyen d’une bibliothèque cliente.
 
 ## Le segment application vers opérateur
 
-Le problème traité est le coût d'intégration applicative : sans langage commun, chaque application développe une intégration propre à chaque opérateur. Un contrat partagé vise à passer de `opérateurs × applications` à `opérateurs + applications`. Le gain dépend de l'adoption.
+Le problème étudié est la multiplication des intégrations spécifiques entre applications et services de paiement. Dans le modèle où chaque application intègre chaque service séparément, le nombre d’interfaces développées est proportionnel à `opérateurs × applications`. Un contrat commun permet de mutualiser ce travail autour de `opérateurs + applications` implémentations. Il s’agit d’un modèle de conception, dont les bénéfices effectifs dépendent de l’adoption, des capacités prises en charge et des contraintes de déploiement.
 
-L'interopérabilité porte ici sur l'interface marchande. Le marchand garde son compte et son contrat chez chaque fournisseur. La norme ne fournit ni transfert entre opérateurs, ni compensation, ni règlement.
+L’interopérabilité définie ici concerne l’interface d’intégration marchande. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur. Les transferts, la compensation et le règlement entre fournisseurs relèvent d’autres mécanismes.
 
 ## Architecture native
 
@@ -20,7 +20,7 @@ flowchart LR
     S -- "même contrat OpenFSP" --> P2["Opérateur natif B"]
 ```
 
-L'application choisit sa contrepartie et utilise ses identifiants et sa configuration. La bibliothèque cliente met en forme les échanges ; elle ne crée pas un service central et ne remplace pas le système de l'opérateur.
+L’application sélectionne le service de paiement et utilise les identifiants et la configuration correspondants. La bibliothèque cliente prépare les échanges conformément au contrat d’interface. Elle n’ajoute aucun service central à l’architecture et ne se substitue pas au système du fournisseur.
 
 ## Contrat et invariants
 
@@ -35,55 +35,51 @@ L'application choisit sa contrepartie et utilise ses identifiants et sa configur
 | Les notifications possèdent une signature vérifiable, des règles d'ordre et de déduplication.                | [Webhooks](/fr/docs/spec/webhooks)                    |
 | L'accès au contrat est authentifié et limité par des portées.                                                | [Authentification](/fr/docs/spec/authentication)      |
 
-Les [décisions](/fr/docs/decisions) expliquent mes choix et les solutions que j'ai écartées. Les règles normatives et leurs numéros restent dans les chapitres correspondants.
+Les [décisions de conception](/fr/docs/decisions) documentent les choix retenus, leurs justifications et les alternatives examinées. Les exigences numérotées sont définies dans les chapitres normatifs correspondants.
 
 ## Découverte des capacités
 
-Un langage commun ne signifie pas que tous les opérateurs proposent les mêmes fonctions. Chacun annonce les capacités qu'il offre réellement. Le client découvre ces capacités et adapte son parcours ; une fonction absente n'est pas émulée.
+Une interface commune peut être implémentée par des services offrant des fonctions différentes. Chaque serveur déclare les capacités effectivement prises en charge. L’application les découvre pour déterminer les parcours applicables ; une fonction non prise en charge n’est pas émulée.
 
-La [découverte](/fr/docs/spec/capabilities) décrit les points d'accès, les limites annoncées et les comportements de refus. La disponibilité d'un remboursement, d'un relevé ou d'une consultation faisant autorité dépend des capacités de l'implémentation visée.
+La [découverte des capacités](/fr/docs/spec/capabilities) définit les points d’accès, les limites annoncées et les refus applicables. Les opérations disponibles dépendent de la version de la spécification et des capacités de l’implémentation visée. Le remboursement reste une extension réservée et n’est pas spécifié dans la version actuelle.
 
 ## Vérification de conformité
 
-Une affirmation de conformité porte sur une cible, un niveau et une version du protocole. La norme distingue deux cibles : client et serveur. Le niveau Core et les profils de capacité sont définis par la [spécification de conformité](/fr/docs/spec/conformance).
+Une déclaration de conformité identifie une cible, un niveau et une version du protocole. Les cibles `client` et `server`, le niveau Core et les profils associés aux capacités sont définis dans la [spécification de conformité](/fr/docs/spec/conformance).
 
-Une attestation consigne une exécution ; elle ne certifie pas une implémentation.
+Une attestation consigne les résultats d’une exécution donnée de la suite. Sa signature permet d’en vérifier l’origine et l’intégrité ; elle ne constitue pas une certification de l’implémentation.
 
 ## Versions
 
-Versionnement sémantique, version majeure dans le chemin (`/v1`), ajouts découverts par les capacités. Avant `1.0.0`, une version mineure peut rompre la
-compatibilité. Les changements de comportement passent par les [décisions publiées](/fr/docs/decisions).
+Le projet utilise un versionnement sémantique. Le chemin de l’API contient la version majeure (`/v1`) ; les capacités permettent de découvrir les ajouts disponibles. Avant `1.0.0`, une version mineure peut introduire une rupture de compatibilité. Les modifications de comportement sont documentées dans les [décisions publiées](/fr/docs/decisions).
 
 ## Normes
 
-RFC 2119 et RFC 8174 (mots-clés), RFC 9457 (erreurs), RFC 3339 en UTC (horodatages), ISO 4217 (HTG), UIT-T E.164 (téléphone), RFC 9562 UUID version 7
-(identifiants), RFC 9421 (signature des webhooks), projet IETF `Idempotency-Key`, OpenAPI 3.1, schéma `Bearer` de la RFC 9110
-([authentification 3](/fr/docs/spec/authentication#3)), RFC 8615 (découverte). Mojaloop et le processeur national PRONAP travaillent au niveau du commutateur et
-complètent OpenFSP, car seul un commutateur permet à un payeur chez A de payer un marchand qui n'accepte que B.
+La spécification s’appuie notamment sur les RFC 2119 et 8174 pour les mots-clés normatifs, la RFC 9457 pour les erreurs, la RFC 3339 pour les horodatages UTC, ISO 4217 pour la devise HTG et la recommandation UIT-T E.164 pour les numéros de téléphone. Les autres références comprennent la RFC 9562 pour les UUID version 7, la RFC 9421 pour les signatures de messages HTTP, le projet IETF `Idempotency-Key`, OpenAPI 3.1, le schéma `Bearer` de la RFC 9110 ([authentification 3](/fr/docs/spec/authentication#3)) et la RFC 8615 pour les points d’accès de découverte. Les mécanismes de commutation, tels que ceux associés à Mojaloop ou à PRONAP dans le contexte étudié, traitent une couche distincte : l’échange de paiements entre services. Leur articulation avec OpenFSP relève d’une architecture plus large que l’interface marchande.
 
 ## Sécurité
 
-- Transport TLS partout ([API 1.1](/fr/docs/spec/payments-api#1.1), [webhooks 7.2](/fr/docs/spec/webhooks#7.2)).
-- Clés d'API stockées sous forme de condensé, jamais journalisées ([authentification 4](/fr/docs/spec/authentication#4)).
-- Toute transition est horodatée (`updated_at`, `completed_at`), et l'API n'offre aucun moyen de fixer un état ([cycle de vie 6.1](/fr/docs/spec/lifecycle#6.1)).
+- Les échanges utilisent TLS ([API 1.1](/fr/docs/spec/payments-api#1.1), [webhooks 7.2](/fr/docs/spec/webhooks#7.2)).
+- Les clés d’API sont conservées sous forme de condensés et exclues des journaux ([authentification 4](/fr/docs/spec/authentication#4)).
+- Les transitions sont horodatées par `updated_at` et `completed_at`. L’API ne permet pas au client de fixer l’état du paiement ([cycle de vie 6.1](/fr/docs/spec/lifecycle#6.1)).
 
 ## Cadre réglementaire
 
-La conformité au protocole n'est pas une conformité réglementaire. Les données du paiement et des relevés servent au rapprochement et à l’audit ; elles ne prouvent pas qu’un déploiement satisfait les obligations de son exploitant.
+La conformité au protocole et le respect des obligations réglementaires constituent deux évaluations distinctes. Les données de paiement et les relevés contribuent au rapprochement et à l’audit ; leur présence ne démontre pas que le déploiement satisfait les obligations applicables à son exploitant.
 
 ## Hors périmètre
 
-Je justifie ce cadrage dans les [décisions](/fr/docs/decisions#0001). Lever l'une de ces limites exige une nouvelle décision.
+Le périmètre est justifié dans la [décision 0001](/fr/docs/decisions#0001). Toute extension de ce périmètre nécessite une nouvelle décision de conception.
 
-- OpenFSP ne détient, ne déplace ni ne conserve de fonds.
-- OpenFSP n’exploite aucun service de paiement hébergé. Une offre hébergée fondée sur OpenFSP relève de son exploitant et de ses propres obligations réglementaires.
-- OpenFSP n'est pas un établissement de paiement agréé et ne remplace aucun agrément ni aucun contrat avec un opérateur.
-- OpenFSP n'est ni un commutateur, ni une chambre de compensation, ni un système de règlement.
-- OpenFSP ne certifie pas les opérateurs.
-- OpenFSP ne spécifie aucune interface utilisateur.
+- La spécification ne prévoit ni détention, ni transfert, ni conservation de fonds par le projet.
+- Le projet n’exploite pas de service de paiement hébergé. Toute offre hébergée fondée sur OpenFSP relève de son exploitant et des obligations réglementaires qui lui sont applicables.
+- OpenFSP ne constitue pas un établissement de paiement agréé et ne se substitue ni aux agréments requis ni aux contrats avec les fournisseurs.
+- La commutation, la compensation et le règlement sont extérieurs au périmètre défini.
+- Le projet ne délivre pas de certification aux fournisseurs.
+- La spécification ne prescrit pas d’interface utilisateur.
 
-Le paiement de proximité relève d'une [phase](/fr/docs#phases) ultérieure.
+L’extension au paiement de proximité appartient à une [phase ultérieure](/fr/docs#phases).
 
 ## Implémentations de référence
 
-La spécification est indépendante d'un langage de programmation. Le serveur simulé de référence et la suite de conformité permettent de l'essayer et de tester une implémentation. Pour construire votre propre serveur, suivez le [guide d'implémentation](/fr/docs/native-operator).
+La spécification est indépendante des langages de programmation et des choix d’infrastructure. Le serveur simulé de référence permet d’expérimenter les échanges ; la suite de conformité évalue les exigences observables dans les scénarios exécutés. Le [guide d’implémentation](/fr/docs/native-operator) décrit la réalisation d’un serveur OpenFSP.

@@ -1,11 +1,11 @@
 ---
 title: Implémenter OpenFSP
-description: Parcours de lecture, surface HTTP et vérification de conformité pour un fournisseur qui veut exposer OpenFSP nativement.
+description: Étapes d’implémentation native de l’API OpenFSP et évaluation des exigences de conformité applicables.
 ---
 
-Implémentez le contrat OpenFSP dans votre système pour recevoir directement les demandes des applications marchandes. Les SDK Kotlin, Java et TypeScript appellent cette même API. Chaque marchand garde son compte, ses clés et son contrat chez vous.
+Une implémentation native expose l’interface OpenFSP dans le système du fournisseur de services de paiement. Les applications marchandes peuvent alors communiquer directement avec cette interface, en HTTP ou au moyen d’une bibliothèque cliente. Chaque marchand conserve son compte, ses clés et son contrat auprès du fournisseur.
 
-Cette page donne le plan de travail et les tests. Les obligations elles-mêmes sont dans la [spécification](/fr/docs/spec).
+Ce guide organise les tâches d’implémentation et les vérifications associées. Les exigences applicables sont définies dans la [spécification](/fr/docs/spec).
 
 ## Lire le contrat dans l'ordre
 
@@ -29,19 +29,19 @@ Cette page donne le plan de travail et les tests. Les obligations elles-mêmes s
 | `POST /v1/payments/{id}/synchronize`                      | Synchronisation de l'état selon le contrat.                                                 | Lire les règles applicables à la cible native avec le cycle de vie et les capacités annoncées.                                            |
 | Relevés et notifications                                  | Fonctions conditionnées par les capacités correspondantes.                                  | Une fonction réservée ou non prise en charge ne doit pas être présentée comme disponible.                                                 |
 
-Les URL ci-dessus désignent la surface normative. Les clients devraient lire les URL publiées dans le document de découverte plutôt que les reconstruire ([3.1.3](/fr/docs/spec/capabilities#3.1.3)). L'[identifiant `provider`](/fr/docs/registry) reste distinct du nom commercial affiché.
+Les URL présentées correspondent aux points d’accès définis par la spécification. Les applications clientes devraient utiliser les URL publiées dans le document de découverte ([3.1.3](/fr/docs/spec/capabilities#3.1.3)). L’[identifiant `provider`](/fr/docs/registry) désigne le service enregistré et reste distinct de son nom commercial affiché.
 
 ## Traiter la notification d'un paiement
 
-Pour les appels qui utilisent le `callback_url` prévu par le contrat, vérifiez les conditions de l'[API 5.1.8](/fr/docs/spec/payments-api#5.1.8). Les tests natifs contrôlent notamment la livraison d'un `payment.succeeded` signé, les clés Ed25519 publiées et le refus d'un `callback_url` HTTP hors des exceptions de bouclage.
+Lorsque la création utilise le champ `callback_url`, appliquez les conditions de l’[API 5.1.8](/fr/docs/spec/payments-api#5.1.8). Les scénarios de conformité native vérifient notamment la livraison d’un événement `payment.succeeded` signé, la publication des clés Ed25519 et le rejet d’une URL de notification HTTP hors des exceptions de bouclage.
 
-Ne prenez pas le comportement du simulateur pour une extension implicite du protocole. Les événements, leur signature, leur ordre et leur déduplication suivent les [webhooks](/fr/docs/spec/webhooks) ; les tests correspondants figurent en [conformité 5.4](/fr/docs/spec/conformance#5.4) et [5.10](/fr/docs/spec/conformance#5.10).
+La spécification des [webhooks](/fr/docs/spec/webhooks) définit les événements, leur signature, leur traitement en cas de réception désordonnée et leur déduplication. Le comportement du simulateur ne crée aucune extension implicite. Les vérifications associées sont décrites en [conformité 5.4](/fr/docs/spec/conformance#5.4) et [5.10](/fr/docs/spec/conformance#5.10).
 
 ## Observer une implémentation native simulée
 
-Le dépôt de référence contient `mock_openfsp`, un opérateur fictif qui expose lui-même OpenFSP.
+Le dépôt de référence comprend `mock_openfsp`, un service de paiement fictif qui expose directement l’API OpenFSP.
 
-Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp), avec les prérequis du [démarrage rapide](/fr/docs/quickstart#2), utilisez deux terminaux :
+Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp), et après installation des [prérequis de développement](/fr/docs/quickstart#2), exécutez les commandes suivantes dans deux terminaux distincts :
 
 ```bash title="Terminal 1 : opérateur simulé"
 make simulator
@@ -51,13 +51,13 @@ make simulator
 make validate-native
 ```
 
-La cible par défaut est `http://127.0.0.1:8090/mock_openfsp`. Le rapport est écrit dans `backend/validator/infrastructure/build/conformance-report-native.json`. La commande utilise les clés de test publiées par le simulateur et démarre le récepteur de webhooks de la suite sur le port 8098, valeur par défaut du Makefile (`VALIDATE_NATIVE_WEBHOOK_PORT`).
+Par défaut, la suite cible `http://127.0.0.1:8090/mock_openfsp` et utilise les clés de test publiées par le simulateur. Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report-native.json`. Le Makefile démarre le récepteur de webhooks de la suite sur le port 8098, configurable par `VALIDATE_NATIVE_WEBHOOK_PORT`.
 
-Les [sources de l'opérateur natif simulé](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) et le [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) permettent de vérifier le comportement et la commande.
+Les [sources de l’implémentation native simulée](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) et le [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) documentent respectivement son comportement et les paramètres d’exécution.
 
 ## Tester votre implémentation
 
-Préparez une instance de test dédiée, ses clés de test et les capacités que vous souhaitez revendiquer. Construisez le CLI depuis le dépôt de référence :
+Préparez une instance dédiée aux tests, les clés nécessaires et la liste des capacités à évaluer. Compilez ensuite l’interface en ligne de commande à partir du dépôt de référence :
 
 ```bash
 cd backend
@@ -65,7 +65,7 @@ cd backend
 cd ..
 ```
 
-La commande suivante lance la suite contre votre instance. Remplacez `operator.example` et renseignez les clés de votre environnement de test :
+Exécutez la suite contre cette instance avec la commande suivante. Remplacez `operator.example` et renseignez les variables contenant les clés de votre environnement de test :
 
 ```bash
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
@@ -89,20 +89,20 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
 | `revoked-key`    | Une clé que vous avez révoquée.                                        |
 | `expired-key`    | Une clé arrivée à expiration.                                          |
 
-Le CLI n'a pas de port de webhook par défaut : sans `--webhook-port`, il ne démarre aucun récepteur et le test du `payment.succeeded` signé ne s'exécute pas. `--webhook-url` est l'adresse HTTPS publique qu'appelle votre instance, redirigée vers ce port ; sans elle, le récepteur annonce `http://127.0.0.1:8098/webhooks`, que seule une instance locale peut joindre.
+L’interface en ligne de commande ne définit aucun port de réception par défaut. Sans `--webhook-port`, aucun récepteur ne démarre et le scénario de livraison du `payment.succeeded` signé ne s’exécute pas. L’option `--webhook-url` fournit l’adresse HTTPS publique, redirigée vers ce port, que l’instance évaluée utilise pour les notifications. En son absence, l’adresse annoncée est `http://127.0.0.1:8098/webhooks`, accessible uniquement depuis une instance locale.
 
-Ne pointez pas `make validate-native` vers un opérateur réel : ses valeurs par défaut et ses entrées sont celles de `mock_openfsp`.
+La cible `make validate-native` est configurée pour `mock_openfsp`. Pour évaluer un service réel, utilisez une configuration explicite adaptée à son environnement de test.
 
-Certains scénarios exigent que vous produisiez un refus, une expiration ou une transition. Sans contrôle automatisé adapté, la suite les déclare assistés et indique l'action requise ([configuration de la suite](/fr/docs/spec/conformance#4)).
+Certains scénarios nécessitent de provoquer un refus, une expiration ou une transition d’état. Si l’environnement ne permet pas d’automatiser cette action, la suite marque le scénario comme assisté et décrit l’intervention requise ([configuration de la suite](/fr/docs/spec/conformance#4)).
 
 ## Lire et publier le résultat
 
-`make validate-native` se termine avec le code 0 quand Core n'est incomplet qu'à cause de scénarios assistés : lisez donc le rapport plutôt que le code de sortie. Les verdicts et les niveaux sont définis en [conformité 6](/fr/docs/spec/conformance#6).
+`make validate-native` peut retourner le code de sortie 0 alors que le niveau Core reste incomplet du fait de scénarios assistés. L’évaluation doit donc s’appuyer sur le rapport et ses verdicts, définis en [conformité 6](/fr/docs/spec/conformance#6), plutôt que sur le seul code de sortie.
 
-Publiez une affirmation limitée à ce périmètre, accompagnée du rapport, de la configuration expurgée et des versions. Une [attestation signée](/fr/docs/verify) authentifie les résultats d'une exécution ; elle ne certifie pas un produit.
+Toute déclaration de conformité publiée doit préciser le périmètre évalué et être accompagnée du rapport, de la configuration expurgée des secrets et des versions utilisées. Une [attestation signée](/fr/docs/verify) permet de vérifier l’origine et l’intégrité des résultats d’une exécution ; elle ne certifie pas le produit.
 
 ## Pour continuer
 
-- [État du projet](/fr/docs/status) : l'état de chaque composant.
-- [Décisions](/fr/docs/decisions) : les raisons des choix de conception.
-- [Spécification de conformité](/fr/docs/spec/conformance) : les obligations et la forme d'une revendication.
+- [État du projet](/fr/docs/status) : disponibilité des composants et périmètres vérifiés.
+- [Décisions](/fr/docs/decisions) : justifications des choix de conception.
+- [Spécification de conformité](/fr/docs/spec/conformance) : exigences applicables et contenu d’une déclaration de conformité.

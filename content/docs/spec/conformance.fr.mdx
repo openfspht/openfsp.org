@@ -1,53 +1,42 @@
 ---
 title: Conformité
-description: Ce qu'énonce une affirmation de conformité, les cibles et niveaux testés par la suite, le contenu de la suite et de son rapport, et le serveur simulé de référence.
+description: Périmètres de conformité, méthodes de vérification, rapports et exigences du serveur simulé de référence.
 ---
 
-Je distingue la conformité par cible, version du protocole et capacités. Le rapport consigne les contrôles et leurs limites. Je motive ces choix dans la [décision 0008](/fr/docs/decisions#0008).
+La conformité est définie selon la cible, la version du protocole et les capacités applicables. Le rapport consigne les vérifications effectuées et leurs limites. La [décision 0008](/fr/docs/decisions#0008) expose les principes de cette évaluation.
 
 ## 1. Définition
 
-**1.1.** Une affirmation de conformité est un triplet : cible, niveau, version du protocole. Une
-affirmation incomplète n'est pas reconnue ; la partie qui la publie NE DOIT PAS la présenter
-comme telle.
+**1.1.** Une déclaration de conformité identifie un triplet : cible, niveau et version du protocole. Une déclaration incomplète n’est pas reconnue ; son auteur NE DOIT PAS la présenter comme une déclaration de conformité.
 
-**1.2.** La conformité vaut pour une version de la spécification ; un résultat sur une version
-majeure ne vaut pas pour une autre.
+**1.2.** La conformité s’applique à une version donnée de la spécification. Un résultat obtenu pour une version majeure ne s’étend pas à une autre version majeure.
 
-**1.3.** La conformité est une propriété d'une configuration de déploiement, pas d'un code
-source.
+**1.3.** La conformité caractérise une configuration de déploiement et non le seul code source.
 
-**1.4.** Un résultat est daté et reproductible : même implémentation, même version de suite et
-même configuration DOIVENT donner le même résultat (9.6).
+**1.4.** Le résultat est daté et reproductible. Pour une même implémentation, une même version de la suite et une même configuration, les exécutions DOIVENT produire le même résultat (9.6).
 
 ## 2. Cibles
 
-**2.1.**
+**2.1.** Les cibles évaluées et les composants de substitution sont définis ci-dessous :
 
 | Cible   | Testé                                       | Remplacé par            |
 | ------- | ------------------------------------------- | ----------------------- |
 | Client  | Application ou SDK qui appelle un serveur.  | Le serveur simulé (9).  |
 | Serveur | Implémentation de l'API.                    | Rien.                   |
 
-**2.2.** La conformité client porte sur l'usage des réponses : récupération par référence,
-URL de retour non probante, réutilisation de la clé d'idempotence, paiement durablement
-`pending`.
+**2.2.** La conformité client couvre l’utilisation des réponses : récupération par référence, absence de valeur probante de l’URL de retour, réutilisation de la clé d’idempotence et prise en charge d’un paiement durablement `pending`.
 
-**2.3.** La section 5 définit les tests de la cible serveur.
+**2.3.** Les tests applicables à la cible serveur sont définis dans la section 5.
 
-**2.4.** Une exécution vise une seule cible.
+**2.4.** Chaque exécution évalue une seule cible.
 
 ## 3. Niveaux
 
-**3.1.** **Core** : la capacité de base ([API 2](/fr/docs/spec/payments-api#2)) et tout ce qui est
-obligatoire quelle que soit la capacité : modèle de données, cycle de vie, idempotence, erreurs,
-authentification, découverte de capacités, plafonds lorsqu'ils sont déclarés, tests de refus
-du 5.4.
+**3.1.** Le niveau **Core** couvre la capacité de base ([API 2](/fr/docs/spec/payments-api#2)) et les exigences générales : modèle de données, cycle de vie, idempotence, erreurs, authentification, découverte des capacités, limites déclarées et tests de refus du 5.4.
 
-**3.2.** Une implémentation qui ne satisfait pas Core n'est pas conforme.
+**3.2.** Une implémentation est conforme uniquement si elle satisfait au niveau Core.
 
-**3.3.** Un profil porte le nom de la capacité testée. Un profil NE DOIT PAS être revendiqué pour
-une capacité non annoncée.
+**3.3.** Le nom d’un profil correspond à celui de la capacité évaluée. Un profil NE DOIT PAS être revendiqué pour une capacité non déclarée.
 
 | Profil                     | Capacité                         | Spécification                                                                          |
 | -------------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
@@ -57,55 +46,37 @@ une capacité non annoncée.
 | `webhooks.per_payment_url` | Événements livrés à `callback_url` | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)                                        |
 | `webhooks.emit`            | Événements signés                | [webhooks](/fr/docs/spec/webhooks)                                                     |
 
-**3.4.** La spécification d'une capacité DOIT définir les tests de son profil.
+**3.4.** La spécification d’une capacité DOIT définir les tests associés à son profil.
 
-**3.5.** Un test Core échoué fait échouer Core. La suite NE DOIT PAS
-rapporter Core comme réussi lorsqu'un test Core a échoué, ni rapporter un taux de réussite de Core.
+**3.5.** L’échec d’un test Core entraîne l’échec de Core. La suite NE DOIT PAS déclarer Core réussi lorsqu’un de ses tests a échoué, ni exprimer son résultat par un taux de réussite.
 
-**3.6.** Réussir tous les profils ne constitue pas un niveau supplémentaire.
+**3.6.** La réussite de tous les profils ne définit aucun niveau de conformité supplémentaire.
 
 ## 4. Exécution
 
-**4.1.** Toute partie peut exécuter la suite, contre l'implémentation de son choix ; elle
-produit le rapport du 7.
+**4.1.** Toute partie peut exécuter la suite contre une implémentation de son choix. L’exécution produit le rapport défini au 7.
 
-**4.2.** Pour un serveur, la suite joue le client.
+**4.2.** Pour évaluer un serveur, la suite assure le rôle du client.
 
-**4.3.** La suite NE DOIT PAS exiger de modification, d'instrumentation ou de mode de test de
-l'implémentation.
+**4.3.** La suite NE DOIT PAS imposer de modification, d’instrumentation ou de mode de test à l’implémentation évaluée.
 
-**4.4.** Seule la configuration est permise : des identifiants de test, une clé de portée
-`statements:read` pour les tests du 5.9, et les entrées des tests assistés (4.7).
+**4.4.** La configuration seule est admise : identifiants de test, clé disposant de `statements:read` pour le 5.9 et entrées nécessaires aux tests assistés du 4.7.
 
-**4.5.** Contre le serveur simulé, la suite pilote sa surface de contrôle (9.5). Contre tout
-autre serveur, un test qui exige une issue choisie est assisté (4.7).
+**4.5.** La suite pilote l’interface de contrôle du serveur simulé (9.5). Pour tout autre serveur, les tests nécessitant un résultat choisi sont assistés selon le 4.7.
 
-**4.6.** La suite DOIT être exécutable hors ligne, en intégration continue, sans compte.
+**4.6.** La suite DOIT pouvoir s’exécuter hors ligne et en intégration continue, sans compte.
 
-**4.7.** Un test qui exige une action d'exploitant (révocation de clé, déclaration de bornes,
-issue choisie par la suite) est marqué assisté : la suite décrit l'action, un exploitant
-l'exécute par l'administration ou la configuration du serveur, et le rapport signale le test
-comme assisté. Ce n'est pas une modification au sens du 4.3.
+**4.7.** Un test nécessitant une intervention de l’exploitant est marqué comme assisté, par exemple pour révoquer une clé, déclarer des bornes ou produire un résultat choisi. La suite décrit l’action, l’exploitant l’effectue via l’administration ou la configuration du serveur et le rapport mentionne cette assistance. Cette intervention ne constitue pas une modification au sens du 4.3.
 
 ## 5. Contenu
 
-**5.1. Forme.** Types de média ([API 1.4](/fr/docs/spec/payments-api#1.4)), enveloppe de collection
-([API 1.12](/fr/docs/spec/payments-api#1.12)), `Request-Id` ([API 1.8](/fr/docs/spec/payments-api#1.8)), problem details
-([API 10.1](/fr/docs/spec/payments-api#10.1)), `Money` entier ([modèle de données 3](/fr/docs/spec/data-model#3)),
-horodatages UTC ([modèle de données 7](/fr/docs/spec/data-model#7)), requêtes strictes et réponses
-tolérantes ([modèle de données 2.3, 2.4](/fr/docs/spec/data-model#2.4)).
+**5.1. Forme.** Les vérifications couvrent les types de média ([API 1.4](/fr/docs/spec/payments-api#1.4)), l’enveloppe des collections ([API 1.12](/fr/docs/spec/payments-api#1.12)), `Request-Id` ([API 1.8](/fr/docs/spec/payments-api#1.8)), les objets d’erreur ([API 10.1](/fr/docs/spec/payments-api#10.1)), les valeurs entières de `Money` ([modèle de données 3](/fr/docs/spec/data-model#3)), les horodatages UTC ([modèle de données 7](/fr/docs/spec/data-model#7)) et le traitement des champs inconnus dans les requêtes et les réponses ([modèle de données 2.3, 2.4](/fr/docs/spec/data-model#2.4)).
 
-**5.2. Cycle de vie.** Chaque transition du [cycle de vie 2](/fr/docs/spec/lifecycle#2) est atteignable,
-hors `pending` vers `canceled` ; aucun état terminal n'est quitté ; `failure_reason` est présent
-si et seulement si `status` vaut `failed`.
+**5.2. Cycle de vie.** Les tests vérifient que les transitions du [cycle de vie 2](/fr/docs/spec/lifecycle#2) sont atteignables, à l’exception de `pending` vers `canceled`, qu’aucun état terminal n’est quitté et que `failure_reason` est présent si et seulement si `status` vaut `failed`.
 
-**5.3. Idempotence.** Rejeu de la réponse enregistrée ([idempotence 3.2](/fr/docs/spec/idempotency#3.2)) ; même
-clé, autre corps rejeté ([idempotence 3.3](/fr/docs/spec/idempotency#3.3)) ; doublon concurrent jamais
-exécuté en parallèle, mis en attente ou rejeté en `idempotency-request-in-progress` avec
-`Retry-After` ([idempotence 3.4](/fr/docs/spec/idempotency#3.4)) ; cloisonnement par principal ([idempotence 2.3](/fr/docs/spec/idempotency#2.3)) ;
-`reference` en double rejetée de façon permanente.
+**5.3. Idempotence.** Les tests vérifient la restitution de la réponse enregistrée ([idempotence 3.2](/fr/docs/spec/idempotency#3.2)), le rejet d’un corps différent pour la même clé ([idempotence 3.3](/fr/docs/spec/idempotency#3.3)), l’absence d’exécution parallèle d’un doublon concurrent, mis en attente ou rejeté avec `idempotency-request-in-progress` et `Retry-After` ([idempotence 3.4](/fr/docs/spec/idempotency#3.4)), le cloisonnement par principal ([idempotence 2.3](/fr/docs/spec/idempotency#2.3)) et le rejet permanent des doublons de `reference`.
 
-**5.4. Refus.** Chaque test vérifie un refus ou une absence d'effet :
+**5.4. Refus.** Chaque cas du tableau vérifie un rejet ou l’absence de l’effet interdit :
 
 | Test                                                     | Attendu                                                           | Règle                                                    | Serveur simulé                                          |
 | -------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
@@ -118,20 +89,13 @@ exécuté en parallèle, mis en attente ou rejeté en `idempotency-request-in-pr
 | Requête de l'API tentant de fixer l'état d'un paiement   | état inchangé                                                     | [cycle de vie 6.1](/fr/docs/spec/lifecycle#6.1)          | `mock_openfsp`, `PENDING_FOREVER`                       |
 | Clé inconnue, révoquée, d'un autre environnement         | trois `unauthenticated` indiscernables                            | [authentification 4.7](/fr/docs/spec/authentication#4.7) | aucun ; assisté (4.7)                                   |
 
-**5.5.** Chaque test qui dépend d'une issue nomme le scénario du serveur simulé qui la produit
-(9.4.3).
+**5.5.** Chaque test dépendant d’un résultat identifie le scénario du serveur simulé qui produit ce résultat (9.4.3).
 
-**5.6.** Tests client : réutilisation de la clé ([idempotence 7.1](/fr/docs/spec/idempotency#7.1)), pas de renvoi
-d'un `4xx` non rejouable ([idempotence 7.2](/fr/docs/spec/idempotency#7.2)), récupération par référence
-([API 5.2.3](/fr/docs/spec/payments-api#5.2.3)), URL de retour non probante ([API 7.3](/fr/docs/spec/payments-api#7.3)),
-tolérance aux membres inconnus, paiement durablement `pending`, et pour les abonnés, vérification
-avant action ([webhooks 5.9](/fr/docs/spec/webhooks#5.9)) avec sondage fonctionnel quand tout événement est
-retenu ([webhooks 10.2](/fr/docs/spec/webhooks#10.2)).
+**5.6.** Les tests client couvrent la réutilisation de la clé ([idempotence 7.1](/fr/docs/spec/idempotency#7.1)), l’absence de nouvelle tentative après un `4xx` non rejouable ([idempotence 7.2](/fr/docs/spec/idempotency#7.2)), la récupération par référence ([API 5.2.3](/fr/docs/spec/payments-api#5.2.3)), l’absence de valeur probante de l’URL de retour ([API 7.3](/fr/docs/spec/payments-api#7.3)), la tolérance aux membres inconnus et le maintien durable en `pending`. Pour les abonnés, ils couvrent la vérification avant action ([webhooks 5.9](/fr/docs/spec/webhooks#5.9)) et le maintien de la consultation lorsque tous les événements sont retenus ([webhooks 10.2](/fr/docs/spec/webhooks#10.2)).
 
-**5.7.** La suite DOIT couvrir chaque exigence observable par au moins un test, et le rapport DOIT
-expliciter la correspondance test-exigence.
+**5.7.** La suite DOIT associer au moins un test à chaque exigence observable. Le rapport DOIT expliciter la correspondance entre tests et exigences.
 
-**5.8. Issues de paiement.** Chaque test exerce un scénario du 9.4.3 :
+**5.8. Issues de paiement.** Chaque test utilise un scénario défini au 9.4.3 :
 
 | Test                                              | Attendu                                                                                                                               | Règle                                                                                                 | Serveur simulé                                                          |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -141,7 +105,7 @@ expliciter la correspondance test-exigence.
 | Dénouement sans événement, opérateur avec consultation | état rapporté par la consultation, après synchronisation                                                                         | [capacités 5.2](/fr/docs/spec/capabilities#5.2)                                                       | `mock_openfsp`, `NO_CALLBACK`                                           |
 | Erreur de l'opérateur à la création               | `502 provider-error`, `retryable` `true`, `effect` `unknown` ; renvoi de même clé sans `Idempotent-Replay`                            | [API 10.6.5, 10.8.6](/fr/docs/spec/payments-api#10.8.6)                                               | `mock_openfsp`, `PROVIDER_ERROR`                                        |
 
-**5.9. Relevés.** Tests du [cycle de vie 10.6.1](/fr/docs/spec/lifecycle#10.6.1) :
+**5.9. Relevés.** Les tests suivants correspondent au [cycle de vie 10.6.1](/fr/docs/spec/lifecycle#10.6.1) :
 
 | Test                                                                  | Attendu                                                                                                                                                                           | Règle                                                         | Serveur simulé                                                         |
 | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -150,7 +114,7 @@ expliciter la correspondance test-exigence.
 | Paiement `succeeded` absent d'un relevé clos                          | paiement listé dans `missing_payments`                                                                                                                                            | [cycle de vie 10.4.4](/fr/docs/spec/lifecycle#10.4.4)         | `mock_openfsp`, `PENDING_FOREVER`, puis `succeeded` ; assisté (4.7)    |
 | Ligne comptabilisée après minuit UTC et avant minuit à Port-au-Prince | `business_date` égale à la date de `booked_at` dans le fuseau de la journée comptable                                                                                             | [cycle de vie 10.1.2, 10.1.3](/fr/docs/spec/lifecycle#10.1.3) | `mock_openfsp`, `SUCCESS`                                              |
 
-**5.10. Capacités.**
+**5.10. Capacités.** Les tests de déclaration des capacités, de bornes et de livraison sont définis ci-dessous :
 
 | Test                                                                                                                | Attendu                                                               | Règle                                                  | Serveur simulé                                              |
 | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
@@ -159,118 +123,94 @@ expliciter la correspondance test-exigence.
 | Montant inférieur d'un centime à `min_amount`, supérieur d'un centime à `max_amount`, non multiple de `amount_step` | `amount-out-of-range` portant les bornes déclarées ; aucun paiement créé | [capacités 6.7, 7.3](/fr/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
 | Événement livré à `callback_url`                                                                                    | `payment.succeeded` signé, vérifié avec `webhook_keys`                | [API 5.1.8](/fr/docs/spec/payments-api#5.1.8)          | `mock_openfsp`, `SUCCESS`                                   |
 
-**5.11. Authentification.**
+**5.11. Authentification.** Les cas d’échec d’authentification sont évalués selon le tableau suivant :
 
 | Test                                                                           | Attendu                                                                                                         | Règle                                                              | Serveur simulé        |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------- |
 | Clé absente, mal formée, inconnue, révoquée, expirée, d'un autre environnement | six `unauthenticated` au même `title`, sans `detail` distinctif ; `WWW-Authenticate: Bearer` sur la clé absente | [authentification 3.3, 4.7, 7.6](/fr/docs/spec/authentication#7.6) | aucun ; assisté (4.7) |
 
-**5.12.** Les tests du 5.9 relèvent du profil `payments.statement`, et le test « Événement
-livré à `callback_url` » du 5.10 du profil `webhooks.per_payment_url` ; un serveur qui n'annonce
-pas une capacité n'est pas soumis aux tests de son profil.
+**5.12.** Les tests du 5.9 appartiennent au profil `payments.statement`. Le test de livraison à `callback_url` du 5.10 appartient au profil `webhooks.per_payment_url`. Les tests d’un profil ne s’appliquent pas au serveur qui ne déclare pas la capacité correspondante.
 
 ## 6. Versions
 
-**6.1.** La suite teste une seule version mineure du protocole et DOIT refuser une version
-majeure qu'elle ne connaît pas.
+**6.1.** Une version de la suite évalue une seule version mineure du protocole et DOIT refuser toute version majeure inconnue.
 
-**6.2.** Un résultat nomme la version de la suite, la version du protocole, la cible, le niveau,
-les profils, la date et la configuration.
+**6.2.** Le résultat identifie la version de la suite, la version du protocole, la cible, le niveau, les profils, la date et la configuration.
 
-**6.3.** Un résultat ne vaut que pour la configuration qui l'a produit ; obtenu contre le
-serveur simulé, il ne dit rien d'un opérateur réel (9.8).
+**6.3.** La portée du résultat se limite à la configuration évaluée. Un résultat obtenu contre le serveur simulé ne caractérise pas un service réel (9.8).
 
-**6.4.** Un résultat devient périmé quand l'implémentation ou la version du protocole change.
-La partie qui cite un résultat DOIT citer la version de l'implémentation testée.
+**6.4.** Le résultat devient périmé après modification de l’implémentation ou de la version du protocole. Toute partie qui le cite DOIT préciser la version de l’implémentation évaluée.
 
-**6.5.** Une version corrective PEUT ajouter des tests ; les notes de version de la suite DOIVENT
-le signaler.
+**6.5.** Une version corrective PEUT ajouter des tests ; les notes de version de la suite DOIVENT signaler ces ajouts.
 
 ## 7. Rapport
 
-**7.1.** Le rapport est lisible par machine ; seul son contenu est spécifié.
+**7.1.** Le rapport est lisible par machine. La spécification définit son contenu, sans imposer sa présentation.
 
-**7.2.** Il porte le triplet du 1.1, la version de la suite, la date, la configuration, un
-résultat par test et l'exigence correspondante.
+**7.2.** Le rapport contient le triplet du 1.1, la version de la suite, la date, la configuration, ainsi que le résultat et l’exigence correspondante pour chaque test.
 
-**7.3.** Un test échoué indique l'attendu et l'observé.
+**7.3.** En cas d’échec, le résultat du test indique le comportement attendu et celui observé.
 
-**7.4.** Le rapport DOIT mentionner les limites de la suite (8.1) à chaque exécution, même réussie.
+**7.4.** À chaque exécution, y compris réussie, le rapport DOIT mentionner les limites de la suite (8.1).
 
-**7.5.** La partie qui publie un rapport DEVRAIT publier la configuration permettant de le
-reproduire.
+**7.5.** La partie publiant un rapport DEVRAIT fournir la configuration nécessaire à sa reproduction.
 
-**7.6.** Les revendications fondées sur un rapport relèvent de la
-[gouvernance 8](https://github.com/openfspht/governance/blob/main/GOVERNANCE.md#8-name-and-conformance-marks).
+**7.6.** Les déclarations fondées sur un rapport sont encadrées par la [gouvernance 8](https://github.com/openfspht/governance/blob/main/GOVERNANCE.md#8-name-and-conformance-marks).
 
 ## 8. Sécurité
 
-**8.1.** Un rapport de conformité n'est pas un audit de sécurité (7.4).
+**8.1.** Le rapport de conformité ne constitue pas un audit de sécurité (7.4).
 
-**8.2.** La suite NE DOIT PAS exiger d'identifiants de production ; elle s'exécute contre un
-environnement de test ou le serveur simulé (9).
+**8.2.** La suite NE DOIT PAS nécessiter d’identifiants de production. Son exécution vise un environnement de test ou le serveur simulé (9).
 
 ## 9. Serveur simulé
 
-Les règles du 9 obligent le serveur simulé.
+Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 ### 9.1. Rôle
 
-**9.1.1.** Le serveur simulé est un serveur de référence : il implémente l'API pour des
-opérateurs simulés, afin que les clients et la suite se testent sans opérateur réel.
+**9.1.1.** Le serveur simulé implémente l’API pour des services de paiement fictifs. Il permet l’évaluation des clients et de la suite sans accès à un service réel.
 
-**9.1.2.** Il teste le client et la suite (limites : 9.8).
+**9.1.2.** Son utilisation permet de tester le client et la suite dans les limites du 9.8.
 
-**9.1.3.** Il ne simule que les capacités spécifiées ([capacités 2.2](/fr/docs/spec/capabilities#2.2)).
+**9.1.3.** Seules les capacités disposant d’une spécification sont simulées ([capacités 2.2](/fr/docs/spec/capabilities#2.2)).
 
 ### 9.2. Règle directrice
 
-**9.2.1.** Il n'invente pas de capacité, et chaque capacité facultative manque à au moins un
-opérateur simulé, opérateurs de test du 9.3.5 compris.
+**9.2.1.** Aucune capacité supplémentaire n’est créée par le simulateur. Chaque capacité facultative est absente d’au moins un opérateur simulé, en incluant les opérateurs de test du 9.3.5.
 
 ### 9.3. Opérateurs simulés
 
-**9.3.1.**
+**9.3.1.** L’implémentation simulée de référence est décrite ci-dessous :
 
 | Opérateur      | Capacités                                                                       | Cas exercé                                                                  |
 | -------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `webhooks.per_payment_url` | Serveur de référence (9.3.2) : consultation, relevé, événements à `callback_url`. |
 
-**9.3.2.** `mock_openfsp` expose lui-même l'API et signe ses livraisons selon les
-[webhooks](/fr/docs/spec/webhooks) (RFC 9421).
+**9.3.2.** Le service `mock_openfsp` expose directement l’API et signe ses livraisons selon les [webhooks](/fr/docs/spec/webhooks), fondés sur la RFC 9421.
 
-**9.3.3.** Le paiement au comptoir est reporté : aucun opérateur simulé n'en annonce les
-capacités.
+**9.3.3.** Le paiement de proximité est reporté à une version ultérieure. Aucun opérateur simulé ne déclare les capacités correspondantes.
 
-**9.3.4.** Les identifiants des opérateurs simulés utilisent le préfixe `mock_`, réservé par le
-[registre](/fr/docs/registry). Aucun opérateur réel n'y reçoit d'identifiant.
+**9.3.4.** Les identifiants simulés portent le préfixe `mock_`, réservé dans le [registre](/fr/docs/registry). Aucun service réel ne reçoit d’identifiant dans cet espace.
 
-**9.3.5.** Le serveur simulé sert aussi des opérateurs simulés réservés aux tests, définis par
-des indicateurs de capacité. La suite s'en sert pour les cas que `mock_openfsp` n'isole pas :
+**9.3.5.** Le serveur expose également des opérateurs simulés réservés aux tests et définis par leurs indicateurs de capacité. Ils permettent d’isoler les cas que `mock_openfsp` ne distingue pas :
 
 | Opérateur de test | Capacités                        | Cas exercé                                                                                         |
 | ----------------- | -------------------------------- | -------------------------------------------------------------------------------------------------- |
 | De base           | `payments`                       | Opération d'une capacité non annoncée ; relevés d'un opérateur sans `payments.statement`.          |
 | Relevé seul       | `payments`, `payments.statement` | Synchronisation sans `payments.lookup`.                                                            |
 
-**9.3.6.** `mock_openfsp` ne livre à `callback_url` ([API 5.1.8](/fr/docs/spec/payments-api#5.1.8)) que les
-événements de transition vers un état terminal, jamais `payment.created`. `sequence` croît par
-paiement et compte la création non livrée : la transition porte `2`
-([webhooks 8.1](/fr/docs/spec/webhooks#8.1)).
+**9.3.6.** Le service `mock_openfsp` livre à `callback_url` ([API 5.1.8](/fr/docs/spec/payments-api#5.1.8)) uniquement les événements de transition terminale, sans livrer `payment.created`. La valeur de `sequence` augmente par paiement et inclut la création non livrée ; la transition porte donc `2` ([webhooks 8.1](/fr/docs/spec/webhooks#8.1)).
 
-**9.3.7.** Outre sa clé active, `mock_openfsp` publie une clé révoquée, une clé expirée et la clé
-d'un second principal, pour que les tests du 5.3 et du 5.11 s'exercent contre lui sans action
-d'exploitant.
+**9.3.7.** En complément de sa clé active, `mock_openfsp` publie une clé révoquée, une clé expirée et une clé d’un second principal. Ces clés permettent d’exécuter les tests du 5.3 et du 5.11 sans intervention de l’exploitant.
 
 ### 9.4. Défaillances
 
-**9.4.1.** Chaque scénario est choisi de façon déterministe à la création du paiement ; aucun ne
-survient sans avoir été demandé.
+**9.4.1.** Le choix du scénario est déterministe lors de la création du paiement. Aucun scénario ne survient sans sélection explicite.
 
-**9.4.2.** Sélecteur : avant la création, la suite déclare le scénario d'un paiement sur la
-surface de contrôle (9.5), sous sa référence.
+**9.4.2.** Avant la création, la suite associe le scénario à la référence du paiement au moyen de l’interface de contrôle (9.5).
 
-**9.4.3.** Scénarios :
+**9.4.3.** Les scénarios disponibles sont définis dans le tableau suivant :
 
 | Scénario             | Comportement                                                          | Règle exercée                                   |
 | -------------------- | --------------------------------------------------------------------- | ----------------------------------------------- |
@@ -286,48 +226,40 @@ surface de contrôle (9.5), sous sa référence.
 | `UNKNOWN_STATUS`     | Valeur de `status` jamais vue.                                        | [Cycle de vie 1.2](/fr/docs/spec/lifecycle#1.2) |
 | `PROVIDER_ERROR`     | Erreur côté opérateur.                                                | [API 10.8.6](/fr/docs/spec/payments-api#10.8.6) |
 
-**9.4.4.** Un scénario n'est ajouté que si une spécification définit un comportement impossible à
-provoquer autrement.
+**9.4.4.** Un scénario supplémentaire est introduit uniquement lorsqu’une spécification définit un comportement impossible à provoquer autrement.
 
-**9.4.5.** Hors mode automatique (9.4.8), un paiement sans scénario déclaré se comporte comme
-`SUCCESS`.
+**9.4.5.** En dehors du mode automatique (9.4.8), un paiement sans scénario déclaré utilise `SUCCESS`.
 
-**9.4.6.** Le serveur simulé répond après un court délai fixe, jamais instantanément.
+**9.4.6.** Les réponses du serveur simulé interviennent après un délai bref et fixe ; elles ne sont jamais instantanées.
 
-**9.4.7.** La surface de contrôle refuse avec `422` un scénario que l'opérateur visé n'offre pas.
+**9.4.7.** L’interface de contrôle retourne `422` si le scénario demandé n’est pas disponible pour l’opérateur sélectionné.
 
-**9.4.8.** La surface de contrôle offre un mode automatique : chaque nouveau paiement reçoit, à
-tour de rôle, le scénario suivant parmi ceux qu'offre son opérateur (9.4.7).
+**9.4.8.** En mode automatique, l’interface de contrôle attribue à chaque nouveau paiement le scénario suivant dans une rotation des scénarios disponibles pour son opérateur (9.4.7).
 
 ### 9.5. Contrôle
 
-**9.5.1.** Une surface de contrôle, distincte de l'API, permet de déclarer le scénario d'un
-paiement à venir, de résoudre un paiement en attente et de livrer un événement retenu. Elle
-n'offre aucun contrôle de l'horloge : l'expiration s'exerce avec `EXPIRE` (9.4.3).
+**9.5.1.** Une interface de contrôle distincte de l’API permet de préparer le scénario d’un paiement, de résoudre un paiement en attente et de livrer un événement retenu. Elle ne permet pas de modifier l’horloge ; les expirations sont évaluées au moyen d’`EXPIRE` (9.4.3).
 
-**9.5.2.** Elle est pilotée par la suite de tests, jamais par le serveur testé.
+**9.5.2.** La suite de tests pilote cette interface. Le serveur évalué ne la pilote jamais.
 
-**9.5.3.** Elle est liée à l'interface de bouclage ou placée derrière l'authentification de
-l'environnement de test.
+**9.5.3.** L’interface est liée au bouclage ou protégée par l’authentification de l’environnement de test.
 
 ### 9.6. Déterminisme
 
-**9.6.1.** Une même séquence de requêtes sur un serveur simulé fraîchement démarré produit la même
-séquence de réponses.
+**9.6.1.** Sur une instance fraîchement démarrée, une séquence donnée de requêtes produit toujours la même séquence de réponses.
 
-**9.6.2.** L'état est propre à l'instance et n'est pas conservé entre redémarrages.
+**9.6.2.** L’état appartient à l’instance et n’est pas conservé après redémarrage.
 
 ### 9.7. Séparation de la production
 
-**9.7.1.** Tout paiement simulé porte un identifiant `mock_` (9.3.4).
+**9.7.1.** Chaque paiement simulé porte un identifiant `mock_` selon le 9.3.4.
 
-**9.7.2.** Le serveur simulé ne rapporte jamais l'identifiant d'un opérateur réel et ne produit aucun
-artefact assimilable à un règlement.
+**9.7.2.** Le serveur simulé ne retourne jamais d’identifiant d’opérateur réel et ne produit aucun artefact pouvant être interprété comme un règlement.
 
 ### 9.8. Limites
 
-**9.8.1.** Il ne prouve pas qu'un opérateur se comporte comme le dit sa documentation.
+**9.8.1.** Le serveur simulé ne permet pas d’établir qu’un service réel respecte sa documentation.
 
-**9.8.2.** Il ne mesure pas la tenue en charge.
+**9.8.2.** Le serveur simulé ne fournit aucune mesure de tenue en charge.
 
-**9.8.3.** Ses scénarios sont dérivés des règles de la spécification.
+**9.8.3.** Les scénarios sont construits à partir des règles de la spécification.

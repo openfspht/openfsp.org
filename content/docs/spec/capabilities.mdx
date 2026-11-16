@@ -1,26 +1,25 @@
 ---
 title: Capabilities and limits
-description: Announce and discover the actual functions and limits of each compatible provider.
+description: Declaration and discovery of capabilities and limits applicable to each payment service.
 ---
 
-I make supported operations and account limits discoverable before payment creation. The non-emulation constraint comes from [decision 0005](/docs/decisions#0005).
+Discovery exposes supported operations and applicable account limits before payment creation. [Decision 0005](/docs/decisions#0005) explains why unsupported functions are not emulated.
 
 ## 1. Capability
 
-**1.1.** A capability is a named feature, supported or not for a given provider.
+**1.1.** A capability designates a named function whose support is defined for a particular provider.
 
-**1.2.** Capabilities are reported per provider, never for the server as a whole.
+**1.2.** Capabilities are declared separately for each provider rather than globally for the server.
 
-**1.3.** A server MUST announce a capability for a provider only if that provider performs the operation itself. It MUST NOT announce a capability obtained by
-emulation, approximation or composition of other operations.
+**1.3.** The server MUST declare a capability for a provider only when that provider performs the operation itself. It MUST NOT declare a capability obtained through emulation, approximation or composition of other operations.
 
-**1.4.** Capability `payments`: [API 2.1](/docs/spec/payments-api#2.1).
+**1.4.** The `payments` capability is defined in [API 2.1](/docs/spec/payments-api#2.1).
 
 ## 2. Names and registry
 
-**2.1.** A capability name matches `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$`: domain, then operation.
+**2.1.** A capability name follows `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$`, with a domain followed by the operation.
 
-**2.2.** Registry. A _reserved_ name has no specification yet and MUST NOT be announced. A _withdrawn_ name MUST NOT be announced and is never reassigned (2.5).
+**2.2.** The registry distinguishes specified, reserved and withdrawn names. A _reserved_ name has no specification yet and MUST NOT be declared. A _withdrawn_ name MUST NOT be declared and cannot be reassigned (2.5).
 
 | Name                           | Status              | Meaning                                                                                                                  |
 | ------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -29,7 +28,7 @@ emulation, approximation or composition of other operations.
 | `payments.statement`           | specified           | Daily statement of the merchant account at the provider, readable by the client ([lifecycle 10](/docs/spec/lifecycle#10)). |
 | `payments.fee`                 | specified           | The provider reports fees ([data model 8](/docs/spec/data-model#8)).                                                     |
 | `payments.refund`              | reserved            | Refund of a captured payment.                                                                                            |
-| `payments.capture`             | reserved            | Separate authorization and capture.                                                                                      |
+| `payments.capture`             | reserved            | Separate authorisation and capture.                                                                                      |
 | `payments.cancel`              | reserved            | Cancellation before completion.                                                                                          |
 | `payments.proximity_cpm`       | reserved            | Native resolution of tokens presented by the payer.                                                                      |
 | `confirmation_requests`        | reserved            | Timed confirmation by the payer.                                                                                         |
@@ -39,19 +38,17 @@ emulation, approximation or composition of other operations.
 | `webhooks.verify`              | withdrawn           | None.                                                                                                                    |
 | `webhooks.per_payment_url`     | specified           | The provider accepts a `callback_url` at creation and delivers that payment's events to it ([API 5.1.8](/docs/spec/payments-api#5.1.8)). |
 
-**2.3.** Adding a name requires a decision record. An addition is not a breaking change (4.3).
+**2.3.** Adding a name requires a decision record. Such an addition is not an incompatible change (4.3).
 
-**2.4.** A server MAY announce names outside the registry, prefixed with a reversed DNS name it controls (`com.example.payments.instalments`), and MUST NOT
-invent unprefixed names.
+**2.4.** The server MAY declare names outside the registry under a reversed DNS prefix it controls (`com.example.payments.instalments`) and MUST NOT create names without that prefix.
 
-**2.5.** Capabilities are not versioned: a change of meaning requires a new name.
+**2.5.** Capabilities have no separate versions. A change in meaning requires a new name.
 
-**2.6.** The server MUST use the registered identifier of each provider
-([registry](/docs/registry)).
+**2.6.** For each provider, the server MUST use the identifier recorded in the [registry](/docs/registry).
 
-**2.7.** A provider identifier is registered by pull request on the registry, without a decision record.
+**2.7.** Assignment of a provider identifier is requested through a registry pull request and requires no decision record.
 
-**2.8.** Identifiers are permanent. A renamed provider receives a new identifier and the old one is marked superseded.
+**2.8.** Assigned identifiers are permanent. A renamed provider receives a new identifier; the previous identifier is retained and marked as superseded.
 
 ## 3. Discovery
 
@@ -61,7 +58,7 @@ invent unprefixed names.
 GET /.well-known/openfsp-configuration
 ```
 
-Unauthenticated (RFC 8615). The shape follows OpenID Connect discovery: absolute URLs suffixed `_endpoint` or `_uri`, and lists suffixed `_supported`.
+This endpoint is public and unauthenticated (RFC 8615). Its structure follows OpenID Connect discovery conventions: absolute URLs with `_endpoint` or `_uri` suffixes, and lists with the `_supported` suffix.
 
 ```json
 {
@@ -82,17 +79,15 @@ Unauthenticated (RFC 8615). The shape follows OpenID Connect discovery: absolute
 }
 ```
 
-**3.1.1.** The document MUST NOT reveal the providers in use, any information about the merchant, the version of the server software, or the administration
-interface.
+**3.1.1.** The document MUST NOT disclose the providers in use, merchant information, the server software version or the administration interface.
 
-**3.1.2.** `protocol_version` is the targeted specification version. A client MUST NOT infer any capability from it.
+**3.1.2.** The `protocol_version` field identifies the targeted specification version. The client MUST NOT infer available capabilities from it.
 
-**3.1.3.** `issuer` is the public URL of the server, without a trailing slash. A client SHOULD read endpoints from this document rather than build them.
+**3.1.3.** The `issuer` field contains the server’s public URL without a trailing slash. The client SHOULD use the endpoints published in this document rather than reconstruct them.
 
-**3.1.4.** `capabilities_supported` lists the capability names (2) the server software can serve. This list MUST NOT depend on the configured providers. What
-a provider actually announces is read from `/v1/capabilities` (3.2).
+**3.1.4.** The `capabilities_supported` field lists the capabilities in section 2 that the server software can expose. This list MUST NOT depend on configured providers. Capabilities actually declared per provider are available from `/v1/capabilities` (3.2).
 
-**3.1.5.** `webhook_keys` holds the public webhook signing keys ([webhooks 6.1](/docs/spec/webhooks#6.1)). This is their only publication point.
+**3.1.5.** The `webhook_keys` field contains public webhook signing keys ([webhooks 6.1](/docs/spec/webhooks#6.1)). This document is their sole publication point.
 
 ### 3.2. Capabilities
 
@@ -100,7 +95,7 @@ a provider actually announces is read from `/v1/capabilities` (3.2).
 GET /v1/capabilities
 ```
 
-Authenticated.
+This endpoint requires authentication.
 
 ```json
 {
@@ -122,7 +117,7 @@ Authenticated.
 }
 ```
 
-**3.2.1.** Provider fields:
+**3.2.1.** A provider description contains the following fields:
 
 | Field          | Type             | Presence | Notes                                                        |
 | -------------- | ---------------- | -------- | ------------------------------------------------------------ |
@@ -132,7 +127,7 @@ Authenticated.
 | `capabilities` | array of strings | REQUIRED | Always contains `payments`.                                  |
 | `payments`     | object           | REQUIRED | 3.2.2.                                                       |
 
-**3.2.2.** `payments` object:
+**3.2.2.** The `payments` object describes the payment profile using the following fields:
 
 | Field                 | Type             | Meaning                                                                              |
 | --------------------- | ---------------- | ------------------------------------------------------------------------------------ |
@@ -143,43 +138,43 @@ Authenticated.
 | `limits`              | object           | OPTIONAL. Amount limits (6.4).                                                       |
 | `locales`             | array of strings | `locale` values supported for the payer's page ([API 5.1.7](/docs/spec/payments-api#5.1.7)). |
 
-**3.2.3.** `expiry_guaranteed` MUST be `false` unless the provider guarantees that a payment not complete at `expires_at` will never complete.
+**3.2.3.** The value of `expiry_guaranteed` MUST be `false` unless the provider guarantees that a payment incomplete at `expires_at` can never complete.
 
-**3.2.4.** The response SHOULD carry `Cache-Control` with a `max-age` of at most one hour.
+**3.2.4.** The response SHOULD contain `Cache-Control` with a `max-age` value no greater than one hour.
 
-**3.2.5.** As an exception to 1.3, `webhooks.emit` appears in the list of every provider for which the server emits events.
+**3.2.5.** As an exception to 1.3, `webhooks.emit` is declared for each provider whose events are emitted by the server.
 
 ## 4. Obligations
 
-**4.1.** A client MUST NOT invoke an operation whose capability is not announced for the chosen provider.
+**4.1.** The client MUST NOT call an operation whose capability is not declared for the selected provider.
 
-**4.2.** A client MUST handle `capability-not-supported` at any time, and SHOULD then read the capabilities again.
+**4.2.** The client MUST handle `capability-not-supported` at any time and SHOULD then refresh the capabilities.
 
-**4.3.** A client MUST ignore an unknown capability name.
+**4.3.** The client MUST ignore capability names it does not recognise.
 
-**4.4.** The server MUST reject with `capability-not-supported` any operation whose capability it does not announce, even if it can perform it.
+**4.4.** The server MUST return `capability-not-supported` for an operation whose capability it does not declare, even if execution is technically possible.
 
-**4.5.** The server MAY detect that a provider has suspended a capability. If it detects it, it MUST NOT announce it.
+**4.5.** The server MAY detect that a provider has suspended a capability. When it detects this, it MUST NOT continue to declare the capability.
 
 ## 5. `payments.lookup`
 
-**5.1.** `payments.lookup` announces an authoritative lookup of the current state at the provider.
+**5.1.** The `payments.lookup` capability indicates that a lookup can establish the authoritative current state at the provider.
 
-**5.2.** If it is announced, sync ([API 5.3](/docs/spec/payments-api#5.3)) MUST read the state at the provider.
+**5.2.** When this capability is declared, synchronisation ([API 5.3](/docs/spec/payments-api#5.3)) MUST query the state at the provider.
 
-**5.3.** Otherwise, sync MUST return `capability-not-supported` and MUST NOT return the stored state as if it had been read again.
+**5.3.** Without this capability, synchronisation MUST return `capability-not-supported` and MUST NOT present stored state as the result of a new lookup.
 
-**5.3.1.** Exception: a terminal payment is returned unchanged with `200` ([API 5.3.3](/docs/spec/payments-api#5.3.3)).
+**5.3.1.** As an exception, a terminal payment is returned unchanged with `200` ([API 5.3.3](/docs/spec/payments-api#5.3.3)).
 
 ## 6. Amount limits
 
-**6.1.** A provider's limits are the minimum and maximum amount of a transaction on the merchant account, set by the provider for that merchant.
+**6.1.** A provider’s limits represent the minimum and maximum transaction amounts for the merchant account, as set by the provider for that merchant.
 
-**6.2.** How the server learns a provider's limits is out of scope. No administration endpoint is required.
+**6.2.** The mechanism by which the server obtains limits is outside the specification’s scope. No administration endpoint is prescribed.
 
-**6.3.** The server MUST NOT invent a limit, nor infer one from past failures.
+**6.3.** The server MUST NOT assign an unestablished limit or infer a limit from previous failures.
 
-**6.4.** A provider's `payments` object (3.2.2) carries an OPTIONAL `limits` member:
+**6.4.** The provider’s `payments` object (3.2.2) contains an OPTIONAL `limits` member:
 
 ```json
 "limits": {
@@ -195,12 +190,11 @@ Authenticated.
 | `max_amount`  | `Money` | OPTIONAL | 6.5.                                                       |
 | `amount_step` | `Money` | OPTIONAL | The amount MUST be a multiple of it. `100`: whole gourdes. |
 
-**6.5.** A missing limit means "unknown", not "unlimited". A client MUST NOT display it as the absence of a cap.
+**6.5.** An absent limit means its value is unknown. The client MUST NOT present it as the absence of a cap.
 
-**6.6.** If `min_amount` and `max_amount` are both present, `min_amount` MUST be less than or equal to `max_amount`.
+**6.6.** When both `min_amount` and `max_amount` are present, `min_amount` MUST be less than or equal to `max_amount`.
 
-**6.7.** At creation ([API 5.1](/docs/spec/payments-api#5.1)), the server MUST reject an amount below `min_amount`, above `max_amount` or not a multiple of
-`amount_step`, with `amount-out-of-range`, without creating a payment. The response carries the limits as extension members:
+**6.7.** At creation ([API 5.1](/docs/spec/payments-api#5.1)), the server MUST reject with `amount-out-of-range`, without creating a payment, any amount below `min_amount`, above `max_amount` or not a multiple of `amount_step`. The response contains the limits in the following extension members:
 
 ```json
 {
@@ -216,28 +210,24 @@ Authenticated.
 }
 ```
 
-**6.7.1.** An amount that [data model 3.6](/docs/spec/data-model#3.6) rejects (zero or negative) is rejected with `invalid-field` before the limit check, even
-if limits are declared.
+**6.7.1.** A zero or negative amount rejected by [data model 3.6](/docs/spec/data-model#3.6) produces `invalid-field` before limit checking, even when limits are declared.
 
-**6.8.** `amount-out-of-range` is an error caused by the request: its response is stored under [idempotency 5.1](/docs/spec/idempotency#5.1). After a change of
-limits, a client that submits the creation again MUST use a new `Idempotency-Key`.
+**6.8.** The `amount-out-of-range` error results from the request; its response is retained under [idempotency 5.1](/docs/spec/idempotency#5.1). After limits change, the client MUST use a new `Idempotency-Key` to submit creation again.
 
-**6.9.** A payment refused by the provider because of a payer cap, or of a limit that is not announced, becomes `failed` with `limit_exceeded`
-([lifecycle 7.2](/docs/spec/lifecycle#7.2)). The server MUST NOT convert it into `amount-out-of-range`.
+**6.9.** A provider refusal caused by a payer cap or an undeclared limit moves the payment to `failed` with `limit_exceeded` ([lifecycle 7.2](/docs/spec/lifecycle#7.2)). The server MUST NOT convert this refusal into `amount-out-of-range`.
 
 ## 7. Conformance
 
-**7.1.** A conformant server MUST serve both endpoints of 3.
+**7.1.** A conforming server MUST expose both endpoints defined in section 3.
 
-**7.2.** The conformance suite checks 2.2.
+**7.2.** The conformance suite verifies the requirements of 2.2.
 
-**7.3.** The suite tests 6.7 at both limits (limit accepted, limit exceeded by one cent) and checks that no payment is created.
+**7.3.** The suite verifies 6.7 at both limits: acceptance at the boundary, then rejection when exceeded by one cent, with no payment created for the rejected amount.
 
 ## 8. Security
 
-**8.1.** The configuration document SHOULD be rate-limited.
+**8.1.** Access to the configuration document SHOULD be rate-limited.
 
-**8.2.** Announcing a capability grants no authorization: the server MUST check the key's scope independently
-([authentication 6](/docs/spec/authentication#6)).
+**8.2.** Declaring a capability grants no authorisation. The server MUST independently verify the key’s scope ([authentication 6](/docs/spec/authentication#6)).
 
-**8.3.** Limits are served only by the authenticated endpoint of 3.2, never by the configuration document (3.1.1).
+**8.3.** Limits are published only through the authenticated endpoint in 3.2 and remain absent from the configuration document (3.1.1).

@@ -1,11 +1,11 @@
 ---
 title: Passerelle de transition
-description: Pourquoi cette implémentation existe, son déploiement, et comment elle place l'API OpenFSP devant les API existantes de MonCash et NatCash.
+description: Rôle, architecture et limites de la passerelle de référence pour les API existantes de MonCash et NatCash.
 ---
 
-La passerelle est un serveur OpenFSP placé devant les API existantes de MonCash et NatCash, pour que les marchands puissent utiliser la norme dès aujourd'hui, avant que les opérateurs l'implémentent eux-mêmes. Elle tourne sur Kotlin, Spring Boot et PostgreSQL.
+La passerelle de référence est un serveur OpenFSP qui adapte les échanges aux API existantes de MonCash et NatCash. Elle constitue un mode d’intégration transitoire en l’absence d’implémentation native par ces services. Sa disponibilité et les limites de ses vérifications sont décrites dans l’état du projet.
 
-Côté clients, elle suit la [spécification](/fr/docs/spec) comme tout autre serveur. Cette page décrit ce qu'elle fait derrière cette API : la traduction du dialecte de chaque opérateur est une propriété de cet outil, pas une règle de la norme.
+L’interface exposée aux clients suit la [spécification](/fr/docs/spec). Les mécanismes décrits ci-dessous concernent le fonctionnement interne de cette implémentation. La traduction des formats et des comportements propres à chaque service relève de la passerelle ; elle ne constitue pas une exigence générale d’OpenFSP.
 
 ## Composants
 
@@ -16,7 +16,7 @@ Côté clients, elle suit la [spécification](/fr/docs/spec) comme tout autre se
 | SDK                 | Bibliothèques clientes et outils de test.                         | Kotlin, Java et TypeScript, dans le dépôt `openfsp`.  |
 | Suite de conformité | Tests et rapports reproductibles.                                 | Moteur et CLI Kotlin, scénarios YAML et schémas JSON. |
 
-[L'état du projet](/fr/docs/status) donne l'état de chaque composant.
+[L’état du projet](/fr/docs/status) précise la disponibilité et le périmètre de test de chaque composant.
 
 ## Trajet d'une requête
 
@@ -34,32 +34,32 @@ flowchart TD
     AD2 -- "API de l'opérateur" --> P2
 ```
 
-L'application désigne l'opérateur ; la passerelle n'en choisit jamais. Elle tient l'enregistrement de paiement, les enregistrements d'idempotence, les transitions d'état et l'audit, et confie chaque appel à l'adaptateur de l'opérateur visé. Rappels, consultations et relevés reviennent par ce même adaptateur. Un opérateur qui expose déjà OpenFSP est atteint par un adaptateur générique, sans traduction de dialecte ; la passerelle envoie alors `create-<identifiant de commande>` comme `Idempotency-Key`.
+L’application sélectionne explicitement le service de paiement. La passerelle conserve les paiements, les enregistrements d’idempotence, les transitions d’état et les données d’audit. Elle délègue les appels externes à l’adaptateur du service sélectionné ; les notifications, les consultations et les relevés sont traités par ce même adaptateur. Lorsqu’un service expose déjà OpenFSP, un adaptateur générique est utilisé sans traduction de formats. La passerelle transmet alors `create-<identifiant de commande>` comme valeur de `Idempotency-Key`.
 
 ## Déploiement et confiance
 
-L'exploitant (le marchand ou son mandataire) déploie la passerelle et détient ses secrets d'opérateur ; le projet ne les détient jamais. La relation entre le marchand et son opérateur ne change pas. Le marchand a un compte chez chaque opérateur accepté, si bien qu'aucune valeur ne circule entre opérateurs et qu'aucune compensation n'est nécessaire. Chaque déploiement sert un seul compte marchand : une passerelle compromise n'expose que ce marchand. Chaque version publie des images de conteneur multiplateformes avec leur provenance de construction et une SBOM.
+L’exploitant, marchand ou mandataire, déploie la passerelle et gère les secrets nécessaires aux API des services de paiement. Ces secrets ne sont pas confiés au projet. Le marchand conserve sa relation contractuelle et son compte auprès de chaque fournisseur accepté. Cette architecture ne transfère aucune valeur entre services et n’introduit aucune opération de compensation. Chaque déploiement sert un seul compte marchand, ce qui limite à ce compte le périmètre des identifiants et des données exposés par la compromission de la passerelle. Chaque version fournit des images de conteneur multiplateformes accompagnées de leur provenance de construction et d’une nomenclature des composants logiciels (SBOM).
 
 ## Adaptateurs [#adapters]
 
-Un adaptateur traduit une opération OpenFSP vers l'API d'un opérateur et la réponse en retour. Il ne tient ni l'enregistrement de paiement, ni les enregistrements d'idempotence, ni les transitions d'état, ni l'audit, et il est le seul composant à détenir un secret d'opérateur.
+L’adaptateur traduit une opération OpenFSP vers l’API du service concerné et convertit la réponse reçue. La persistance des paiements, l’idempotence, les transitions d’état et l’audit restent à la charge de la passerelle. L’adaptateur est le seul composant applicatif qui détient le secret du service.
 
-- **Opérations.** La création est obligatoire ; consultation, réception des rappels et lecture des relevés n'existent que si l'opérateur les offre. Une opération que l'opérateur ne sait pas faire n'est ni implémentée ni déclarée ([capacités 1.3](/fr/docs/spec/capabilities#1.3)).
-- **Déclaration.** L'adaptateur déclare les capacités et le profil de paiement que l'opérateur prend en charge (types de `next_action`, `payer` exigé, `return_url` exigée, expiration garantie). La passerelle retire une capacité suspendue ([capacités 4.5](/fr/docs/spec/capabilities#4.5)). Les bornes de montant viennent de la configuration de la passerelle, par opérateur.
-- **Statuts.** La correspondance va de l'opérateur vers OpenFSP, jamais l'inverse. Un statut inconnu ou ambigu ne correspond à rien et le paiement reste `pending` ; un motif incertain donne `unspecified` ([cycle de vie 7.3](/fr/docs/spec/lifecycle#7.3)).
-- **Données.** Les montants décimaux sont lus sous leur forme textuelle, sans flottant ; un montant inexact au centime rend la réponse inexploitable (`provider-error`). Les numéros sont convertis en E.164 selon le format documenté de l'opérateur, ou omis. Un horodatage sans décalage se lit dans le fuseau de la journée comptable (`America/Port-au-Prince` par défaut), une heure ambiguë se résout vers l'instant le plus tardif, et une durée relative court à partir de la réception. `failure_detail` porte le code et le message de l'opérateur, caviardés ; un horodatage de l'opérateur ne remplace jamais `completed_at`.
-- **Ce qui est transmis.** L'adaptateur ne transmet à l'opérateur ni la `reference` ni les `metadata`.
-- **Document publié.** Chaque adaptateur publie ses capacités et son profil de paiement, ses correspondances de statuts et de `failure_reason`, sa stratégie d'idempotence, la nature de ses rappels, ses pertes connues, les secrets requis et leur mode de fourniture, et son identifiant du [registre](/fr/docs/registry).
+- **Opérations.** La création est obligatoire. La consultation, la réception des notifications et la lecture des relevés sont exposées uniquement si le service les prend en charge. Une opération absente n’est ni implémentée ni déclarée ([capacités 1.3](/fr/docs/spec/capabilities#1.3)).
+- **Déclaration.** L’adaptateur décrit les capacités et le profil de paiement pris en charge : types de `next_action`, présence exigée de `payer`, présence exigée de `return_url` et garantie d’expiration. La passerelle retire les capacités suspendues ([capacités 4.5](/fr/docs/spec/capabilities#4.5)). Les bornes de montant proviennent de sa configuration par service.
+- **États.** La correspondance est établie du service vers OpenFSP. Un état inconnu ou ambigu ne permet aucune transition : le paiement reste `pending`. Un motif non établi est représenté par `unspecified` ([cycle de vie 7.3](/fr/docs/spec/lifecycle#7.3)).
+- **Données.** Les montants décimaux sont analysés depuis leur représentation textuelle, sans conversion fractionnaire en virgule flottante. Une valeur non exacte au centime rend la réponse inexploitable (`provider-error`). Les numéros sont convertis en E.164 selon le format documenté du service, ou omis. Un horodatage sans décalage utilise le fuseau de la journée comptable, `America/Port-au-Prince` par défaut ; une heure ambiguë est résolue vers l’instant le plus tardif. Une durée relative est calculée depuis la réception. Le code et le message du service sont conservés dans `failure_detail` après masquage des secrets. L’horodatage externe ne remplace jamais `completed_at`.
+- **Données transmises.** L’adaptateur ne transmet au service ni la `reference` ni les `metadata` du marchand.
+- **Documentation.** Chaque adaptateur documente ses capacités, son profil de paiement, les correspondances d’états et de `failure_reason`, sa stratégie d’idempotence, les propriétés des notifications, les pertes d’information connues, les secrets requis et leur mode de fourniture, ainsi que l’identifiant du service dans le [registre](/fr/docs/registry).
 
 ## Identifiant de commande et issues indéterminées [#order-identifier]
 
-La passerelle transmet à l'opérateur un identifiant de commande dérivé de la `reference` par HMAC-SHA256 sous une clé de dérivation propre au déploiement, encodé en 26 caractères base32 minuscules (128 bits). Il est stocké avec le paiement, reste valide après un changement de clé (la nouvelle clé ne sert qu'aux nouveaux paiements), et se dérive de la même façon pour les opérateurs `mock_*`. Un opérateur qui le plafonne sous 128 bits est documenté comme perte connue.
+L’identifiant de commande transmis au service est dérivé de la `reference` par HMAC-SHA256 avec une clé propre au déploiement. Il est encodé sur 26 caractères base32 minuscules et représente 128 bits. Conservé avec le paiement, il reste valide après une rotation de clé ; la nouvelle clé s’applique uniquement aux nouveaux paiements. La même dérivation est utilisée pour les services `mock_*`. Toute restriction du service réduisant cet identifiant à moins de 128 bits est documentée parmi les pertes connues.
 
-Avant de renvoyer une opération à l'issue indéterminée, la passerelle tente de l'établir chez l'opérateur : par son idempotence ou par consultation sur l'identifiant de commande. Un identifiant par appel comme le `requestId` de NatCash n'est pas de l'idempotence. Si l'opérateur n'offre ni l'un ni l'autre, la passerelle ne renvoie jamais automatiquement : le paiement reste `pending` et l'exploitant est prévenu. Tant que l'appel de création n'a pas répondu, la passerelle peut ne pas présenter le paiement.
+Avant de réémettre une opération au résultat indéterminé, la passerelle cherche à établir son résultat auprès du service, au moyen de l’idempotence fournie par celui-ci ou d’une consultation par identifiant de commande. Un identifiant d’appel tel que le `requestId` de NatCash ne constitue pas une garantie d’idempotence. Si aucun de ces mécanismes n’existe, aucune réémission automatique n’a lieu : le paiement reste `pending` et l’exploitant est informé. Tant que l’appel de création n’a pas répondu, la passerelle peut différer l’exposition du paiement.
 
 ## Établir l'issue [#outcome]
 
-La passerelle n'enregistre un état terminal que d'après l'une de ces sources, dans cet ordre de préférence, et en garde au moins une pour tout paiement en attente :
+La passerelle enregistre un état terminal uniquement à partir de l’une des sources suivantes, classées par ordre de préférence. Au moins une de ces sources reste disponible pour chaque paiement en attente :
 
 | Source                                                       | Offerte par l'opérateur sous la forme |
 | ------------------------------------------------------------ | ------------------------------------- |
@@ -69,33 +69,33 @@ La passerelle n'enregistre un état terminal que d'après l'une de ces sources, 
 | **(d)** relevé de l'opérateur par un canal authentifié       | `payments.statement`                  |
 | **(e)** attestation de l'exploitant                          | toujours disponible                   |
 
-- **Rappels.** Un rappel signé ne relève de (a) que si la signature couvre au moins l'identifiant du paiement et son issue. Tout autre rappel est un signal pour consulter une autre source, et son contenu est ignoré. Un rappel rejoué ne peut pas modifier un état terminal ; les signatures NatCash ne portent ni horodatage ni nonce.
-- **URL propre au paiement.** Pour (c), chaque paiement reçoit dans le chemin de son URL de rappel un jeton d'au moins 128 bits aléatoires, comparé en temps constant, jamais journalisé et exclu des journaux d'accès du proxy inverse. Un jeton qui ne correspond à aucun paiement en attente est rejeté sans effet ; une URL commune à plusieurs paiements ne relève pas de (c).
-- **Conflits.** Un rapport qui contredit un état terminal enregistré, ou un montant différent de celui du paiement, ne modifie jamais le paiement : la passerelle enregistre le conflit durablement, le signale à l'exploitant et en laisse la résolution à une personne. Un paiement au montant discordant reste `pending`.
-- **Rapprochement en arrière-plan.** La passerelle relit périodiquement les paiements en attente, de sa propre initiative.
-- **Expiration.** `expired` est enregistré quand l'opérateur rapporte le paiement expiré, quand une consultation après `expires_at` le montre inachevé, quand l'opérateur garantit l'expiration, quand un relevé couvrant une période postérieure à `expires_at` ne le mentionne pas comme achevé, ou sur attestation.
-- **Attestation.** La source (e) relève de l'API d'administration de la passerelle, jamais de l'API OpenFSP. Elle consigne l'attestant, l'heure, l'état et la référence de la preuve ; un jeton d'administration partagé peut la protéger, l'attestant étant alors nommé dans la requête. Un déploiement devrait exiger une seconde validation au-delà d'un montant qu'il fixe.
+- **Notifications du service.** Une notification relève de la source (a) uniquement si sa signature couvre au moins l’identifiant du paiement et son résultat. Dans les autres cas, elle déclenche la consultation d’une autre source et son contenu n’est pas utilisé pour établir l’état. Un rejeu ne modifie aucun état terminal. Les signatures NatCash ne contiennent ni horodatage ni nonce.
+- **URL propre au paiement.** Pour la source (c), le chemin de l’URL contient un jeton d’au moins 128 bits aléatoires propre au paiement. La comparaison est effectuée en temps constant. Le jeton est exclu des journaux, notamment de ceux du proxy inverse. Un jeton ne correspondant à aucun paiement en attente est rejeté sans effet. Une URL partagée entre plusieurs paiements ne satisfait pas ce mécanisme.
+- **Conflits.** Une information contredisant un état terminal, ou signalant un montant différent, ne modifie pas le paiement. Le conflit est conservé durablement et signalé à l’exploitant pour résolution humaine. Un paiement dont le montant est discordant reste `pending`.
+- **Rapprochement en arrière-plan.** La passerelle consulte périodiquement les paiements en attente sans requête préalable du client.
+- **Expiration.** L’état `expired` est enregistré lorsque le service confirme l’expiration, lorsqu’une consultation après `expires_at` établit que le paiement est inachevé, lorsque le service garantit l’expiration, lorsqu’un relevé couvrant une période postérieure à `expires_at` ne présente pas le paiement comme achevé, ou sur attestation.
+- **Attestation de l’exploitant.** La source (e) utilise l’API d’administration de la passerelle, distincte de l’API OpenFSP. Elle consigne l’identité de l’attestant, l’instant, l’état et la référence de la preuve. Un jeton d’administration partagé peut protéger cet accès ; l’identité de l’attestant est alors fournie dans la requête. Une seconde validation est recommandée au-delà d’un seuil défini par le déploiement.
 
 ## Relais de retour [#return-relay]
 
-MonCash ne prend pas d'URL de retour par paiement. La passerelle expose un point de retour par opérateur, que l'exploitant déclare chez celui-ci. Il retrouve le paiement par l'identifiant de commande reçu, déclenche une synchronisation, redirige en `303` vers la `return_url` enregistrée du paiement (jamais vers une URL reçue dans la requête), et répond `404` sans redirection pour un identifiant inconnu ou mal formé. Il n'est pas authentifié et il est limité en débit.
+MonCash ne prévoit pas d’URL de retour propre à chaque paiement. La passerelle expose donc un point de retour par service, enregistré par l’exploitant auprès du fournisseur. À réception, elle recherche le paiement par l’identifiant de commande, déclenche sa synchronisation et retourne une redirection `303` vers la `return_url` conservée avec le paiement. Une URL transmise dans la requête n’est jamais utilisée comme destination. Un identifiant inconnu ou mal formé produit une réponse `404` sans redirection. Ce point d’accès est non authentifié et soumis à une limitation de débit.
 
 ## Membres et points d'accès hors norme [#extensions]
 
-- **Données amont dans `metadata`.** La passerelle ajoute ses propres clés aux `metadata` de chaque paiement ([modèle de données 9](/fr/docs/spec/data-model#9)), à côté de celles du client : `gateway.order_id`, l'identifiant de commande qu'elle transmet à l'opérateur, et `gateway.provider_reference`, l'identifiant de transaction de l'opérateur une fois connu. Elles ne comptent pas dans les limites du client et n'écrasent jamais une clé du client.
-- **Erreurs amont.** Sur une erreur venue de l'opérateur, le code et le message de l'opérateur figurent dans le `detail` du problem detail, sans jamais servir à en tirer `type`, `retryable` ou `effect`. Pour un opérateur qui parle OpenFSP, ce sont le dernier segment du `type` de son problem detail et son `detail`, à défaut son `title`. Secrets et jetons sont caviardés. Un client ne devrait pas fonder de décision sur `detail` et devrait l'échapper à l'affichage.
-- **Relevé de la passerelle** sur `GET /gateway/statements?provider=…&business_date=…`, hors de `/v1` et absent du document de configuration, avec la portée `statements:read`. La console lit le même relevé par l'API d'administration. Établi d'après les propres enregistrements de la passerelle, pour tout opérateur et toute journée comptable, selon la date de `completed_at` : `payments` trié par `completed_at`, `totals` par état terminal, et `final` une fois la journée écoulée. Il sert la comptabilité du marchand ; il ne fonde jamais une transition, et seul un relevé de l'opérateur montre ce que la passerelle n'a pas vu.
-- **Contrôle de santé** sur `/actuator/health`, non authentifié, hors de `/v1`.
+- **Métadonnées du service.** La passerelle ajoute à chaque paiement ses propres clés `metadata`, conformément au [modèle de données 9](/fr/docs/spec/data-model#9) : `gateway.order_id` pour l’identifiant de commande transmis au service et `gateway.provider_reference` pour l’identifiant de transaction lorsqu’il est connu. Ces clés ne comptent pas dans les limites du client et ne remplacent jamais une clé fournie par celui-ci.
+- **Erreurs du service.** Le code et le message externes sont inscrits dans le membre `detail` de l’objet d’erreur RFC 9457 ; ils ne servent pas à déduire `type`, `retryable` ou `effect`. Pour un service exposant OpenFSP, le code correspond au dernier segment de son `type` et le message à son `detail`, ou à son `title` à défaut. Les secrets et les jetons sont masqués. Le client devrait éviter toute décision fondée sur `detail` et échapper ce contenu lors de l’affichage.
+- **Relevé de la passerelle.** Le point d’accès `GET /gateway/statements?provider=…&business_date=…` est extérieur à `/v1`, absent du document de configuration et protégé par la portée `statements:read`. La console consulte ce même relevé via l’API d’administration. Pour chaque service et journée comptable, il est construit à partir des enregistrements internes selon la date de `completed_at`. Il contient `payments`, trié par `completed_at`, `totals` par état terminal et `final` après la fin de la journée. Il sert au suivi comptable du marchand et ne justifie aucune transition d’état. Seul un relevé du service peut révéler des opérations non observées par la passerelle.
+- **Contrôle de santé.** Le point d’accès `/actuator/health` est non authentifié et extérieur à `/v1`.
 
-La passerelle n'utilise les URL de rappel par paiement et les rappels signés que vers les opérateurs. Elle ne livre pas d'événements à la `callback_url` d'un client : elle n'annonce donc ni `webhooks.per_payment_url` ni `webhooks.verify`, retiré.
+Les URL de notification propres au paiement et les notifications signées concernent uniquement les échanges entre la passerelle et les services externes. La passerelle ne livre pas d’événements à la `callback_url` du client. Elle ne déclare donc pas `webhooks.per_payment_url`, ni l’ancienne capacité retirée `webhooks.verify`.
 
 ## Secrets d'opérateur [#secrets]
 
-La passerelle charge les secrets d'opérateur depuis des variables d'environnement ou un gestionnaire de secrets, jamais seulement depuis un fichier de configuration, et peut les recharger sans redémarrage. Aucun point d'accès ne les renvoie, même partiellement ; un contrôle de santé peut seulement dire qu'un opérateur est joignable. Ils n'atteignent jamais un journal, une trace, une métrique, un rapport d'erreur ni un vidage mémoire. Toute valeur détenue comme secret d'opérateur est remplacée par `[REDACTED]` dans le `detail` du problem detail et dans `failure_detail`, par comparaison avec les valeurs détenues et non par motifs. Les enregistrements d'audit n'en contiennent jamais.
+Les secrets des services sont chargés depuis des variables d’environnement ou un gestionnaire de secrets, et non exclusivement depuis un fichier de configuration. La passerelle permet leur rechargement sans redémarrage. Aucun point d’accès ne retourne un secret, même partiellement ; le contrôle de santé indique uniquement si un service est joignable. Les secrets sont exclus des journaux, traces, métriques, rapports d’erreur, vidages mémoire et enregistrements d’audit. Dans le `detail` des erreurs et dans `failure_detail`, les valeurs détenues comme secrets sont remplacées par `[REDACTED]` au moyen d’une comparaison avec les valeurs effectives, plutôt que par reconnaissance de motifs.
 
 ## Profils observés [#profiles]
 
-J'ai établi ces profils d'après la documentation des opérateurs (MonCash REST API, NatCash Merchant Online Integration 2.0) et mes propres intégrations de ces deux opérateurs. Les points non confirmés figurent sous [À vérifier en bac à sable](#sandbox-checks).
+Ces profils reposent sur la documentation des services (MonCash REST API et NatCash Merchant Online Integration 2.0) ainsi que sur les travaux d’intégration réalisés par l’auteur. Les observations sont présentées avec leurs limites. Les points restant à confirmer figurent dans la liste [À vérifier en bac à sable](#sandbox-checks).
 
 ### Correspondance [#mapping]
 
@@ -119,7 +119,7 @@ J'ai établi ces profils d'après la documentation des opérateurs (MonCash REST
 | Rappels signés             | non                                                  | oui, source (a)                         |
 | URL de rappel par paiement | non                                                  | oui, source (c)                         |
 
-Stratégie d'idempotence pour les deux : consultation par [identifiant de commande](#order-identifier).
+Pour les deux services, la stratégie de reprise utilise la consultation par [identifiant de commande](#order-identifier).
 
 ### Statuts [#statuses]
 
@@ -138,29 +138,29 @@ Stratégie d'idempotence pour les deux : consultation par [identifiant de comman
 
 ### Pertes connues [#losses]
 
-- Aucun motif d'échec : `failure_reason` vaut `unspecified`.
-- `cost` chez MonCash est le montant du paiement : il alimente le contrôle de montant, jamais `fee`.
-- NatCash peut écrire un montant avec un séparateur de milliers (`3,162.00`) et un `responseCode` en nombre ou en chaîne.
-- Aucuns frais : `fee` reste absent.
-- Refus des centimes non confirmé : `amount_step` reste absent tant que l'exploitant ne l'a pas constaté ([capacités 6.3](/fr/docs/spec/capabilities#6.3)).
+- En l’absence de motif d’échec exploitable, `failure_reason` vaut `unspecified`.
+- Le champ MonCash `cost` représente le montant du paiement. Il intervient dans la vérification du montant et ne renseigne jamais `fee`.
+- NatCash peut représenter un montant avec un séparateur de milliers (`3,162.00`) et `responseCode` sous forme de nombre ou de chaîne.
+- En l’absence de données sur les frais, `fee` reste absent ; cette absence ne signifie pas que les frais sont nuls.
+- Le refus des centimes n’est pas confirmé. Le champ `amount_step` reste absent jusqu’à observation par l’exploitant ([capacités 6.3](/fr/docs/spec/capabilities#6.3)).
 
 ### À vérifier en bac à sable [#sandbox-checks]
 
-1. Alphabet et longueur de l'`orderId` MonCash.
+1. Jeu de caractères et longueur autorisés pour `orderId` chez MonCash.
 2. Réponse de `RetrieveOrderPayment` pour un paiement inexistant ou inachevé.
-3. Réponses d'échec de MonCash.
-4. Refus des centimes par l'un ou l'autre opérateur.
-5. Rappel MonCash et paramètres transmis à l'URL de retour (`orderId` ou `transactionId`).
-6. Unité d'`expiredAt` chez NatCash.
-7. Portée d'`ERR_TRANSACTION_EXPIRED` : jeton ou paiement.
+3. Formats des réponses d’échec de MonCash.
+4. Acceptation ou refus des centimes par chacun des services.
+5. Disponibilité des notifications MonCash et paramètres transmis à l’URL de retour (`orderId` ou `transactionId`).
+6. Unité de la durée `expiredAt` chez NatCash.
+7. Objet visé par `ERR_TRANSACTION_EXPIRED` : jeton ou paiement.
 
 ## Tester la passerelle [#testing]
 
-La passerelle se teste comme un serveur OpenFSP ([conformité](/fr/docs/spec/conformance)). Ses adaptateurs se testent contre le serveur simulé, qui joue aussi `mock_moncash` et `mock_natcash` : leurs dialectes suivent la documentation de chaque opérateur et les observations de son bac à sable, portent le préfixe `mock_` et la mention « (mock) », et n'offrent que les scénarios que l'opérateur réel peut produire. Pour ces exécutions, le serveur simulé reproduit aussi les expirations en amont (`TIMEOUT_THEN_SUCCESS`, `TIMEOUT_THEN_NOTHING`), les contradictions (`CONTRADICT`), les écarts de montant (`AMOUNT_MISMATCH`) et l'écho d'identifiants (`CREDENTIAL_ECHO`), choisit les scénarios par l'identifiant de commande calculé avec la clé de dérivation, et journalise les requêtes reçues pour qu'un test vérifie un appel ou son absence. Une passerelle pointée vers le serveur simulé l'indique dans son journal de démarrage et s'exécute en environnement `test`. La connexion refusée se teste avec un opérateur sur un port fermé.
+La passerelle est évaluée comme un serveur OpenFSP ([conformité](/fr/docs/spec/conformance)). Ses adaptateurs sont testés contre le simulateur, qui expose également `mock_moncash` et `mock_natcash`. Ces services reproduisent les formats documentés et les observations en bac à sable ; leurs identifiants portent le préfixe `mock_` et leurs noms la mention « (mock) ». Leurs scénarios sont limités aux comportements attribués aux services réels. Pour évaluer la passerelle, le simulateur reproduit les dépassements de délai (`TIMEOUT_THEN_SUCCESS`, `TIMEOUT_THEN_NOTHING`), les contradictions (`CONTRADICT`), les écarts de montant (`AMOUNT_MISMATCH`) et les réponses contenant des identifiants secrets (`CREDENTIAL_ECHO`). Il sélectionne les scénarios à partir de l’identifiant de commande calculé avec la clé de dérivation et journalise les requêtes pour vérifier la présence ou l’absence d’un appel. Une passerelle connectée au simulateur le signale au démarrage et utilise l’environnement `test`. Le refus de connexion est reproduit par un service ciblé sur un port fermé.
 
-Rien de cela ne prouve qu'un adaptateur correspond à son opérateur, ni qu'un opérateur se comporte comme sa documentation le dit. Sans accès à l'opérateur, les correspondances se testent sur des données et les refus sur des réponses enregistrées.
+Ces tests évaluent le comportement de l’adaptateur face aux représentations et aux défaillances simulées. Ils ne suffisent pas à établir sa compatibilité avec le service réel ni l’exactitude de la documentation externe. En l’absence d’accès au service, les correspondances sont vérifiées sur des jeux de données et les refus sur des réponses enregistrées.
 
-Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp) :
+Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp), exécutez les commandes suivantes dans trois terminaux :
 
 ```bash
 make simulator             # terminal 1, port 8090
@@ -168,9 +168,9 @@ make gateway-conformance   # terminal 2, port 8080
 make validate              # terminal 3
 ```
 
-Le profil `conformance` ajoute les opérateurs de test `mock_no_source`, `mock_statement_only` et `mock_unreachable`. `make validate` émet par l'API d'administration les clés dont les scénarios ont besoin et enregistre un récepteur de webhooks sur le port 8099 le temps de l'exécution, puis les révoque et le retire. Le rapport est écrit dans `backend/validator/infrastructure/build/conformance-report.json`.
+Le profil `conformance` ajoute les services de test `mock_no_source`, `mock_statement_only` et `mock_unreachable`. La commande `make validate` crée les clés nécessaires par l’API d’administration et enregistre un récepteur de webhooks sur le port 8099 pour la durée de l’exécution. Elle révoque ensuite les clés et retire le récepteur. Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report.json`.
 
-`make dev-sandbox` démarre la passerelle sur les bacs à sable de MonCash et NatCash. Les identifiants viennent de `.env.sandbox` à la racine du dépôt (ignoré par git), un `NOM=valeur` par ligne, ou du shell :
+`make dev-sandbox` connecte la passerelle aux bacs à sable MonCash et NatCash. Les identifiants sont lus dans les variables du shell ou dans `.env.sandbox`, à la racine du dépôt et exclu du suivi Git, au format `NOM=valeur` sur chaque ligne :
 
 ```bash
 MONCASH_CLIENT_ID=
@@ -182,4 +182,4 @@ NATCASH_PRIVATE_KEY=
 NATCASH_FUNCTION_CODE=
 ```
 
-La passerelle refuse de démarrer si l'une de ces variables est vide. Mener un paiement à terme demande un portefeuille de bac à sable, et les rappels des opérateurs exigent une passerelle joignable depuis Internet.
+Le démarrage échoue si l’une de ces variables est vide. L’achèvement d’un paiement nécessite un portefeuille de bac à sable. La réception des notifications externes nécessite une passerelle accessible depuis Internet.

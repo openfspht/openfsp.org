@@ -1,13 +1,13 @@
 ---
 title: Provider registry
-description: Provider identifiers in the OpenFSP contract and their assignment, independent of integration mode.
+description: Assignment and stability of payment service identifiers used by the provider field.
 ---
 
-This registry assigns the `provider` identifiers used by [API 3.2](/docs/spec/payments-api#3.2) and announced by [capabilities 3.2](/docs/spec/capabilities#3.2).
+This registry defines the `provider` identifiers used by [API 3.2](/docs/spec/payments-api#3.2) and published in [capability discovery 3.2](/docs/spec/capabilities#3.2). These identifiers designate services independently of the integration method.
 
-The identifier stays the same across every implementation ([capabilities 2.6](/docs/spec/capabilities#2.6)). A local spelling would make clients non-portable from one deployment to another.
+A service retains the same identifier across implementations ([capability discovery 2.6](/docs/spec/capabilities#2.6)). This stability allows applications to reuse identifiers across deployments.
 
-Listing an identifier says nothing about whether the provider implements OpenFSP. Simulated providers use the `mock_*` namespace.
+Registry inclusion is not a declaration of OpenFSP adoption or conformance. The `mock_*` namespace is reserved for simulated services.
 
 ## Registered identifiers
 
@@ -26,8 +26,8 @@ Listing an identifier says nothing about whether the provider implements OpenFSP
 
 ## Register an identifier
 
-Open a pull request on [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx) that adds a row. I review it without adding a decision, because an identifier is a label with no normative behaviour of its own ([capabilities 2.7](/docs/spec/capabilities#2.7)).
+To request an identifier, add a registry row through a pull request on [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx). The request is reviewed. Assignment alone requires no design decision because it introduces no normative behaviour ([capability discovery 2.7](/docs/spec/capabilities#2.7)).
 
-An identifier matches `^[a-z0-9_]{1,32}$` ([API 3.2](/docs/spec/payments-api#3.2)). I accept one that names the payment service as its users know it, not the company that runs it, and that makes no trademark claim. Listing a provider here implies no relationship with it and no endorsement either way.
+The identifier follows `^[a-z0-9_]{1,32}$` ([API 3.2](/docs/spec/payments-api#3.2)). It names the service as known to its users rather than the company operating it and makes no trademark claim. Inclusion establishes neither a contractual relationship nor endorsement between the service and the project.
 
-Identifiers are permanent. A provider that changes name gets a new identifier, and the old row stays with the new identifier under _Replaced by_, because deployments and stored records keep carrying the old value.
+Assigned identifiers are permanent. When a service changes name, it receives a new identifier and its previous row is retained with a reference in the _Replaced by_ column. Existing deployments and records can therefore continue to refer to the earlier value.

@@ -1,9 +1,9 @@
 ---
 title: Payment lifecycle
-description: Payment states and transitions, evidence of completion, failure reasons and statement reconciliation.
+description: States, transitions and conditions for establishing payment outcomes; statements and reconciliation.
 ---
 
-I keep a payment pending until authoritative evidence establishes a terminal state. [Decision 0003](/docs/decisions#0003) explains this constraint.
+A payment remains pending until authoritative evidence establishes its terminal state. [Decision 0003](/docs/decisions#0003) explains this design principle.
 
 ## 1. States
 
@@ -15,9 +15,9 @@ I keep a payment pending until authoritative evidence establishes a terminal sta
 | `expired`   | yes      | The payment window closed without completion (5).         |
 | `canceled`  | yes      | The payment was canceled before completion.               |
 
-**1.1.** `pending` is the only non-terminal state. It covers, without distinction, an inactive payer, processing in progress and an outcome not yet established.
+**1.1.** `pending` is the only non-terminal state. It covers payer inactivity, ongoing processing and outcomes that remain indeterminate.
 
-**1.2.** A client that receives an unknown `status` value MUST treat it as a processing error and MUST NOT infer a state from it, terminal or not. A new state is introduced only under 8.
+**1.2.** When an unknown `status` value is received, the client MUST treat it as a processing error and MUST NOT infer a terminal or non-terminal state. New states are introduced only under section 8.
 
 ## 2. Transitions
 
@@ -31,7 +31,7 @@ stateDiagram-v2
     pending --> canceled
 ```
 
-**2.1.** Only these transitions are allowed:
+**2.1.** Only the transitions in the following table are permitted:
 
 | From      | To          | Cause                                   |
 | --------- | ----------- | --------------------------------------- |
@@ -40,17 +40,17 @@ stateDiagram-v2
 | `pending` | `expired`   | Conditions of 5.3.                      |
 | `pending` | `canceled`  | Cancellation established (3.2).         |
 
-**2.2.** The server MUST reject and MUST NOT record any other transition.
+**2.2.** The server MUST reject all other transitions and MUST NOT record them.
 
 ## 3. Terminality
 
-**3.1.** A terminal payment MUST NOT move to any other state, including on later contradictory information.
+**3.1.** A terminal payment MUST NOT transition to any other state, even if contradictory information is received later.
 
-**3.2.** The server MUST NOT enter a terminal state by inference or by the passage of time: it records a terminal state only once it has established the outcome. For `expired`, 5 applies as well.
+**3.2.** The server MUST NOT record a terminal state by inference or solely from elapsed time. Recording occurs only when the outcome is established. The conditions in section 5 also apply to `expired`.
 
-**3.3.** A server that cannot establish the outcome of a payment MUST leave it `pending`.
+**3.3.** If the outcome cannot be established, the server MUST keep the payment in `pending`.
 
-**3.4.** A payment MAY stay `pending` indefinitely.
+**3.4.** A payment MAY remain in `pending` indefinitely.
 
 ## 4. Fields
 
@@ -64,34 +64,34 @@ stateDiagram-v2
 | `failure_reason` | string      | conditional | REQUIRED if `status` is `failed` (7).  |
 | `failure_detail` | object      | OPTIONAL    | Raw provider error (7.4).              |
 
-**4.1.** `completed_at` is the instant the server recorded the terminal state.
+**4.1.** The `completed_at` field denotes the time at which the server recorded the terminal state.
 
-**4.2.** `updated_at` MUST change on every transition and MAY change without a transition. A client MUST NOT infer a transition from `updated_at` alone.
+**4.2.** The value of `updated_at` MUST change at each transition and MAY change without a transition. The client MUST NOT infer a transition from `updated_at` alone.
 
-**4.3.** Once the terminal state is reached, `status`, `completed_at` and `failure_reason` are immutable. Other fields MAY still be filled in.
+**4.3.** After a terminal transition, `status`, `completed_at` and `failure_reason` become immutable. Other fields MAY be completed later.
 
 ## 5. Expiration
 
-**5.1.** `expires_at` is the instant after which the payer can no longer complete the payment.
+**5.1.** The `expires_at` field identifies the time after which the payer can no longer complete the payment.
 
-**5.2.** `expires_at` passing does not, on its own, move the payment to `expired`.
+**5.2.** Passing `expires_at` is insufficient by itself to trigger a transition to `expired`.
 
-**5.3.** The server MUST NOT record `expired` without one of these conditions:
+**5.3.** The server MUST NOT record `expired` unless at least one of the following conditions is satisfied:
 
-- **(a)** it has established that the payment can no longer complete;
-- **(b)** `expires_at` has passed and the provider guarantees that a payment not complete at `expires_at` will never complete (the only exception to 3.2).
+- **(a)** the server has established that the payment can no longer complete;
+- **(b)** `expires_at` has passed and the provider guarantees that a payment incomplete at `expires_at` can never complete. This is the sole exception to 3.2.
 
-**5.4.** If none of these conditions holds, the payment stays `pending`.
+**5.4.** If these conditions are not satisfied, the payment remains in `pending`.
 
 ## 6. Recording a state
 
-**6.1.** The API MUST NOT offer any way to set the state of a payment.
+**6.1.** The API MUST NOT provide any mechanism for setting a payment’s state.
 
 ## 7. Failures
 
-**7.1.** A `200` response carrying a `failed` payment reports a successful request ([API 10.2](/docs/spec/payments-api#10.2)). API errors belong to [errors](/docs/spec/payments-api#10), not to the lifecycle.
+**7.1.** A `200` response containing a `failed` payment indicates that the request succeeded ([API 10.2](/docs/spec/payments-api#10.2)). API errors are defined in the [error model](/docs/spec/payments-api#10) and are distinct from payment state.
 
-**7.2.** If `status` is `failed`, `failure_reason` MUST take one of these values:
+**7.2.** When `status` is `failed`, `failure_reason` MUST contain one of the following values:
 
 | Value                  | Meaning                                                                                                  |
 | ---------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -104,45 +104,45 @@ stateDiagram-v2
 | `provider_error`       | Failure reported by the provider.                                                                        |
 | `unspecified`          | Failure with no usable reason.                                                                           |
 
-**7.3.** `unspecified` MUST be used when no more precise reason is established. The server MUST NOT guess a more precise reason.
+**7.3.** If no more specific reason is established, `unspecified` MUST be used. The server MUST NOT assign a more specific reason by assumption.
 
-**7.4.** `failure_detail` MUST carry at least the provider's error code and message, unaltered.
+**7.4.** The `failure_detail` field MUST contain at least the provider’s error code and message, without alteration.
 
-**7.5.** The enumeration is closed; extending it requires a decision record. A client MUST treat an unknown value as `unspecified`.
+**7.5.** This enumeration is closed; extensions require a decision record. The client MUST interpret an unknown value as `unspecified`.
 
 ## 8. Extension by capability
 
-**8.1.** A capability MAY introduce additional states.
+**8.1.** A capability MAY define additional states.
 
-**8.2.** Such a state MUST be defined by the capability's specification, with its transitions to and from the base machine and whether it is terminal.
+**8.2.** The capability specification MUST define each additional state, its transitions to and from the base state machine, and whether it is terminal or non-terminal.
 
-**8.3.** The server MUST NOT report a capability-specific state for a capability it does not advertise.
+**8.3.** The server MUST NOT return a state associated with a capability it does not declare.
 
-**8.4.** A capability MUST NOT change the meaning of a base state, add a transition out of a terminal state, or weaken 3.
+**8.4.** A capability MUST NOT alter the meaning of a base state, introduce a transition out of a terminal state or weaken section 3.
 
-**8.5.** A refund is a separate resource. A refunded payment stays `succeeded`.
+**8.5.** A refund is a separate resource. After a refund, the payment retains the `succeeded` state.
 
 ## 9. Security
 
-**9.1.** A client or server that displays `failure_detail` MUST treat its content as untrusted.
+**9.1.** Any client or server displaying `failure_detail` MUST treat its contents as untrusted.
 
-**9.2.** The server SHOULD rate-limit payment creation to counter account enumeration through `payer_unreachable`.
+**9.2.** The server SHOULD rate-limit payment creation to reduce account-enumeration risk through `payer_unreachable`.
 
-**9.3.** Client documentation SHOULD recommend not showing `failure_reason` to the payer as is.
+**9.3.** Client documentation SHOULD recommend against displaying the raw `failure_reason` value directly to the payer.
 
 ## 10. Statements and reconciliation
 
 ### 10.1. Business day
 
-**10.1.1.** `Date` type: [data model 1](/docs/spec/data-model#1).
+**10.1.1.** The `Date` type is defined in [data model 1](/docs/spec/data-model#1).
 
-**10.1.2.** The business day of an entry is the date the provider assigns to it. If the provider assigns none, it is the date of `booked_at` in the IANA time zone of the business day, `America/Port-au-Prince` unless the operator configures another.
+**10.1.2.** An entry’s business day is the date assigned by the provider. If none is assigned, it is derived from `booked_at` in the IANA business-day time zone: `America/Port-au-Prince`, unless the operator configures another zone.
 
-**10.1.3.** Haiti observes daylight saving time: the server MUST NOT derive a business day from a fixed UTC offset.
+**10.1.3.** Because Haiti observes daylight saving time, the server MUST NOT determine the business day from a fixed time offset.
 
 ### 10.2. Statement
 
-**10.2.1.** A statement groups the movements on the merchant account at a provider for one business day.
+**10.2.1.** A statement groups movements in a merchant account at a provider for a given business day.
 
 ```json
 {
@@ -163,7 +163,7 @@ stateDiagram-v2
 }
 ```
 
-**10.2.2.** Statement fields:
+**10.2.2.** The statement structure is defined by the following fields:
 
 | Field              | Type                  | Presence | Notes                                      |
 | ------------------ | --------------------- | -------- | ------------------------------------------ |
@@ -174,13 +174,13 @@ stateDiagram-v2
 | `entries`          | array                 | REQUIRED | 10.3.                                      |
 | `missing_payments` | array of `ResourceId` | REQUIRED | 10.4.4. Empty while `complete` is `false`. |
 
-**10.2.3.** A merchant account has at most one statement per (provider, business day).
+**10.2.3.** A merchant account has at most one statement for each (provider, business day) pair.
 
-**10.2.4.** `complete` is `true` when the provider has closed the day. An open statement MAY receive new entries; a closed statement MUST NOT.
+**10.2.4.** The value of `complete` is `true` when the provider has closed the day. An open statement MAY receive additional entries; a closed statement MUST NOT receive additional entries.
 
 ### 10.3. Entry
 
-**10.3.1.** Fields:
+**10.3.1.** An entry has the following fields:
 
 | Field                | Type                | Presence    | Notes                                                  |
 | -------------------- | ------------------- | ----------- | ------------------------------------------------------ |
@@ -192,17 +192,17 @@ stateDiagram-v2
 | `payment`            | `ResourceId`        | conditional | Present if `match` is `matched` or `conflict`.         |
 | `match`              | string              | REQUIRED    | 10.4.                                                  |
 
-**10.3.2.** `type` takes one of the values `payment`, `reversal`, `fee`, `adjustment`. The enumeration is closed; extending it requires a decision record. A client MUST treat an unknown value as `adjustment`.
+**10.3.2.** The `type` field takes one of `payment`, `reversal`, `fee` or `adjustment`. The enumeration is closed and extensions require a decision record. The client MUST interpret an unknown value as `adjustment`.
 
-**10.3.3.** As an exception to [data model 3.6](/docs/spec/data-model#3.6), an entry's `amount`, `fee_amount` and `net_amount` MAY be negative or zero.
+**10.3.3.** As an exception to [data model 3.6](/docs/spec/data-model#3.6), an entry’s `amount`, `fee_amount` and `net_amount` MAY be negative or zero.
 
-**10.3.4.** The server MUST NOT compute `fee_amount` or `net_amount`, nor fill them in by subtraction.
+**10.3.4.** The server MUST NOT calculate `fee_amount` or `net_amount`, including by subtraction.
 
 ### 10.4. Reconciliation
 
-**10.4.1.** An entry for a payment refers to it by `payment`, its `id`. The server MUST NOT match an entry to a payment by amount or by time.
+**10.4.1.** An entry associated with a payment references its `id` in `payment`. The server MUST NOT establish this association from the amount or time.
 
-**10.4.2.** `match` takes one of the values:
+**10.4.2.** The `match` field accepts the following values:
 
 | Value       | Meaning                                                           |
 | ----------- | ----------------------------------------------------------------- |
@@ -210,38 +210,38 @@ stateDiagram-v2
 | `unmatched` | No payment matches.                                               |
 | `conflict`  | A payment matches, but its amount or state contradicts the entry. |
 
-**10.4.3.** An `unmatched` entry MUST NOT create a payment. The server MUST report it to the operator.
+**10.4.3.** An `unmatched` entry MUST NOT cause a payment to be created. The server MUST report the entry to the operator.
 
-**10.4.4.** A closed statement MUST list in `missing_payments` the `succeeded` payments at that provider whose `completed_at` falls within the business day and that no entry matches.
+**10.4.4.** A closed statement MUST include in `missing_payments` the provider’s `succeeded` payments whose `completed_at` falls within the business day and which have no matching entry.
 
-**10.4.5.** A `conflict` entry MUST NOT modify the payment.
+**10.4.5.** A `conflict` entry MUST NOT cause the payment to be modified.
 
 ### 10.5. Endpoints
 
-**10.5.1.** Read a statement:
+**10.5.1.** Statement retrieval uses the following endpoint:
 
 ```
 GET /v1/statements?provider=natcash&business_date=2026-09-28
 ```
 
-`provider` and `business_date` are REQUIRED. The response is a collection of at most one statement; a statement that does not exist yet gives `200` with empty `data` ([API 5.2.2](/docs/spec/payments-api#5.2.2)).
+The parameters `provider` and `business_date` are REQUIRED. The response contains a collection of at most one statement. If no statement exists yet, the server returns `200` with empty `data` ([API 5.2.2](/docs/spec/payments-api#5.2.2)).
 
-**10.5.2.** List unmatched entries:
+**10.5.2.** Retrieval of unmatched entries uses the following endpoint:
 
 ```
 GET /v1/statement_entries?match=unmatched&provider=natcash
 ```
 
-The `match` parameter accepts the values `unmatched` and `conflict`. The response is a collection ([API 1.12](/docs/spec/payments-api#1.12)) sorted by ascending `booked_at`, of at most `limit` items (1 to 100, default 50). If more items exist, the response carries `next_cursor`, an opaque string to send back in the `cursor` parameter.
+The `match` parameter accepts `unmatched` and `conflict`. The response is a collection ([API 1.12](/docs/spec/payments-api#1.12)) sorted by ascending `booked_at` and limited to `limit` items: 1 to 100, with 50 as the default. If additional items exist, `next_cursor` contains an opaque string to send in the `cursor` parameter to continue retrieval.
 
 **10.5.3.** Both endpoints require the `statements:read` scope ([authentication 6](/docs/spec/authentication#6)).
 
-**10.5.4.** They are served for every provider. For a provider that does not advertise `payments.statement`, the collection is empty.
+**10.5.4.** Both endpoints are exposed for every provider. If `payments.statement` is not declared for the provider, the returned collection is empty.
 
 ### 10.6. Conformance
 
-**10.6.1.** The suite tests, against a server that publishes a statement: a matched entry, an `unmatched` entry (no payment created), a `succeeded` payment missing from a closed statement, and a business day spanning the clock change.
+**10.6.1.** On a server publishing statements, the suite checks a matched entry, an `unmatched` entry without payment creation, a `succeeded` payment missing from a closed statement and a business day spanning a daylight saving transition.
 
 ### 10.7. Security
 
-**10.7.1.** A statement reveals the merchant's revenue. `statements:read` SHOULD NOT be granted to a key used only to collect payments.
+**10.7.1.** Statements disclose merchant turnover. The `statements:read` scope SHOULD NOT be granted to a key used only for accepting payments.
