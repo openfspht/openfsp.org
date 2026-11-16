@@ -4,8 +4,18 @@ import { asLocale, localePath } from "@/lib/i18n";
 import { baseOptions } from "@/lib/layout.shared";
 
 const copy = {
-  en: { title: "Page not found", body: "This page does not exist or has moved.", home: "Back to home", docs: "Read the docs" },
-  fr: { title: "Page introuvable", body: "Cette page n'existe pas ou a changé d'adresse.", home: "Retour à l'accueil", docs: "Lire la documentation" },
+  en: {
+    title: "Page not found",
+    body: "This page does not exist or has moved.",
+    home: "Back to home",
+    docs: "Read the docs",
+  },
+  fr: {
+    title: "Page introuvable",
+    body: "Cette page n'existe pas ou a changé d'adresse.",
+    home: "Retour à l'accueil",
+    docs: "Lire la documentation",
+  },
 };
 
 export function NotFound() {

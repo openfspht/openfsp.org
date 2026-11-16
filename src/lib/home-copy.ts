@@ -58,9 +58,21 @@ export const homeCopy = {
       title: "Le contrat tient en quelques requêtes HTTP et des webhooks signés.",
       body: "La spécification décrit ce que votre application envoie, ce qu’elle reçoit et comment réagir quand le réseau coupe. Chaque règle a son propre lien.",
       links: [
-        { title: "API des paiements", body: "Création, consultation et synchronisation.", href: "/docs/spec/payments-api" },
-        { title: "Webhooks signés", body: "Authentifier les notifications reçues.", href: "/docs/spec/webhooks" },
-        { title: "Suite de conformité", body: "Tester une implémentation et ses limites.", href: "/docs/spec/conformance" },
+        {
+          title: "API des paiements",
+          body: "Création, consultation et synchronisation.",
+          href: "/docs/spec/payments-api",
+        },
+        {
+          title: "Webhooks signés",
+          body: "Authentifier les notifications reçues.",
+          href: "/docs/spec/webhooks",
+        },
+        {
+          title: "Suite de conformité",
+          body: "Tester une implémentation et ses limites.",
+          href: "/docs/spec/conformance",
+        },
       ],
       event: "Événement reçu par la boutique",
       payload: "Extrait du corps d’un événement simulé",
@@ -82,7 +94,10 @@ export const homeCopy = {
       title: "Où en est le projet",
       body: "La spécification, les implémentations de référence et la suite de conformité sont publiées et éprouvées avec des opérateurs simulés. Aucun opérateur ni régulateur n’a encore adopté la norme.",
       phases: [
-        { title: "Phase 1, en cours", body: "Contrat d’intégration marchande, implémentations de référence et conformité reproductible." },
+        {
+          title: "Phase 1, en cours",
+          body: "Contrat d’intégration marchande, implémentations de référence et conformité reproductible.",
+        },
         {
           title: "Prochaine étape, les SDK",
           body: "Des bibliothèques clientes publiées, d’abord Kotlin pour la JVM, puis TypeScript, qui appellent la même API chez chaque opérateur.",
@@ -165,9 +180,21 @@ export const homeCopy = {
       title: "The contract is a few HTTP requests and signed webhooks.",
       body: "The specification defines what your application sends, what it receives and what to do when the connection drops. Every rule has its own link.",
       links: [
-        { title: "Payments API", body: "Create, retrieve and synchronize.", href: "/docs/spec/payments-api" },
-        { title: "Signed webhooks", body: "Authenticate incoming notifications.", href: "/docs/spec/webhooks" },
-        { title: "Conformance suite", body: "Test an implementation and its limits.", href: "/docs/spec/conformance" },
+        {
+          title: "Payments API",
+          body: "Create, retrieve and synchronize.",
+          href: "/docs/spec/payments-api",
+        },
+        {
+          title: "Signed webhooks",
+          body: "Authenticate incoming notifications.",
+          href: "/docs/spec/webhooks",
+        },
+        {
+          title: "Conformance suite",
+          body: "Test an implementation and its limits.",
+          href: "/docs/spec/conformance",
+        },
       ],
       event: "Event received by the shop",
       payload: "Excerpt from a simulated event body",
@@ -189,8 +216,14 @@ export const homeCopy = {
       title: "Where the project stands",
       body: "The specification, reference implementations and conformance suite are published and exercised against simulated providers. No provider or regulator has adopted the standard yet.",
       phases: [
-        { title: "Phase 1, in progress", body: "Merchant integration contract, reference implementations and reproducible conformance." },
-        { title: "Next step, SDKs", body: "Published client libraries, Kotlin for the JVM first, then TypeScript, that call the same API at every provider." },
+        {
+          title: "Phase 1, in progress",
+          body: "Merchant integration contract, reference implementations and reproducible conformance.",
+        },
+        {
+          title: "Next step, SDKs",
+          body: "Published client libraries, Kotlin for the JVM first, then TypeScript, that call the same API at every provider.",
+        },
         {
           title: "Phase 2, envisaged",
           body: "Proximity payments with a short-lived token presented by the customer. This flow is not part of the current version.",

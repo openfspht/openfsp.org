@@ -46,7 +46,17 @@ function titleSize(title: string): number {
 
 function Card({ page }: { page: OgPage }) {
   return (
-    <div style={{ width: OG_WIDTH, height: OG_HEIGHT, display: "flex", flexDirection: "column", backgroundColor: CHALK, color: INK, fontFamily: "Inter" }}>
+    <div
+      style={{
+        width: OG_WIDTH,
+        height: OG_HEIGHT,
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: CHALK,
+        color: INK,
+        fontFamily: "Inter",
+      }}
+    >
       <div style={{ display: "flex", height: 14, backgroundColor: INK }}>
         <div style={{ width: 220, height: 14, backgroundColor: ACCENT }} />
       </div>
@@ -54,18 +64,62 @@ function Card({ page }: { page: OgPage }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <img src={logo} width={278} height={50} />
           {page.section ? (
-            <div style={{ display: "flex", fontFamily: "Space Grotesk", fontWeight: 500, fontSize: 26, color: MUTED }}>{page.section}</div>
+            <div
+              style={{
+                display: "flex",
+                fontFamily: "Space Grotesk",
+                fontWeight: 500,
+                fontSize: 26,
+                color: MUTED,
+              }}
+            >
+              {page.section}
+            </div>
           ) : null}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, justifyContent: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            flexGrow: 1,
+            justifyContent: "center",
+          }}
+        >
           <div
-            style={{ display: "flex", fontFamily: "Space Grotesk", fontWeight: 700, fontSize: titleSize(page.title), lineHeight: 1.05, letterSpacing: -1.5 }}
+            style={{
+              display: "flex",
+              fontFamily: "Space Grotesk",
+              fontWeight: 700,
+              fontSize: titleSize(page.title),
+              lineHeight: 1.05,
+              letterSpacing: -1.5,
+            }}
           >
             {shorten(page.title, 70)}
           </div>
-          <div style={{ display: "flex", marginTop: 28, fontSize: 30, lineHeight: 1.4, color: MUTED, maxWidth: 960 }}>{shorten(page.description, 150)}</div>
+          <div
+            style={{
+              display: "flex",
+              marginTop: 28,
+              fontSize: 30,
+              lineHeight: 1.4,
+              color: MUTED,
+              maxWidth: 960,
+            }}
+          >
+            {shorten(page.description, 150)}
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `2px solid ${RULE}`, paddingTop: 24, fontSize: 24 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderTop: `2px solid ${RULE}`,
+            paddingTop: 24,
+            fontSize: 24,
+          }}
+        >
           <div style={{ display: "flex", fontWeight: 500 }}>openfsp.org{page.path === "/" ? "" : page.path}</div>
           <div style={{ display: "flex", color: MUTED }}>Apache-2.0</div>
         </div>

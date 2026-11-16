@@ -16,7 +16,12 @@ const urlPath = (file: string) =>
     .replace(/\.html$/, "")
     .replace(/\/$/, "")}`;
 const pages = new Map(htmlFiles.filter((file) => !file.endsWith("/404.html")).map((file) => [urlPath(file), file]));
-const XML_ENTITIES: Record<string, string> = { "&": "&amp;", '"': "&quot;", "<": "&lt;", ">": "&gt;" };
+const XML_ENTITIES: Record<string, string> = {
+  "&": "&amp;",
+  '"': "&quot;",
+  "<": "&lt;",
+  ">": "&gt;",
+};
 const xml = (value: string) => value.replace(/[&"<>]/g, (char) => XML_ENTITIES[char]);
 const sitemap = [...pages.keys()]
   .sort()
@@ -83,7 +88,15 @@ for (const [path, html] of documents) {
       .join(",");
   if (french && ruleIds(html) !== ruleIds(french)) errors.push(`${path}: English/French rule IDs differ`);
 }
-const HTML_ENTITIES: Record<string, string> = { amp: "&", quot: '"', lt: "<", gt: ">", "#x27": "'", "#39": "'", nbsp: " " };
+const HTML_ENTITIES: Record<string, string> = {
+  amp: "&",
+  quot: '"',
+  lt: "<",
+  gt: ">",
+  "#x27": "'",
+  "#39": "'",
+  nbsp: " ",
+};
 const decode = (value: string) => value.replace(/&([a-z0-9#]+);/gi, (entity, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? entity);
 const meta = (html: string, property: string) => {
   const found = html.match(new RegExp(`<meta[^>]*(?:property|name)="${property}"[^>]*content="([^"]*)"`));

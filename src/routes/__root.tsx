@@ -12,7 +12,10 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "OpenFSP" },
-      { name: "description", content: "An open payment standard for Haiti, with one API shared by merchant applications and every payment service provider." },
+      {
+        name: "description",
+        content: "An open payment standard for Haiti, with one API shared by merchant applications and every payment service provider.",
+      },
       { property: "og:site_name", content: "OpenFSP" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

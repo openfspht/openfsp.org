@@ -1,4 +1,8 @@
-FROM oven/bun:1.4.4-alpine AS build
+FROM oven/bun:1.4.4-alpine AS bun
+
+FROM node:24.12-alpine AS build
+
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
 WORKDIR /site
 

@@ -1,9 +1,9 @@
 ## Development
 
-TanStack Start, React 19, Fumadocs, MDX and Tailwind 4 on Vite, with Bun.
+TanStack Start, React 19, Fumadocs, MDX and Tailwind 4 on Vite+ (`vp`), with Bun as package manager.
 
 - `bun run dev` serves the site on port 4321. Reuse a running server; stop only the ones you started.
-- Before finishing, run `bun run check`, `bun test` and `bun run build`. The build prerenders every page, then `scripts/prepare-static.ts` writes the sitemap, `robots.txt`, the 404 page and gzip files, and fails on a broken link, a missing anchor or a page or rule missing in one language.
+- Before finishing, run `bun run check` (format, lint and types), `bun run test` and `bun run build`. The build prerenders every page, then `scripts/prepare-static.ts` writes the sitemap, `robots.txt`, the 404 page and gzip files, and fails on a broken link, a missing anchor or a page or rule missing in one language.
 - References: [TanStack Start prerendering](https://tanstack.com/start/latest/docs/framework/react/guide/static-prerendering), [Fumadocs](https://fumadocs.dev/docs), [Tailwind](https://tailwindcss.com/docs).
 
 ## Positioning

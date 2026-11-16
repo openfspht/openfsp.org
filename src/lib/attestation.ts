@@ -16,7 +16,10 @@ export interface AttestationPayload {
   suite?: { version?: string; protocol_version?: string };
   report?: { digest?: string };
   validity?: { statement?: string; reference?: string };
-  verdicts?: { core?: string | { verdict?: string }; profiles?: { capability?: string; name?: string; verdict?: string }[] };
+  verdicts?: {
+    core?: string | { verdict?: string };
+    profiles?: { capability?: string; name?: string; verdict?: string }[];
+  };
 }
 
 export type Verification =

@@ -2,9 +2,19 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { fumadocsMdx } from "fumadocs-mdx/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  fmt: {
+    printWidth: 160,
+    sortPackageJson: false,
+    ignorePatterns: ["dist", ".output", ".source", ".tanstack", "src/routeTree.gen.ts", "bun.lock", ".impeccable", "content"],
+  },
+  lint: {
+    ignorePatterns: ["dist", ".output", ".source", ".tanstack", "src/routeTree.gen.ts"],
+    options: { typeAware: true, typeCheck: true },
+  },
+  test: { include: ["test/**/*.test.ts"] },
   server: { port: 4321 },
   plugins: [
     fumadocsMdx(),

@@ -16,7 +16,12 @@ function anchorRule(paragraph: Paragraph) {
   if (!match) return;
   const id = match[1];
   paragraph.data = { ...paragraph.data, hProperties: { id, className: ["rule"] } };
-  paragraph.children[0] = { type: "link", url: `#${id}`, data: { hProperties: { className: ["rule-number"] } }, children: [first] };
+  paragraph.children[0] = {
+    type: "link",
+    url: `#${id}`,
+    data: { hProperties: { className: ["rule-number"] } },
+    children: [first],
+  };
 }
 
 function anchorHeading(heading: Heading) {

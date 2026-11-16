@@ -1,7 +1,0 @@
-dist
-.output
-.source
-.tanstack
-src/routeTree.gen.ts
-bun.lock
-.impeccable

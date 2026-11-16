@@ -22,7 +22,11 @@ export function pageHead(locale: Locale, path: string, title: string, descriptio
     ],
     links: [
       { rel: "canonical", href: url },
-      ...(["en", "fr"] as const).map((language) => ({ rel: "alternate", hrefLang: language, href: `${SITE_URL}${localePath(language, path)}` })),
+      ...(["en", "fr"] as const).map((language) => ({
+        rel: "alternate",
+        hrefLang: language,
+        href: `${SITE_URL}${localePath(language, path)}`,
+      })),
       { rel: "alternate", hrefLang: "x-default", href: `${SITE_URL}${path}` },
     ],
   };

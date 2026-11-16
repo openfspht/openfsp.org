@@ -1,12 +1,11 @@
 pre-commit:
   commands:
-    format:
-      glob: "*.{ts,tsx,css,json,mjs,md,mdx,yml}"
-      run: bunx prettier --check {staged_files}
+    check:
+      run: bunx vp check
 pre-push:
   commands:
     check:
-      run: bun run check && bun test
+      run: bun run check && bun run test
 commit-msg:
   commands:
     conventional:

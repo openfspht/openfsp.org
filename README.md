@@ -16,7 +16,7 @@ Start, prerendered and served by nginx.
 ```sh
 bun install
 bun run dev      # http://localhost:4321
-bun run check && bun test && bun run build
+bun run check && bun run test && bun run build
 ```
 
 The build fails on a broken link, a missing anchor or a page missing in one language.

@@ -29,7 +29,9 @@ const loadPage = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/{-$lang}/docs/$")({
   loader: async ({ params }) => {
-    const data = await loadPage({ data: { slugs: params._splat?.split("/").filter(Boolean) ?? [], lang: asLocale(params.lang) } });
+    const data = await loadPage({
+      data: { slugs: params._splat?.split("/").filter(Boolean) ?? [], lang: asLocale(params.lang) },
+    });
     await docs.getPage(data.path)?.preload();
     return data;
   },
@@ -58,7 +60,10 @@ function Content({ path }: { path: string }) {
     <DocsPage
       toc={toc}
       slots={{ toc: { provider: TOCProvider, main: TOC, popover: AccessibleTOCPopover } }}
-      tableOfContent={{ style: "clerk", container: { role: "navigation", "aria-labelledby": "toc-title" } }}
+      tableOfContent={{
+        style: "clerk",
+        container: { role: "navigation", "aria-labelledby": "toc-title" },
+      }}
     >
       <DocsTitle>{page.title}</DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>

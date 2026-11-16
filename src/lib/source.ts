@@ -9,7 +9,9 @@ export const docs = defineDocs({
   dir: "content/docs",
   docs: {
     async: true,
-    mdxOptions: applyMdxPreset({ remarkPlugins: (plugins) => [remarkMermaid, remarkRules, ...plugins] }),
+    mdxOptions: applyMdxPreset({
+      remarkPlugins: (plugins) => [remarkMermaid, remarkRules, ...plugins],
+    }),
   },
 });
 
