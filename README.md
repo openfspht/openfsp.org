@@ -7,21 +7,44 @@
   </a>
 </p>
 
-<p align="center"><b>The OpenFSP site and specification, served at openfsp.org</b></p>
+<p align="center"><b>The OpenFSP specification and documentation, served at openfsp.org</b></p>
 
-Every specification chapter is an MDX page in `content/docs/`, English (`page.mdx`) with its French version
-(`page.fr.mdx`). Each rule number is an anchor, such as `/docs/spec/idempotency#3.2`. Built with Fumadocs on TanStack
-Start, prerendered and served by nginx.
+<p align="center">
+  <a href="https://github.com/openfspht/openfsp.org/actions/workflows/ci.yml"><img src="https://github.com/openfspht/openfsp.org/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-0B3B36" alt="Apache-2.0"></a>
+</p>
+
+## Develop
+
+Bun 1.4 and Node 22.18 or later.
 
 ```sh
 bun install
-bun run dev      # http://localhost:4321
-bun run check && bun run test && bun run build
+bun run dev                                     # http://localhost:4321
+bun run check && bun run test && bun run build  # format, lint, types, tests, static build
 ```
 
-The build fails on a broken link, a missing anchor or a page missing in one language.
+The build prerenders every page into `dist/client` and fails on a broken link, a missing anchor or a page missing in
+one language.
 
-Edit the English and French pages together, and never renumber a rule: the conformance suite in
-[openfspht/openfsp](https://github.com/openfspht/openfsp) cites rules by number.
+## Edit the specification
+
+Each chapter is an MDX page in `content/docs/`: `page.mdx` in English, `page.fr.mdx` in French. Edit both together.
+Every rule number is an anchor, such as `/docs/spec/idempotency#3.2`, and the conformance suite in
+[openfspht/openfsp](https://github.com/openfspht/openfsp) cites rules by number: never renumber one.
+
+## Deploy
+
+```sh
+docker run -d -p 8080:8080 ghcr.io/openfspht/openfsp.org:latest
+```
+
+A static site served by unprivileged nginx on port 8080, for `linux/amd64` and `linux/arm64`. `/health` answers `ok`.
+Terminate TLS in front of it.
+
+Merging the release pull request tags a version and publishes `ghcr.io/openfspht/openfsp.org:<version>` and `latest`.
+To rebuild a tag, run the **Release** workflow by hand with that tag.
+
+## License
 
 [Apache-2.0](LICENSE)
