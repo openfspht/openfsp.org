@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: false
+      - run: uvx --from actionlint-py==1.7.12.25 actionlint
+
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun run check
+      - run: bun test
+      - run: bun run build
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: build
+        run: docker build -t openfsp-site:ci .
+      - name: smoke test
+        run: |
+          docker run -d -p 8080:8080 openfsp-site:ci
+          for _ in $(seq 1 20); do
+            curl -sf http://localhost:8080/health && break
+            sleep 0.5
+          done
+          curl -sf http://localhost:8080/ > /dev/null
+          curl -sf http://localhost:8080/docs/spec/payments-api > /dev/null
+          curl -sf http://localhost:8080/fr/docs/spec/idempotency > /dev/null
+          curl -sf http://localhost:8080/sitemap.xml > /dev/null
+          curl -sf http://localhost:8080/og.png > /dev/null
+          curl -sf http://localhost:8080/api/search-index/fr > /dev/null
+          curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/problems/provider-timeout | grep -q 301
+          curl -s -o /tmp/not-found.html -w '%{http_code}' http://localhost:8080/missing-page | grep -q 404
+          grep -q 'Page introuvable' /tmp/not-found.html
+          for path in / /fr/docs/quickstart /api/search-index/fr /missing-page /problems/provider-timeout; do
+            curl -sI "http://localhost:8080$path" > /tmp/headers.txt
+            grep -qi '^Content-Security-Policy:' /tmp/headers.txt
+            grep -qi '^Referrer-Policy:' /tmp/headers.txt
+            grep -qi '^X-Content-Type-Options: nosniff' /tmp/headers.txt
+          done
+          curl -sI -H 'Accept-Encoding: gzip' http://localhost:8080/api/search-index/fr | grep -qi '^Content-Encoding: gzip'
