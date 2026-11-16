@@ -1,8 +1,19 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { TOC, TOCPopover, TOCProvider, type TOCPopoverProps } from "fumadocs-ui/layouts/docs/page/slots/toc";
+import {
+  TOC,
+  TOCPopover,
+  TOCProvider,
+  type TOCPopoverProps,
+} from "fumadocs-ui/layouts/docs/page/slots/toc";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import { DocsBody, DocsDescription, DocsPage, DocsTitle, EditOnGitHub } from "fumadocs-ui/layouts/docs/page";
+import {
+  DocsBody,
+  DocsDescription,
+  DocsPage,
+  DocsTitle,
+  EditOnGitHub,
+} from "fumadocs-ui/layouts/docs/page";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
 import { Suspense, use } from "react";
 import { asLocale } from "@/lib/i18n";
@@ -37,7 +48,12 @@ export const Route = createFileRoute("/{-$lang}/docs/$")({
   },
   head: ({ loaderData, params }) =>
     loaderData
-      ? pageHead(asLocale(params.lang), `/docs${params._splat ? `/${params._splat}` : ""}`, `${loaderData.title} | OpenFSP`, loaderData.description ?? "")
+      ? pageHead(
+          asLocale(params.lang),
+          `/docs${params._splat ? `/${params._splat}` : ""}`,
+          `${loaderData.title} | OpenFSP`,
+          loaderData.description ?? "",
+        )
       : {},
   component: Page,
 });

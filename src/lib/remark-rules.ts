@@ -35,7 +35,8 @@ function anchorHeading(heading: Heading) {
 
 function anchorProblem(row: TableRow, seen: Set<string>) {
   const first = row.children[0]?.children[0];
-  if (first?.type !== "inlineCode" || !PROBLEM_CODE.test(first.value) || seen.has(first.value)) return;
+  if (first?.type !== "inlineCode" || !PROBLEM_CODE.test(first.value) || seen.has(first.value))
+    return;
   seen.add(first.value);
   row.data = { ...row.data, hProperties: { id: first.value, className: ["problem"] } };
 }

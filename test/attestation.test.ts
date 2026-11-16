@@ -9,11 +9,20 @@ afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-async function signed(payload: object, status: string | undefined = "active", serialize = (value: object) => canonical(value as never)) {
-  const { privateKey, publicKey } = (await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"])) as CryptoKeyPair;
+async function signed(
+  payload: object,
+  status: string | undefined = "active",
+  serialize = (value: object) => canonical(value as never),
+) {
+  const { privateKey, publicKey } = (await crypto.subtle.generateKey({ name: "Ed25519" }, true, [
+    "sign",
+    "verify",
+  ])) as CryptoKeyPair;
   const jwk = await crypto.subtle.exportKey("jwk", publicKey);
   const input = `${encode(JSON.stringify({ alg: "EdDSA", kid: "att-1" }))}.${encode(serialize({ issuer: "https://validate.openfsp.org", issued_at: "2026-01-01T00:00:00Z", ...payload }))}`;
-  const signature = new Uint8Array(await crypto.subtle.sign({ name: "Ed25519" }, privateKey, new TextEncoder().encode(input)));
+  const signature = new Uint8Array(
+    await crypto.subtle.sign({ name: "Ed25519" }, privateKey, new TextEncoder().encode(input)),
+  );
   globalThis.fetch = (async () =>
     Response.json({
       issuer: "https://validate.openfsp.org",
@@ -24,7 +33,9 @@ async function signed(payload: object, status: string | undefined = "active", se
 
 describe("attestation verification", () => {
   test("canonical JSON sorts keys and keeps numbers", () => {
-    expect(canonical({ b: 1, a: [true, null, "é"], c: { z: 1.5, y: "x" } })).toBe('{"a":[true,null,"é"],"b":1,"c":{"y":"x","z":1.5}}');
+    expect(canonical({ b: 1, a: [true, null, "é"], c: { z: 1.5, y: "x" } })).toBe(
+      '{"a":[true,null,"é"],"b":1,"c":{"y":"x","z":1.5}}',
+    );
   });
 
   test("accepts a signed attestation and checks the report digest", async () => {
@@ -35,7 +46,11 @@ describe("attestation verification", () => {
       report: { digest },
       verdicts: { core: "PASS", profiles: [] },
     });
-    const outcome = await verifyAttestation(jws, "https://validate.openfsp.org", JSON.stringify(report));
+    const outcome = await verifyAttestation(
+      jws,
+      "https://validate.openfsp.org",
+      JSON.stringify(report),
+    );
     expect(outcome).toMatchObject({
       signatureValid: true,
       authenticated: true,
@@ -134,13 +149,21 @@ describe("attestation verification", () => {
     expect(await verifyAttestation(nested, "https://validate.openfsp.org")).toEqual({
       error: "type",
     });
-    const duplicate = await signed({ type: "openfsp-conformance-attestation/1" }, "active", (value) =>
-      canonical(value as never).replace('"issued_at":', '"issued_at":"2999-01-01T00:00:00Z","issued_at":'),
+    const duplicate = await signed(
+      { type: "openfsp-conformance-attestation/1" },
+      "active",
+      (value) =>
+        canonical(value as never).replace(
+          '"issued_at":',
+          '"issued_at":"2999-01-01T00:00:00Z","issued_at":',
+        ),
     );
     expect(await verifyAttestation(duplicate, "https://validate.openfsp.org")).toEqual({
       error: "type",
     });
-    const pretty = await signed({ type: "openfsp-conformance-attestation/1" }, "active", (value) => JSON.stringify(value, null, 2));
+    const pretty = await signed({ type: "openfsp-conformance-attestation/1" }, "active", (value) =>
+      JSON.stringify(value, null, 2),
+    );
     expect(await verifyAttestation(pretty, "https://validate.openfsp.org")).toEqual({
       error: "type",
     });
@@ -155,7 +178,9 @@ describe("attestation verification", () => {
 
   test("stops reading a key document past the size limit", async () => {
     const jws = await signed({ type: "openfsp-conformance-attestation/1" });
-    const keys = await (await fetch("https://validate.openfsp.org/.well-known/openfsp-validator")).text();
+    const keys = await (
+      await fetch("https://validate.openfsp.org/.well-known/openfsp-validator")
+    ).text();
     let pulled = 0;
     const chunk = new Uint8Array(64 * 1024).fill(32);
     globalThis.fetch = (async () =>
@@ -187,7 +212,11 @@ describe("attestation verification", () => {
         error: "type",
       });
     }
-    for (const payload of [null, [], { type: "openfsp-conformance-attestation/1", verdicts: { profiles: {} } }]) {
+    for (const payload of [
+      null,
+      [],
+      { type: "openfsp-conformance-attestation/1", verdicts: { profiles: {} } },
+    ]) {
       const jws = `${encode(JSON.stringify({ alg: "EdDSA", kid: "att-1" }))}.${encode(JSON.stringify(payload))}.AA`;
       expect(await verifyAttestation(jws, "https://validate.openfsp.org")).toEqual({
         error: "type",
@@ -197,7 +226,8 @@ describe("attestation verification", () => {
 
   test("handles missing keys and unavailable networks", async () => {
     const jws = await signed({ type: "openfsp-conformance-attestation/1" });
-    globalThis.fetch = (async () => Response.json({ attestation_keys: [] })) as unknown as typeof fetch;
+    globalThis.fetch = (async () =>
+      Response.json({ attestation_keys: [] })) as unknown as typeof fetch;
     expect(await verifyAttestation(jws, "https://validate.openfsp.org")).toEqual({
       error: "unknownKey",
       kid: "att-1",
@@ -234,7 +264,9 @@ describe("attestation verification", () => {
       report: { digest: "wrong" },
     });
     expect(await verifyAttestation(jws, "http://remote.example")).toEqual({ error: "validator" });
-    expect(await verifyAttestation("a".repeat(1024 * 1024 + 1), "https://validate.openfsp.org")).toEqual({ error: "size" });
+    expect(
+      await verifyAttestation("a".repeat(1024 * 1024 + 1), "https://validate.openfsp.org"),
+    ).toEqual({ error: "size" });
     expect(await verifyAttestation(jws, "https://validate.openfsp.org", "{}")).toMatchObject({
       digestMatches: false,
     });

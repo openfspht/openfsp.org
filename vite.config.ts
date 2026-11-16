@@ -6,9 +6,18 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   fmt: {
-    printWidth: 160,
+    printWidth: 100,
     sortPackageJson: false,
-    ignorePatterns: ["dist", ".output", ".source", ".tanstack", "src/routeTree.gen.ts", "bun.lock", ".impeccable", "content"],
+    ignorePatterns: [
+      "dist",
+      ".output",
+      ".source",
+      ".tanstack",
+      "src/routeTree.gen.ts",
+      "bun.lock",
+      ".impeccable",
+      "content",
+    ],
   },
   lint: {
     ignorePatterns: ["dist", ".output", ".source", ".tanstack", "src/routeTree.gen.ts"],
@@ -21,7 +30,12 @@ export default defineConfig({
     tailwindcss(),
     tanstackStart({
       prerender: { enabled: true, crawlLinks: true, failOnError: true },
-      pages: [{ path: "/" }, { path: "/fr" }, { path: "/api/search-index/en" }, { path: "/api/search-index/fr" }],
+      pages: [
+        { path: "/" },
+        { path: "/fr" },
+        { path: "/api/search-index/en" },
+        { path: "/api/search-index/fr" },
+      ],
     }),
     react(),
   ],

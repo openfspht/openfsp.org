@@ -15,7 +15,9 @@ const urlPath = (file: string) =>
     .replace(/(?:^|\/)index\.html$/, "")
     .replace(/\.html$/, "")
     .replace(/\/$/, "")}`;
-const pages = new Map(htmlFiles.filter((file) => !file.endsWith("/404.html")).map((file) => [urlPath(file), file]));
+const pages = new Map(
+  htmlFiles.filter((file) => !file.endsWith("/404.html")).map((file) => [urlPath(file), file]),
+);
 const XML_ENTITIES: Record<string, string> = {
   "&": "&amp;",
   '"': "&quot;",
@@ -34,7 +36,10 @@ const sitemap = [...pages.keys()]
       ["fr", fr],
       ["x-default", base],
     ]
-      .map(([language, href]) => `<xhtml:link rel="alternate" hreflang="${language}" href="${xml(SITE_URL + href)}"/>`)
+      .map(
+        ([language, href]) =>
+          `<xhtml:link rel="alternate" hreflang="${language}" href="${xml(SITE_URL + href)}"/>`,
+      )
       .join("");
     return `<url><loc>${xml(SITE_URL + path)}</loc>${alternates}</url>`;
   })
@@ -43,7 +48,10 @@ await writeFile(
   join(root, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${sitemap}</urlset>\n`,
 );
-await writeFile(join(root, "robots.txt"), `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+await writeFile(
+  join(root, "robots.txt"),
+  `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`,
+);
 const css = files.find((file) => /\/assets\/app-[^/]+\.css$/.test(file));
 if (!css) throw new Error("App stylesheet missing");
 await writeFile(
@@ -52,11 +60,21 @@ await writeFile(
 );
 
 const clean = (html: string) => html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
-const documents = new Map(await Promise.all([...pages].map(async ([path, file]) => [path, clean(await readFile(file, "utf8"))] as const)));
+const documents = new Map(
+  await Promise.all(
+    [...pages].map(async ([path, file]) => [path, clean(await readFile(file, "utf8"))] as const),
+  ),
+);
 const errors: string[] = [];
 for (const [path, html] of documents) {
-  for (const required of ['rel="canonical"', 'hreflang="en"', 'hreflang="fr"', 'property="og:title"']) {
-    if (!html.toLowerCase().includes(required.toLowerCase())) errors.push(`${path}: missing ${required}`);
+  for (const required of [
+    'rel="canonical"',
+    'hreflang="en"',
+    'hreflang="fr"',
+    'property="og:title"',
+  ]) {
+    if (!html.toLowerCase().includes(required.toLowerCase()))
+      errors.push(`${path}: missing ${required}`);
   }
   for (const match of html.matchAll(/<(?:a|link)\b[^>]*?\bhref="([^"<>]+)"/g)) {
     const href = match[1].replaceAll("&amp;", "&");
@@ -68,10 +86,16 @@ for (const [path, html] of documents) {
     if (!destination) {
       const problem = target.match(/^(\/fr)?\/problems\/([a-z0-9-]+)$/);
       if (problem) {
-        if (!documents.get(`${problem[1] ?? ""}/docs/spec/payments-api`)?.includes(`id="${problem[2]}"`)) errors.push(`${path}: missing problem ${href}`);
+        if (
+          !documents
+            .get(`${problem[1] ?? ""}/docs/spec/payments-api`)
+            ?.includes(`id="${problem[2]}"`)
+        )
+          errors.push(`${path}: missing problem ${href}`);
         continue;
       }
-      if (!files.includes(join(root, decodeURIComponent(target)))) errors.push(`${path}: missing link ${href}`);
+      if (!files.includes(join(root, decodeURIComponent(target))))
+        errors.push(`${path}: missing link ${href}`);
     } else if (url.hash) {
       const id = decodeURIComponent(url.hash.slice(1));
       if (!destination.includes(`id="${id}"`)) errors.push(`${path}: missing anchor ${href}`);
@@ -86,7 +110,8 @@ for (const [path, html] of documents) {
       .map((match) => match[1])
       .sort()
       .join(",");
-  if (french && ruleIds(html) !== ruleIds(french)) errors.push(`${path}: English/French rule IDs differ`);
+  if (french && ruleIds(html) !== ruleIds(french))
+    errors.push(`${path}: English/French rule IDs differ`);
 }
 const HTML_ENTITIES: Record<string, string> = {
   amp: "&",
@@ -97,9 +122,15 @@ const HTML_ENTITIES: Record<string, string> = {
   "#39": "'",
   nbsp: " ",
 };
-const decode = (value: string) => value.replace(/&([a-z0-9#]+);/gi, (entity, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? entity);
+const decode = (value: string) =>
+  value.replace(
+    /&([a-z0-9#]+);/gi,
+    (entity, name: string) => HTML_ENTITIES[name.toLowerCase()] ?? entity,
+  );
 const meta = (html: string, property: string) => {
-  const found = html.match(new RegExp(`<meta[^>]*(?:property|name)="${property}"[^>]*content="([^"]*)"`));
+  const found = html.match(
+    new RegExp(`<meta[^>]*(?:property|name)="${property}"[^>]*content="([^"]*)"`),
+  );
   return found ? decode(found[1]) : undefined;
 };
 const sectionOf = (path: string) => {
@@ -114,11 +145,22 @@ await Promise.all(
     const title = meta(html, "og:title")?.replace(/ \| OpenFSP$/, "");
     if (!image || !title) return void errors.push(`${path}: missing og:image or og:title`);
     const file = join(root, new URL(image).pathname);
-    await renderOgImage({ path, title, description: meta(html, "og:description") ?? "", section: sectionOf(path) }, file);
+    await renderOgImage(
+      { path, title, description: meta(html, "og:description") ?? "", section: sectionOf(path) },
+      file,
+    );
     files.push(file);
   }),
 );
-for (const asset of ["og/index.png", "og/fr.png", "404.html", "robots.txt", "sitemap.xml", "api/search-index/en", "api/search-index/fr"]) {
+for (const asset of [
+  "og/index.png",
+  "og/fr.png",
+  "404.html",
+  "robots.txt",
+  "sitemap.xml",
+  "api/search-index/en",
+  "api/search-index/fr",
+]) {
   if (!(await Bun.file(join(root, asset)).exists())) errors.push(`Missing artifact: ${asset}`);
 }
 if (errors.length) throw new Error([...new Set(errors)].join("\n"));
@@ -127,4 +169,6 @@ for (const file of [...files, join(root, "sitemap.xml"), join(root, "404.html")]
     await writeFile(`${file}.gz`, gzipSync(await readFile(file), { level: 9 }));
   }
 }
-console.log(`Static publishing validated: ${pages.size} pages, bilingual sitemap, 404, assets, internal links and anchors; gzip files generated.`);
+console.log(
+  `Static publishing validated: ${pages.size} pages, bilingual sitemap, 404, assets, internal links and anchors; gzip files generated.`,
+);

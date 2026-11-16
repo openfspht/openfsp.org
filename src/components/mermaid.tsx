@@ -1,7 +1,16 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 
-const TOKENS = ["background", "foreground", "card", "muted", "muted-foreground", "border", "primary", "primary-foreground"] as const;
+const TOKENS = [
+  "background",
+  "foreground",
+  "card",
+  "muted",
+  "muted-foreground",
+  "border",
+  "primary",
+  "primary-foreground",
+] as const;
 type Palette = Record<(typeof TOKENS)[number], string>;
 
 function toHex(color: string, context: CanvasRenderingContext2D) {
@@ -15,7 +24,12 @@ function toHex(color: string, context: CanvasRenderingContext2D) {
 function readPalette(): Palette {
   const context = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
   const style = getComputedStyle(document.documentElement);
-  return Object.fromEntries(TOKENS.map((token) => [token, toHex(style.getPropertyValue(`--color-fd-${token}`).trim(), context)])) as Palette;
+  return Object.fromEntries(
+    TOKENS.map((token) => [
+      token,
+      toHex(style.getPropertyValue(`--color-fd-${token}`).trim(), context),
+    ]),
+  ) as Palette;
 }
 
 function useThemeKey() {
@@ -129,12 +143,17 @@ export function Mermaid({ chart }: { chart: string }) {
             : "The diagram could not be displayed. Its source is available below."}
         </p>
       ) : svg ? (
-        <div className="not-prose flex justify-center overflow-x-auto [&_svg]:h-auto" dangerouslySetInnerHTML={{ __html: svg }} />
+        <div
+          className="not-prose flex justify-center overflow-x-auto [&_svg]:h-auto"
+          dangerouslySetInnerHTML={{ __html: svg }}
+        />
       ) : (
         <div className="h-40 motion-safe:animate-pulse rounded-xl bg-fd-muted/50" aria-hidden />
       )}
       <details className="mt-3 text-sm">
-        <summary className="cursor-pointer text-fd-muted-foreground">{fr ? "Source textuelle du schéma" : "Diagram text source"}</summary>
+        <summary className="cursor-pointer text-fd-muted-foreground">
+          {fr ? "Source textuelle du schéma" : "Diagram text source"}
+        </summary>
         <pre className="overflow-x-auto whitespace-pre-wrap">{chart}</pre>
       </details>
     </div>

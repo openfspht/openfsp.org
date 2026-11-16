@@ -14,7 +14,8 @@ export const Route = createRootRoute({
       { title: "OpenFSP" },
       {
         name: "description",
-        content: "An open payment standard for Haiti, with one API shared by merchant applications and every payment service provider.",
+        content:
+          "An open payment standard for Haiti, with one API shared by merchant applications and every payment service provider.",
       },
       { property: "og:site_name", content: "OpenFSP" },
       { property: "og:type", content: "website" },
@@ -46,7 +47,11 @@ function Document({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body className="flex min-h-screen flex-col">
-        <RootProvider key={locale} i18n={i18nProvider(translations, locale)} search={{ options: { type: "static", api: `/api/search-index/${locale}` } }}>
+        <RootProvider
+          key={locale}
+          i18n={i18nProvider(translations, locale)}
+          search={{ options: { type: "static", api: `/api/search-index/${locale}` } }}
+        >
           {children}
         </RootProvider>
         <Scripts />

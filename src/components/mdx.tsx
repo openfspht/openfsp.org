@@ -13,7 +13,9 @@ function contentText(children: ReactNode): string {
   return Children.toArray(children)
     .map((child): string => {
       if (typeof child === "string" || typeof child === "number") return String(child);
-      return isValidElement<{ children?: ReactNode }>(child) ? contentText(child.props.children) : "";
+      return isValidElement<{ children?: ReactNode }>(child)
+        ? contentText(child.props.children)
+        : "";
     })
     .join("");
 }
@@ -24,7 +26,8 @@ function AccessibleCodeBlock(props: CodeBlockProps) {
   return (
     <CodeBlock {...props} viewportProps={{ "aria-labelledby": id }}>
       <span id={id} className="sr-only">
-        {props.title ?? `${codeLabel[asLocale(lang)]}${contentText(props.children).trim().split("\n")[0].slice(0, 100)}`}
+        {props.title ??
+          `${codeLabel[asLocale(lang)]}${contentText(props.children).trim().split("\n")[0].slice(0, 100)}`}
       </span>
       <Pre>{props.children}</Pre>
     </CodeBlock>

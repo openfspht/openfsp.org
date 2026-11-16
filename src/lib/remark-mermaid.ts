@@ -10,7 +10,9 @@ function toMermaid(node: Code): RootContent {
 }
 
 function walk(parent: Parent) {
-  parent.children = parent.children.map((child) => (child.type === "code" && child.lang === "mermaid" ? toMermaid(child) : child)) as Parent["children"];
+  parent.children = parent.children.map((child) =>
+    child.type === "code" && child.lang === "mermaid" ? toMermaid(child) : child,
+  ) as Parent["children"];
   for (const child of parent.children) if ("children" in child) walk(child as Parent);
 }
 

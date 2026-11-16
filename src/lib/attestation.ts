@@ -42,7 +42,10 @@ function object(value: unknown): value is ObjectValue {
 }
 
 function strings(value: unknown, fields: string[]): boolean {
-  return object(value) && fields.every((field) => value[field] === undefined || typeof value[field] === "string");
+  return (
+    object(value) &&
+    fields.every((field) => value[field] === undefined || typeof value[field] === "string")
+  );
 }
 
 function isPayload(value: unknown): value is AttestationPayload {
@@ -60,7 +63,12 @@ function isPayload(value: unknown): value is AttestationPayload {
     if (!object(value.verdicts)) return false;
     const { core, profiles } = value.verdicts;
     if (core !== undefined && typeof core !== "string" && !strings(core, ["verdict"])) return false;
-    if (profiles !== undefined && (!Array.isArray(profiles) || !profiles.every((profile) => strings(profile, ["capability", "name", "verdict"])))) return false;
+    if (
+      profiles !== undefined &&
+      (!Array.isArray(profiles) ||
+        !profiles.every((profile) => strings(profile, ["capability", "name", "verdict"])))
+    )
+      return false;
   }
   return value.type === ATTESTATION_TYPE;
 }
@@ -80,7 +88,9 @@ function decodeText(segment: string): string {
 function snakeCaseKeys(value: unknown): boolean {
   if (Array.isArray(value)) return value.every(snakeCaseKeys);
   if (!object(value)) return true;
-  return Object.entries(value).every(([key, item]) => !/[A-Z]/.test(key) && (key === "configuration" || snakeCaseKeys(item)));
+  return Object.entries(value).every(
+    ([key, item]) => !/[A-Z]/.test(key) && (key === "configuration" || snakeCaseKeys(item)),
+  );
 }
 
 async function readLimited(response: Response, limit: number): Promise<string | undefined> {
@@ -127,7 +137,14 @@ function validatorUrl(value: unknown): URL | undefined {
   try {
     const url = new URL(value);
     const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
-    if ((url.protocol !== "https:" && !(url.protocol === "http:" && loopback)) || url.username || url.password || url.search || url.hash) return;
+    if (
+      (url.protocol !== "https:" && !(url.protocol === "http:" && loopback)) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    )
+      return;
     if (url.pathname !== "/") return;
     return url;
   } catch {
@@ -135,10 +152,19 @@ function validatorUrl(value: unknown): URL | undefined {
   }
 }
 
-export async function verifyAttestation(jws: string, validator: string, report?: string): Promise<Verification> {
-  if (jws.length > MAX_ATTESTATION_SIZE || (report !== undefined && new TextEncoder().encode(report).length > MAX_REPORT_SIZE)) return { error: "size" };
+export async function verifyAttestation(
+  jws: string,
+  validator: string,
+  report?: string,
+): Promise<Verification> {
+  if (
+    jws.length > MAX_ATTESTATION_SIZE ||
+    (report !== undefined && new TextEncoder().encode(report).length > MAX_REPORT_SIZE)
+  )
+    return { error: "size" };
   const segments = jws.trim().split(".");
-  if (segments.length !== 3 || segments.some((segment) => !/^[A-Za-z0-9_-]+$/.test(segment))) return { error: "format" };
+  if (segments.length !== 3 || segments.some((segment) => !/^[A-Za-z0-9_-]+$/.test(segment)))
+    return { error: "format" };
   let header: unknown;
   let decoded: Json;
   let payloadText: string;
@@ -193,16 +219,34 @@ export async function verifyAttestation(jws: string, validator: string, report?:
   if (!matching.length) return { error: "unknownKey", kid: header.kid };
   if (matching.length !== 1) return { error: "keys" };
   const jwk = matching[0];
-  if (typeof jwk.x !== "string" || (jwk.kty !== undefined && jwk.kty !== "OKP") || (jwk.crv !== undefined && jwk.crv !== "Ed25519")) return { error: "keys" };
+  if (
+    typeof jwk.x !== "string" ||
+    (jwk.kty !== undefined && jwk.kty !== "OKP") ||
+    (jwk.crv !== undefined && jwk.crv !== "Ed25519")
+  )
+    return { error: "keys" };
   let signatureValid: boolean;
   try {
-    const key = await crypto.subtle.importKey("jwk", { kty: "OKP", crv: "Ed25519", x: jwk.x }, { name: "Ed25519" }, false, ["verify"]);
-    signatureValid = await crypto.subtle.verify({ name: "Ed25519" }, key, base64url(segments[2]), new TextEncoder().encode(`${segments[0]}.${segments[1]}`));
+    const key = await crypto.subtle.importKey(
+      "jwk",
+      { kty: "OKP", crv: "Ed25519", x: jwk.x },
+      { name: "Ed25519" },
+      false,
+      ["verify"],
+    );
+    signatureValid = await crypto.subtle.verify(
+      { name: "Ed25519" },
+      key,
+      base64url(segments[2]),
+      new TextEncoder().encode(`${segments[0]}.${segments[1]}`),
+    );
   } catch {
     return { error: "crypto" };
   }
 
-  const issuerMatches = validatorUrl(payload.issuer)?.origin === url.origin && validatorUrl(document.issuer)?.origin === url.origin;
+  const issuerMatches =
+    validatorUrl(payload.issuer)?.origin === url.origin &&
+    validatorUrl(document.issuer)?.origin === url.origin;
   const issued = payload.issued_at ? Date.parse(payload.issued_at) : NaN;
   const issuedAtValid = Number.isFinite(issued) && issued <= Date.now() + CLOCK_SKEW_MS;
   const keyStatus = typeof jwk.status === "string" ? jwk.status : undefined;
@@ -210,7 +254,8 @@ export async function verifyAttestation(jws: string, validator: string, report?:
   let digestMatches: boolean | undefined;
   if (report !== undefined) {
     try {
-      digestMatches = (await sha256Hex(canonical(JSON.parse(report) as Json))) === payload.report?.digest;
+      digestMatches =
+        (await sha256Hex(canonical(JSON.parse(report) as Json))) === payload.report?.digest;
     } catch {
       return { error: "report" };
     }

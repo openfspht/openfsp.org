@@ -60,7 +60,9 @@ function Card({ page }: { page: OgPage }) {
       <div style={{ display: "flex", height: 14, backgroundColor: INK }}>
         <div style={{ width: 220, height: 14, backgroundColor: ACCENT }} />
       </div>
-      <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, padding: "64px 88px 56px" }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", flexGrow: 1, padding: "64px 88px 56px" }}
+      >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <img src={logo} width={278} height={50} />
           {page.section ? (
@@ -120,7 +122,9 @@ function Card({ page }: { page: OgPage }) {
             fontSize: 24,
           }}
         >
-          <div style={{ display: "flex", fontWeight: 500 }}>openfsp.org{page.path === "/" ? "" : page.path}</div>
+          <div style={{ display: "flex", fontWeight: 500 }}>
+            openfsp.org{page.path === "/" ? "" : page.path}
+          </div>
           <div style={{ display: "flex", color: MUTED }}>Apache-2.0</div>
         </div>
       </div>

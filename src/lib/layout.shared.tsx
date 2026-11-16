@@ -18,7 +18,13 @@ export function baseOptions(locale: Locale): BaseLayoutProps {
       title: (
         <>
           <img src="/openfsp-mark.svg" alt="" width={22} height={22} className="dark:hidden" />
-          <img src="/openfsp-mark-inverse.svg" alt="" width={22} height={22} className="hidden dark:block" />
+          <img
+            src="/openfsp-mark-inverse.svg"
+            alt=""
+            width={22}
+            height={22}
+            className="hidden dark:block"
+          />
           <span className="text-[1.05rem] font-bold tracking-tight">OpenFSP</span>
         </>
       ),

@@ -110,7 +110,8 @@ export const homeCopy = {
       link: "Périmètre et phases",
     },
     footer: {
-      description: "Une norme ouverte entre applications marchandes et fournisseurs de services de paiement.",
+      description:
+        "Une norme ouverte entre applications marchandes et fournisseurs de services de paiement.",
       docs: "Documentation",
       project: "Projet",
       source: "Code source",

@@ -7,7 +7,8 @@ export const Route = createFileRoute("/api/search-index/$lang")({
   server: {
     handlers: {
       GET: ({ params }) => {
-        if (params.lang !== "en" && params.lang !== "fr") return new Response("Not found", { status: 404 });
+        if (params.lang !== "en" && params.lang !== "fr")
+          return new Response("Not found", { status: 404 });
         return servers[params.lang].staticGET();
       },
     },
