@@ -42,8 +42,9 @@ docker run -d -p 8080:8080 ghcr.io/openfspht/openfsp.org:latest
 A static site served by unprivileged nginx on port 8080, for `linux/amd64` and `linux/arm64`. `/health` answers `ok`.
 Terminate TLS in front of it.
 
-Merging the release pull request tags a version and publishes `ghcr.io/openfspht/openfsp.org:<version>` and `latest`.
-To rebuild a tag, run the **Release** workflow by hand with that tag.
+Merging the release pull request tags a version, publishes `ghcr.io/openfspht/openfsp.org:<version>` and `latest`, then
+calls the Coolify deploy webhook (`COOLIFY_WEBHOOK` and `COOLIFY_TOKEN` secrets). To rebuild and redeploy a tag, run the
+**Release** workflow by hand with that tag.
 
 ## License
 
