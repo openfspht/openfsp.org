@@ -17,6 +17,7 @@ export default defineConfig({
       "bun.lock",
       ".impeccable",
       "content",
+      "CHANGELOG.md",
     ],
   },
   lint: {
