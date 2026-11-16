@@ -154,7 +154,7 @@ Colors come from the brand (`art/BRAND.md`): Ink for links and the primary fill,
 - The home and the documentation share the `--color-fd-*` tokens in `src/styles/app.css`, in light and dark: `background` for the page and the nav, `card` for panels, `border` for rules, `muted-foreground` for secondary text, `primary` for links and the accent line of the headline.
 - Every neutral is a pure grey (chroma 0), in light and dark: grounds, cards, borders and text. Green comes only from `primary`, amber only from the accent.
 - Code panels are near-black grey in both modes, from `--code-*` tokens on `.landing`, with a darker `--code-bg` and `--code-line` under `.dark`.
-- Amber marks decoration only: the simulated and pending dots, the current phase rule, the last headline line (`brand-accent-deep` on light, at display size only; `brand-accent` on dark). Never amber body text on a light ground.
+- Amber marks decoration only: the current phase rule, the last headline line (`brand-accent-deep` on light, at display size only; `brand-accent` on dark). Never amber body text on a light ground.
 - The home primary button is a neutral `foreground` fill. The documentation `.btn-primary` uses `primary`.
 - State: a written label always accompanies color. Pending mixes `brand-accent` into the background; paid uses `success`.
 
@@ -162,7 +162,7 @@ Colors come from the brand (`art/BRAND.md`): Ink for links and the primary fill,
 
 Inter Variable throughout. Monospace only for code, JSON, HTTP lines and commands. Body text is 15 to 17px, captions 13px, never smaller. Headline tracking stays at -0.03em or looser.
 
-The home content width is 1184px with 40px side margins, 16px below 768px. Sections in order: a two-column hero (three-line headline, lead, simulated request and payment), the target architecture (application, OpenFSP contract, providers) with three steps, the HTTP contract with a webhook payload, a short gateway note linking to its page, the local quickstart, and the project status with phases 1 and 2. Layout lives in Tailwind utilities in `src/components/home.tsx`; `app.css` keeps only tokens, the code panel, buttons and states.
+The home content width is 1184px with 40px side margins, 16px below 768px. Sections in order: a single-column hero (three-line headline, lead, two actions), the target architecture (application, OpenFSP contract, providers) with three steps, the HTTP contract with a webhook payload, a short gateway note linking to its page, the local quickstart, and the project status with phases 1 and 2. Layout lives in Tailwind utilities in `src/components/home.tsx`; `app.css` keeps only tokens, the code panel, buttons and states.
 
 Share cards are the one exception to Inter throughout: `scripts/og.tsx` renders a 1200x630 card per page and locale at build time, with the CDN logo, the page title in Space Grotesk (the wordmark's face, from `art/BRAND.md`), its description in Inter, the page URL, an ink top band with an accent segment, on light grey.
 
@@ -180,7 +180,7 @@ The gateway page contains deployment, adapters and implementation details. Keep 
 
 ## Interaction
 
-The home contract example is explicitly simulated. Choosing a provider updates the request body and resets the example; confirmation updates the displayed payment and event. It sends no payment request. The preview is an explanatory UI, not a screenshot of a deployed console.
+The home page has no simulated payment: the standard is shown by its contract, a webhook payload and the target architecture.
 
 There are no autoplay diagrams or carousels on the home page. Buttons provide brief press feedback only when reduced motion is not requested. Keyboard focus remains visible, copy failures have a readable fallback, and live status changes are announced. No interaction should depend on color alone.
 

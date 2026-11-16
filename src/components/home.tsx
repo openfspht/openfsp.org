@@ -2,18 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { Header } from "fumadocs-ui/layouts/home/slots/header";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Building2,
-  Check,
-  CheckCircle2,
-  Copy,
-  RotateCcw,
-  ShieldCheck,
-  Terminal,
-  Webhook,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Building2, Check, Copy, Terminal, Webhook } from "lucide-react";
 import { localePath, type Locale } from "@/lib/i18n";
 import { CODE_REPO, baseOptions } from "@/lib/layout.shared";
 import { homeCopy } from "@/lib/home-copy";
@@ -29,7 +18,7 @@ const DEMO_COMMANDS = [
 const EVENT_BODY = `{
   "type": "payment.succeeded",
   "data": {
-    "id": "mock_pay_184",
+    "id": "pay_06GY9B9M4HVRD2XV5QQ81Z4WAW",
     "reference": "ORDER-184",
     "status": "succeeded",
     "amount": { "amount": 125000, "currency": "HTG" }
@@ -98,134 +87,6 @@ function CopyButton({
         {message}
       </span>
     </span>
-  );
-}
-
-function PaymentExample({ locale, t }: { locale: Locale; t: CopyText }) {
-  const [provider, setProvider] = useState<"moncash" | "natcash">("moncash");
-  const [paid, setPaid] = useState(false);
-  const request = `{
-  "reference": "ORDER-184",
-  "amount": { "amount": 125000, "currency": "HTG" },
-  "provider": "mock_${provider}",
-  "return_url": "https://shop.example/return"
-}`;
-  return (
-    <figure className="min-w-0" aria-label={t.demo.simulation}>
-      <figcaption className={`mb-3 flex items-center gap-2 text-[13px] ${muted}`}>
-        <span className="size-1.5 rounded-full bg-brand-accent" aria-hidden />
-        {t.demo.simulation}
-      </figcaption>
-      <div className="code-window">
-        <div className="flex items-center gap-3 border-b border-(--code-line) px-4 py-3 font-mono text-[13px]">
-          <span className="font-bold text-(--code-muted)">POST</span>
-          <span>/v1/payments</span>
-          <CopyButton
-            value={request}
-            label={t.demo.copy}
-            copied={t.demo.copied}
-            error={t.demo.copyError}
-          />
-        </div>
-        <div className="flex gap-1.5 px-4 pt-3.5 pb-1" role="group" aria-label={t.demo.provider}>
-          {(["moncash", "natcash"] as const).map((item) => (
-            <button
-              key={item}
-              type="button"
-              className="provider-option"
-              aria-pressed={provider === item}
-              onClick={() => {
-                setProvider(item);
-                setPaid(false);
-              }}
-            >
-              {item === "moncash" ? "MonCash" : "NatCash"}
-              <span className="text-[13px] text-(--code-muted)">mock</span>
-            </button>
-          ))}
-        </div>
-        <pre className="code-block" role="region" tabIndex={0} aria-label={t.demo.request}>
-          <HighlightedCode code={request} />
-        </pre>
-        <div className="flex items-center gap-1.5 border-t border-(--code-line) px-4 py-2.5 font-mono text-[13px] text-(--code-muted)">
-          <ShieldCheck size={14} aria-hidden />
-          <span className="truncate">Idempotency-Key: order-184</span>
-        </div>
-      </div>
-      <div className={`flex h-7 justify-center ${muted}`} aria-hidden>
-        <ArrowRight size={15} className="rotate-90 self-center" />
-      </div>
-      <div className="rounded-xl border border-fd-border bg-fd-background">
-        <div className="flex items-center justify-between gap-3 border-b border-fd-border px-4 py-3 text-sm">
-          <span className="flex items-center gap-2 font-semibold">
-            <img src="/openfsp-mark.svg" alt="" width={17} height={17} className="dark:hidden" />
-            <img
-              src="/openfsp-mark-inverse.svg"
-              alt=""
-              width={17}
-              height={17}
-              className="hidden dark:block"
-            />
-            {t.demo.response}
-          </span>
-          <span className={`text-[13px] tabular-nums ${muted}`}>payments / 184</span>
-        </div>
-        <div className="flex items-center justify-between gap-3 px-4 py-5 sm:px-5">
-          <div>
-            <span className={`mb-1 block text-sm ${muted}`}>{t.demo.order}</span>
-            <strong className="text-2xl font-semibold tracking-[-0.03em] tabular-nums">
-              {t.demo.amount}
-            </strong>
-          </div>
-          <span className={`payment-status ${paid ? "is-paid" : ""}`} role="status">
-            {paid ? (
-              <Check size={14} aria-hidden />
-            ) : (
-              <span className="size-1.5 rounded-full bg-brand-accent" aria-hidden />
-            )}
-            {paid ? t.demo.paid : t.demo.pending}
-          </span>
-        </div>
-        <div className="flex items-center gap-3 px-4 pb-4 sm:px-5">
-          <span
-            className="grid size-6 shrink-0 place-items-center rounded-full border border-fd-border bg-fd-card text-fd-primary"
-            aria-hidden
-          >
-            {paid ? <Check size={13} /> : <span className="size-1 rounded-full bg-fd-primary" />}
-          </span>
-          <div className="flex min-w-0 flex-col gap-0.5 text-sm">
-            <span>{paid ? t.demo.webhook : t.demo.sent}</span>
-            <code className={`text-[13px] ${muted}`}>
-              {paid ? "payment.succeeded" : "payment.created"}
-            </code>
-          </div>
-          <span className={`ml-auto text-[13px] tabular-nums ${muted}`}>
-            {paid ? "14:32:09" : "14:32:07"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between gap-3 rounded-b-xl border-t border-fd-border bg-fd-card px-4 py-3">
-          <span className={`text-sm ${muted}`}>{paid ? t.demo.done : t.demo.waiting}</span>
-          <button
-            type="button"
-            className="text-link shrink-0 cursor-pointer text-sm"
-            onClick={() => setPaid(!paid)}
-          >
-            {paid ? <RotateCcw size={14} aria-hidden /> : <ArrowRight size={14} aria-hidden />}
-            {paid ? t.demo.reset : t.demo.confirm}
-          </button>
-        </div>
-      </div>
-      <div className={`mt-2.5 flex items-center justify-between gap-3 text-[13px] ${muted}`}>
-        <span>{t.demo.notice}</span>
-        <a
-          href={`${localePath(locale, "/docs/spec/payments-api")}#5.1`}
-          aria-label={t.demo.responseLink}
-          className="inline-flex p-1.5"
-        >
-          <ArrowUpRight size={15} aria-hidden />
-        </a>
-      </div>
-    </figure>
   );
 }
 
@@ -301,7 +162,7 @@ export function Home({ locale }: { locale: Locale }) {
       githubUrl={undefined}
     >
       <div>
-        <section className="landing-container grid items-center gap-10 py-10 sm:py-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16 lg:py-20">
+        <section className="landing-container py-14 sm:py-16 lg:py-24">
           <div className="min-w-0">
             <h1 className="hero-title">
               {t.headline.map((line, index) => (
@@ -318,7 +179,7 @@ export function Home({ locale }: { locale: Locale }) {
               ))}
             </h1>
             <p
-              className={`mt-6 max-w-[30rem] text-base/7 text-pretty md:text-[17px]/[1.75] ${muted}`}
+              className={`mt-6 max-w-[38rem] text-base/7 text-pretty md:text-[18px]/[1.75] ${muted}`}
             >
               {t.lead}
             </p>
@@ -338,7 +199,6 @@ export function Home({ locale }: { locale: Locale }) {
               ))}
             </ul>
           </div>
-          <PaymentExample locale={locale} t={t} />
         </section>
 
         <section
@@ -402,10 +262,6 @@ export function Home({ locale }: { locale: Locale }) {
               <HighlightedCode code={EVENT_BODY} />
             </pre>
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-(--code-line) px-4 py-3.5 text-[13px] text-(--code-muted) sm:px-5">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 size={14} aria-hidden />
-                {t.demo.simulation}
-              </span>
               <Link
                 to={href("/docs/spec/webhooks")}
                 className="flex items-center gap-1.5 hover:underline"
@@ -454,8 +310,8 @@ export function Home({ locale }: { locale: Locale }) {
               <CopyButton
                 value={DEMO_COMMANDS.join("\n")}
                 label={t.start.copy}
-                copied={t.demo.copied}
-                error={t.demo.copyError}
+                copied={t.start.copied}
+                error={t.start.copyError}
               />
             </div>
             <pre
