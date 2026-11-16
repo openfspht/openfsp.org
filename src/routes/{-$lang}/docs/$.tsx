@@ -1,5 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { staticFunctionMiddleware } from "@tanstack/start-static-server-functions";
 import {
   TOC,
   TOCPopover,
@@ -25,6 +26,7 @@ import { pageHead } from "@/lib/seo";
 const EDIT_BASE = "https://github.com/openfspht/openfsp.org/blob/main/content/docs";
 
 const loadPage = createServerFn({ method: "GET" })
+  .middleware([staticFunctionMiddleware])
   .validator((params: { slugs: string[]; lang: string }) => params)
   .handler(async ({ data: { slugs, lang } }) => {
     const page = source.getPage(slugs, lang);
