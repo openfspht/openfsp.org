@@ -264,6 +264,7 @@ describe("attestation verification", () => {
       report: { digest: "wrong" },
     });
     expect(await verifyAttestation(jws, "http://remote.example")).toEqual({ error: "validator" });
+    expect(await verifyAttestation(jws, "http://localhost:5176")).toEqual({ error: "validator" });
     expect(
       await verifyAttestation("a".repeat(1024 * 1024 + 1), "https://validate.openfsp.org"),
     ).toEqual({ error: "size" });

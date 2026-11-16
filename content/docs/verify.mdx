@@ -5,7 +5,7 @@ description: Check the signature of a conformance attestation, and optionally th
 
 A conformance run signs an attestation: a compact JWS (EdDSA) whose payload records the target, the suite version and the verdicts. The signature is checked here, in your browser, against the key the validator publishes at `/.well-known/openfsp-validator`. The report file is optional: when given, its SHA-256 digest (RFC 8785 canonical JSON) is compared with the one in the attestation.
 
-The public validator is not online yet. For an attestation produced locally, enter the address of your validator: `http://localhost:5176` with `make demo`, `http://localhost:8095` with `make dev`.
+The form checks against the public validator, [validate.openfsp.org](https://validate.openfsp.org). For an attestation from another validator, enter its HTTPS address.
 
 <AttestationVerifier locale="en" />
 

@@ -3,6 +3,7 @@ export const MAX_ATTESTATION_SIZE = 1024 * 1024;
 export const MAX_REPORT_SIZE = 10 * 1024 * 1024;
 export const MAX_KEYS_SIZE = 1024 * 1024;
 export const CLOCK_SKEW_MS = 5 * 60 * 1000;
+export const PUBLIC_VALIDATOR = "https://validate.openfsp.org";
 const ACTIVE_KEY = "active";
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
@@ -136,15 +137,7 @@ function validatorUrl(value: unknown): URL | undefined {
   if (typeof value !== "string") return;
   try {
     const url = new URL(value);
-    const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
-    if (
-      (url.protocol !== "https:" && !(url.protocol === "http:" && loopback)) ||
-      url.username ||
-      url.password ||
-      url.search ||
-      url.hash
-    )
-      return;
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return;
     if (url.pathname !== "/") return;
     return url;
   } catch {

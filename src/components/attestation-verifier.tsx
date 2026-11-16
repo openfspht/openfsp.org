@@ -2,6 +2,7 @@ import { useState, type SubmitEvent } from "react";
 import {
   MAX_ATTESTATION_SIZE,
   MAX_REPORT_SIZE,
+  PUBLIC_VALIDATOR,
   verifyAttestation,
   type Verification,
 } from "@/lib/attestation";
@@ -27,8 +28,6 @@ const copy = {
       "Choose a validator you trust. A valid signature proves what its key signed, not that the validator is independent or that a provider endorses OpenFSP.",
     unauthenticated:
       "Unverified data: run verdicts are hidden because the signature, issuer, key status or issue date check failed.",
-    local:
-      "For a local demo use http://localhost:5176; development uses http://localhost:8095. The public validator is not deployed yet.",
     key: "Key",
     digest: "Report digest",
     valid: "valid",
@@ -43,8 +42,7 @@ const copy = {
     profiles: "Profiles",
     errors: {
       size: "Attestation limit: 1 MiB. Report limit: 10 MiB.",
-      validator:
-        "Enter an HTTPS validator origin, or HTTP on localhost for development, without a path or credentials.",
+      validator: "Enter an HTTPS validator origin, without a path or credentials.",
       unexpected: "Verification could not finish. Check the inputs and try again.",
       format: "This text is not a compact JWS (three base64url segments).",
       type: "This JWS is not an OpenFSP conformance attestation.",
@@ -74,8 +72,6 @@ const copy = {
       "Choisissez un validateur de confiance. Une signature valide prouve ce que sa clé a signé, pas l’indépendance du validateur ni le soutien d’un opérateur à OpenFSP.",
     unauthenticated:
       "Données non authentifiées : les verdicts sont masqués car la signature, l’identité de l’émetteur, le statut de la clé ou la date d’émission n’a pas été vérifié.",
-    local:
-      "Démo locale : http://localhost:5176 ; développement : http://localhost:8095. Le validateur public n’est pas encore déployé.",
     key: "Clé",
     digest: "Empreinte du rapport",
     valid: "valide",
@@ -90,8 +86,7 @@ const copy = {
     profiles: "Profils",
     errors: {
       size: "Limite : 1 Mio pour l’attestation, 10 Mio pour le rapport.",
-      validator:
-        "Indiquez l’origine HTTPS du validateur, ou HTTP sur localhost en développement, sans chemin ni identifiants.",
+      validator: "Indiquez l’origine HTTPS du validateur, sans chemin ni identifiants.",
       unexpected: "La vérification n’a pas abouti. Vérifiez les données et réessayez.",
       format: "Ce texte n'est pas un JWS compact (trois segments base64url).",
       type: "Ce JWS n'est pas une attestation de conformité OpenFSP.",
@@ -246,11 +241,10 @@ export function AttestationVerifier({ locale = "en" }: { locale?: "en" | "fr" })
             name="validator"
             type="url"
             required
-            placeholder="https://validator.example"
+            defaultValue={PUBLIC_VALIDATOR}
             className={`${field} font-mono`}
           />
         </label>
-        <p className="text-sm leading-relaxed text-fd-muted-foreground">{t.local}</p>
         <div className="space-y-1.5 text-sm">
           <span className="block font-medium">{t.report}</span>
           <label className="flex items-center gap-3">
