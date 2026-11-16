@@ -112,13 +112,17 @@ export function AttestationVerifier({ locale = "en" }: { locale?: "en" | "fr" })
     setResult(undefined);
     const data = new FormData(event.currentTarget);
     const file = data.get("report");
+    const field = (name: string) => {
+      const value = data.get(name);
+      return typeof value === "string" ? value : "";
+    };
     try {
-      if (String(data.get("jws") ?? "").length > MAX_ATTESTATION_SIZE || (file instanceof File && file.size > MAX_REPORT_SIZE)) {
+      if (field("jws").length > MAX_ATTESTATION_SIZE || (file instanceof File && file.size > MAX_REPORT_SIZE)) {
         setError(t.errors.size);
         return;
       }
       const report = file instanceof File && file.size > 0 ? await file.text() : undefined;
-      const outcome = await verifyAttestation(String(data.get("jws") ?? "").trim(), String(data.get("validator") ?? ""), report);
+      const outcome = await verifyAttestation(field("jws").trim(), field("validator"), report);
       if ("error" in outcome) setError(t.errors[outcome.error].replace("{kid}", "kid" in outcome ? outcome.kid : ""));
       else setResult(outcome);
     } catch {
