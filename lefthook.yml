@@ -1,0 +1,14 @@
+pre-commit:
+  commands:
+    format:
+      glob: "*.{ts,tsx,css,json,mjs,md,mdx,yml}"
+      run: bunx prettier --check {staged_files}
+pre-push:
+  commands:
+    check:
+      run: bun run check && bun test
+commit-msg:
+  commands:
+    conventional:
+      run: >-
+        grep -Eq '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?!?: .+' {1}
