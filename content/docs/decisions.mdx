@@ -3,11 +3,11 @@ title: Decisions
 description: The design choices behind the OpenFSP specification, the reason for each and the alternatives I set aside.
 ---
 
-I propose these choices for discussion. Each section states one decision, why I chose it, what I set aside, and the chapter it governs.
+I propose these choices for discussion. The numbered proposals link to the rules they govern.
 
 ## 0001. Architecture and scope
 
-I propose an open specification and, around it, a gateway self-hosted by the merchant as the reference implementation, a mock server and thin client libraries. The gateway and the mock server are written in Kotlin and Spring Boot. The project holds no funds, runs no hosted service and does no clearing. Each provider announces its own capabilities and nothing is emulated; an adapter translates without inventing a capability, a terminal state or an unverifiable retry.
+I propose a shared contract that each provider can expose in its own system. The Kotlin, Java and TypeScript SDKs call that contract. I also supply a gateway for the existing MonCash and NatCash APIs, a simulator and a conformance suite. Adapters translate exchanges without inventing capabilities, terminal states or retries after an unknown outcome.
 
 I chose this mainly because integrations drop from `providers × applications` to `providers + applications`, and a native provider needs no translation.
 
@@ -37,7 +37,7 @@ Governs: [Lifecycle](/docs/spec/lifecycle).
 
 ## 0004. Payments API
 
-The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed catalogue of 19 problem types. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations. When the gateway translates into an existing API, it derives the provider's order identifier from the `reference` by HMAC.
+The API is HTTPS under `/v1`, JSON, RFC 9457 errors with `retryable` and `effect`, and a closed problem catalogue. The base capability `payments` creates, reads by `id` or `reference`, and synchronizes. The client names the provider. `Idempotency-Key` is required on idempotent operations. When the gateway translates into an existing API, it derives the provider's order identifier from the `reference` by HMAC.
 
 These operations are what a merchant actually needs (create, read back after an outage by its own reference, force a lookup when a callback is lost), and each provider can implement them.
 
@@ -57,7 +57,7 @@ Governs: [Capabilities](/docs/spec/capabilities).
 
 ## 0006. Webhooks and event delivery
 
-Delivery is at least once and unordered, with a per-resource `sequence` and an `id` for deduplication. Each event is signed with RFC 9421 HTTP Message Signatures over Ed25519, with a 300 second freshness window and a nonce. The body is a full snapshot of the resource, there are five event types, and retries span seven attempts over 31 hours. Polling stays the recovery path.
+Delivery is at least once and unordered, with a per-resource `sequence` and an `id` for deduplication. Each event is signed with RFC 9421 HTTP Message Signatures over Ed25519, with a 300 second freshness window and a nonce. The body is a full snapshot of the resource, there are five event types, and retries follow a minimum schedule with jitter. Polling stays the recovery path.
 
 I chose a public-key signature because it lets a subscriber reject a forgery with a standard library and proves to a third party what the sender stated.
 
@@ -79,7 +79,7 @@ Governs: [Authentication](/docs/spec/authentication).
 
 Conformance is a triple: target (client, gateway, native provider), level and protocol version. Core is mandatory, then one profile per announced capability, with no partial pass and no ranking. Anyone can run the suite offline without modifying the implementation; the mock server plays three providers, `mock_openfsp`, `mock_moncash` and `mock_natcash`, through declared failure scenarios. The report is machine-readable and states its limits.
 
-Only a black-box test can check non-emulation, and audits under BRH Circulars 121 and 126 prescribe no benchmark.
+I use black-box scenarios to compare announced capabilities with observable behaviour. The report keeps untested obligations visible.
 
 Set aside: paid certification by the project, bronze to gold levels, a percentage score, provider sandboxes, scenarios chosen by amount, random failures and instrumentation.
 

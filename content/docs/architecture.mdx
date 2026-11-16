@@ -3,9 +3,9 @@ title: Standard architecture
 description: The merchant integration layer, shared contract, native adoption and design principles of OpenFSP.
 ---
 
-OpenFSP defines a contract between merchant applications and payment service providers. Its target architecture is distributed: each provider implements the protocol in its own system; each application uses the same contract, directly over HTTP or through a client library.
+OpenFSP sits between the merchant server and the payment provider. Each compatible provider exposes the same HTTP contract. The merchant chooses its provider and uses its own credentials, directly or through the Kotlin, Java and TypeScript SDKs.
 
-The transition implementation and its adapters are documented under [Transition gateway](/docs/gateway).
+The [gateway](/docs/gateway) translates that contract into MonCash and NatCash calls when the service’s API does not speak OpenFSP.
 
 ## The application-to-provider layer
 
@@ -74,17 +74,14 @@ OpenFSP, since only a switch lets a payer at provider A pay a merchant that acce
 
 ## Regulation
 
-Under the 2012 law, a financial institution receives funds from the public with an obligation to return them. A gateway receives no funds, and neither the
-OpenFSP publisher nor a merchant that deploys a gateway is covered by BRH circular 121. This reading holds under current law but is not settled, since the BRH
-can extend the law to similar activities. The `Payment` resource and the statements ([lifecycle 10](/docs/spec/lifecycle#10)) carry the data BRH circulars 121, 126 and 131 ask for;
-carrying that data does not attest that a deployment satisfies them.
+Protocol conformance is not regulatory compliance. Payment and statement data support reconciliation and audit; they do not establish that a deployment meets its operator’s obligations.
 
 ## Out of scope
 
 I explain this scope in [Decisions](/docs/decisions#0001). Lifting any of these limits requires a new decision.
 
 - OpenFSP does not hold, move or keep funds. A gateway instructs providers and is never a party to a transaction.
-- OpenFSP runs no hosted service. A hosted offer built on OpenFSP is the responsibility of its operator, under that operator's own regulatory obligations.
+- OpenFSP runs no hosted payment service. A hosted offer built on OpenFSP is the responsibility of its operator, under that operator's own regulatory obligations.
 - OpenFSP is not a licensed payment institution and replaces no license and no contract with a provider.
 - OpenFSP is not a switch, a clearing house or a settlement system.
 - OpenFSP does not certify providers.

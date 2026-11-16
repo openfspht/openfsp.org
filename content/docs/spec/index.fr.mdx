@@ -3,7 +3,7 @@ title: Conventions
 description: Mots-clés, vocabulaire et documents de la spécification.
 ---
 
-Voici les règles normatives que je propose pour OpenFSP. Les [décisions](/fr/docs/decisions) en donnent les raisons.
+Les règles normatives d'OpenFSP. Les [décisions](/fr/docs/decisions) expliquent la raison de chacune.
 
 ## Portée des termes
 
@@ -26,11 +26,11 @@ Le [guide opérateur natif](/fr/docs/native-operator) relie les chapitres aux t�
 
 | Terme        | Sens                                                                                                                                 |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| opérateur    | Service de paiement vers lequel la passerelle traduit (MonCash, NatCash), appelé « FSP » dans les circulaires de la BRH.             |
+| opérateur    | Service de paiement qui implémente OpenFSP ou auquel un adaptateur donne accès, comme MonCash ou NatCash. Appelé « FSP » dans les circulaires de la BRH.             |
 | passerelle   | Implémentation d'OpenFSP qui reçoit les requêtes des clients. Elle sert un seul marchand, à qui appartiennent toutes ses ressources. |
 | exploitant   | Qui déploie et administre une passerelle.                                                                                            |
-| client       | Application qui appelle la passerelle.                                                                                               |
-| abonné       | Point d'accès qui reçoit les webhooks d'une passerelle.                                                                              |
+| client       | Application qui appelle une API OpenFSP.                                                                                               |
+| abonné       | Point d’accès qui reçoit les événements OpenFSP.                                                                              |
 | vérificateur | Partie qui vérifie la signature d'un événement : abonné, auditeur ou bibliothèque.                                                   |
 | principal    | Identité authentifiée d'un client.                                                                                                   |
 

@@ -3,9 +3,9 @@ title: Implémenter OpenFSP côté opérateur
 description: Parcours de lecture, surface HTTP et vérification de conformité pour un fournisseur qui veut exposer OpenFSP nativement.
 ---
 
-Ce guide informatif s'adresse à un fournisseur de services de paiement qui veut exposer le contrat OpenFSP dans son propre système, sans la passerelle de référence. La [spécification](/fr/docs/spec) fait autorité ; ce parcours ne crée pas de nouvelles obligations.
+Implémentez le contrat OpenFSP dans votre système pour recevoir directement les demandes des applications marchandes. Les SDK Kotlin, Java et TypeScript appellent cette même API. Chaque marchand garde son compte, ses clés et son contrat chez vous.
 
-L'objectif est une connexion directe entre les applications marchandes et votre API, avec le même contrat HTTP, puis le même SDK. Chaque marchand conserve ses identifiants, sa configuration et sa relation contractuelle avec vous. Les fonctions disponibles restent celles que vous annoncez réellement.
+Cette page donne le plan de travail et les tests. Les obligations elles-mêmes sont dans la [spécification](/fr/docs/spec).
 
 ## Lire le contrat dans l'ordre
 
@@ -53,7 +53,7 @@ make simulator
 make validate-native
 ```
 
-La cible par défaut est `http://127.0.0.1:8090/mock_openfsp`. Le rapport est écrit dans `backend/validator/build/conformance-report-native.json`. La commande utilise les clés de test publiées par le simulateur et démarre le récepteur de webhooks de la suite sur le port 8098, valeur par défaut du Makefile (`VALIDATE_NATIVE_WEBHOOK_PORT`). Cette exécution ne lance pas la passerelle.
+La cible par défaut est `http://127.0.0.1:8090/mock_openfsp`. Le rapport est écrit dans `backend/validator/infrastructure/build/conformance-report-native.json`. La commande utilise les clés de test publiées par le simulateur et démarre le récepteur de webhooks de la suite sur le port 8098, valeur par défaut du Makefile (`VALIDATE_NATIVE_WEBHOOK_PORT`). Cette exécution ne lance pas la passerelle.
 
 Les [sources de l'opérateur natif simulé](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) et le [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) permettent de vérifier le comportement et la commande.
 
@@ -63,14 +63,14 @@ Préparez une instance de test dédiée, ses clés de test et les capacités que
 
 ```bash
 cd backend
-./gradlew :validator:cliJar
+./gradlew :validator:infrastructure:bootJar
 cd ..
 ```
 
 La commande suivante lance la suite contre votre instance. Remplacez `operator.example` et renseignez les clés de votre environnement de test :
 
 ```bash
-java -jar backend/validator/build/libs/openfsp-validate.jar \
+java -jar backend/validator/infrastructure/build/libs/app.jar validate \
   --target native-operator \
   --base-url https://operator.example \
   --api-key "$OPENFSP_NATIVE_TEST_KEY" \

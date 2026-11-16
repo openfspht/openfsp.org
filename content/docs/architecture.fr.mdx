@@ -3,9 +3,9 @@ title: Architecture de la norme
 description: La couche d'intégration marchande, le contrat commun, l'adoption native et les principes de conception d'OpenFSP.
 ---
 
-OpenFSP définit un contrat entre applications marchandes et fournisseurs de services de paiement. Son architecture cible est distribuée : chaque opérateur implémente le protocole dans son propre système ; chaque application utilise le même contrat, directement en HTTP ou par une bibliothèque cliente.
+OpenFSP se place entre le serveur marchand et l'opérateur de paiement. Chaque opérateur compatible expose le même contrat HTTP. Le marchand choisit son opérateur et utilise ses propres identifiants, directement ou avec les SDK Kotlin, Java et TypeScript.
 
-L'implémentation de transition et ses adaptateurs sont décrits dans [Passerelle de transition](/fr/docs/gateway).
+La [passerelle](/fr/docs/gateway) traduit ce contrat vers MonCash et NatCash lorsque l’API du service ne parle pas OpenFSP.
 
 ## Le segment application vers opérateur
 
@@ -74,17 +74,14 @@ complètent OpenFSP, car seul un commutateur permet à un payeur chez A de payer
 
 ## Cadre réglementaire
 
-La loi de 2012 définit l'institution financière par la réception de fonds du public avec obligation de restitution. Une passerelle ne reçoit aucun fonds, et ni
-l'éditeur d'OpenFSP ni le marchand qui déploie une passerelle ne relèvent de la circulaire BRH-121. Cette lecture vaut en l'état du droit mais n'est pas
-acquise, car la BRH peut étendre la loi aux activités assimilables. La ressource `Payment` et les relevés ([cycle de vie 10](/fr/docs/spec/lifecycle#10)) portent les données qu'exigent les
-circulaires BRH-121, 126 et 131 ; porter ces données n'atteste pas qu'un déploiement les respecte.
+La conformité au protocole n'est pas une conformité réglementaire. Les données du paiement et des relevés servent au rapprochement et à l’audit ; elles ne prouvent pas qu’un déploiement satisfait les obligations de son exploitant.
 
 ## Hors périmètre
 
 Je justifie ce cadrage dans les [décisions](/fr/docs/decisions#0001). Lever l'une de ces limites exige une nouvelle décision.
 
 - OpenFSP ne détient, ne déplace ni ne conserve de fonds. Une passerelle transmet des ordres aux opérateurs et n'est jamais partie à une transaction.
-- OpenFSP n'exploite aucun service hébergé. Une offre hébergée fondée sur OpenFSP relève de son exploitant et de ses propres obligations réglementaires.
+- OpenFSP n’exploite aucun service de paiement hébergé. Une offre hébergée fondée sur OpenFSP relève de son exploitant et de ses propres obligations réglementaires.
 - OpenFSP n'est pas un établissement de paiement agréé et ne remplace aucun agrément ni aucun contrat avec un opérateur.
 - OpenFSP n'est ni un commutateur, ni une chambre de compensation, ni un système de règlement.
 - OpenFSP ne certifie pas les opérateurs.

@@ -3,9 +3,9 @@ title: Implement OpenFSP as a provider
 description: Reading path, HTTP surface and conformance checks for a payment service provider implementing OpenFSP natively.
 ---
 
-This informative guide is for a payment service provider exposing the OpenFSP contract in its own system, without the reference gateway. The [specification](/docs/spec) is authoritative; this path creates no new requirements.
+Implement the OpenFSP contract in your system to receive requests directly from merchant applications. The Kotlin, Java and TypeScript SDKs call this same API. Each merchant keeps its account, keys and agreement with you.
 
-The goal is a direct connection between merchant applications and your API, over the same HTTP contract, then the same SDK. Each merchant keeps its credentials, configuration and agreement with you. Available functions remain those you actually announce.
+This page is the work plan and the tests. The requirements themselves are in the [specification](/docs/spec).
 
 ## Read the contract in order
 
@@ -53,7 +53,7 @@ make simulator
 make validate-native
 ```
 
-The default target is `http://127.0.0.1:8090/mock_openfsp`. The report is written to `backend/validator/build/conformance-report-native.json`. The command uses the simulator's published test keys and starts the suite's webhook receiver on port 8098, a Makefile default (`VALIDATE_NATIVE_WEBHOOK_PORT`). This run does not start the gateway.
+The default target is `http://127.0.0.1:8090/mock_openfsp`. The report is written to `backend/validator/infrastructure/build/conformance-report-native.json`. The command uses the simulator's published test keys and starts the suite's webhook receiver on port 8098, a Makefile default (`VALIDATE_NATIVE_WEBHOOK_PORT`). This run does not start the gateway.
 
 The [simulated native provider sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) let you inspect behavior and the command.
 
@@ -63,14 +63,14 @@ Prepare a dedicated test instance, test keys and the capabilities you intend to 
 
 ```bash
 cd backend
-./gradlew :validator:cliJar
+./gradlew :validator:infrastructure:bootJar
 cd ..
 ```
 
 The following runs the suite against your instance. Replace `operator.example`, and set the keys from your test environment:
 
 ```bash
-java -jar backend/validator/build/libs/openfsp-validate.jar \
+java -jar backend/validator/infrastructure/build/libs/app.jar validate \
   --target native-operator \
   --base-url https://operator.example \
   --api-key "$OPENFSP_NATIVE_TEST_KEY" \

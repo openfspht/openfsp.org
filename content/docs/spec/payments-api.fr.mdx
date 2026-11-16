@@ -3,11 +3,11 @@ title: API des paiements
 description: "Le contrat HTTP des paiements : ressource Payment, création, lecture, synchronisation et catalogue d'erreurs."
 ---
 
-Je justifie ces choix dans les [décisions](/fr/docs/decisions#0004).
+Je définis la création, la lecture et la synchronisation autour de la référence du marchand. Les erreurs distinguent un refus d’un effet inconnu, selon la [décision 0004](/fr/docs/decisions#0004).
 
 ## 1. Conventions HTTP
 
-Je fixe ces conventions pour tout point d'accès OpenFSP.
+Ces conventions valent pour tout point d'accès OpenFSP.
 
 **1.1.** HTTPS uniquement. La passerelle NE DOIT PAS servir l'API en HTTP clair hors d'un mode
 de développement explicite, qui DOIT être annoncé dans le journal de démarrage.

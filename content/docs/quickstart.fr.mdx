@@ -1,12 +1,13 @@
 ---
 title: Démarrage rapide
-description: Lancer la passerelle de référence, son serveur simulé et la suite de conformité depuis le dépôt openfsp.
+description: Installer un SDK marchand, simuler un paiement en local et tester la conformité.
 ---
 
-Toutes les commandes se lancent à la racine du dépôt [`openfsp`](https://github.com/openfspht/openfsp), qui réunit la passerelle de référence, le serveur simulé, la
-console d'administration, une boutique de démonstration et la suite de conformité. `make` seul liste les cibles.
+Testez un paiement OpenFSP sans compte marchand ni argent réel avec `make demo`. Les commandes ci-dessous se lancent à la racine du dépôt [`openfsp`](https://github.com/openfspht/openfsp).
 
-Un opérateur qui implémente la norme nativement n'a pas besoin de ces outils : commencez par le [parcours opérateur](/fr/docs/native-operator).
+Pour intégrer votre serveur marchand, utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) ou le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`) ; tous deux arrivent sur Maven Central et npm avec la version `0.1.0`. Configurez `OPENFSP_BASE_URL` et `OPENFSP_API_KEY`. Gardez cette clé côté serveur.
+
+Pour implémenter l’API chez un opérateur, suivez le [parcours opérateur](/fr/docs/native-operator). Le [validateur public](https://validate.openfsp.org) est aussi disponible.
 
 ## 1. Démonstration avec Docker
 
@@ -28,7 +29,7 @@ La cible lance `docker compose --profile demo up --build` et démarre :
 | Interface du validateur     | `http://localhost:5176` |
 | Boutique                    | `http://localhost:3000` |
 
-PostgreSQL, le serveur simulé et le service de validation tournent aussi, sans port fixe sur l'hôte. La console demande le jeton d'administration :
+Le simulateur écoute aussi sur `127.0.0.1:8090`. PostgreSQL et le service de validation tournent sans port hôte fixe. La console demande le jeton d'administration :
 `demo-admin-token`. Les clients découvrent les points d'accès sur `/.well-known/openfsp-configuration`.
 
 ### Premier paiement simulé
@@ -103,7 +104,7 @@ make validate              # terminal 3
 ```
 
 `make validate` émet par l'API d'administration les clés dont les scénarios ont besoin et enregistre un récepteur de webhooks sur le port 8099 le temps de
-l'exécution, puis les révoque et le retire. Le rapport est écrit dans `backend/validator/build/conformance-report.json`. Contre une passerelle lancée par
+l'exécution, puis les révoque et le retire. Le rapport est écrit dans `backend/validator/infrastructure/build/conformance-report.json`. Contre une passerelle lancée par
 `make gateway`, la cible signale l'absence des opérateurs de test et saute leurs scénarios.
 
 ## 5. Conformité d'un opérateur natif
@@ -115,6 +116,6 @@ make validate-native   # terminal 2
 
 `make validate-native` exécute la suite avec la cible `native-operator` contre `mock_openfsp`, l'opérateur natif du serveur simulé, sur
 `http://127.0.0.1:8090/mock_openfsp` (`VALIDATE_NATIVE_BASE_URL`), avec les clés qu'il publie. Le rapport est écrit dans
-`backend/validator/build/conformance-report-native.json`.
+`backend/validator/infrastructure/build/conformance-report-native.json`.
 
 Le [guide opérateur](/fr/docs/native-operator) explique comment lire le rapport.

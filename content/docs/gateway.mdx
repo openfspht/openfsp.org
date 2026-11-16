@@ -5,7 +5,7 @@ description: Why this implementation exists, its deployment and adapters for exi
 
 The gateway is one implementation of the OpenFSP standard. It translates the contract into the existing MonCash and NatCash APIs so merchants can use it today, before providers implement it natively.
 
-The design of the standard is on the [architecture](/docs/architecture) page; I explain the choices in the [decisions](/docs/decisions). This page documents the implementation and its adapters, with its numbered adapter rules. Technology choices below describe the implementation, not protocol requirements.
+Each provider has its own adapter. The [architecture](/docs/architecture) defines the shared contract; the numbered rules below constrain the adapters. It runs on Kotlin, Spring Boot and PostgreSQL.
 
 ## Components
 
@@ -13,7 +13,7 @@ The design of the standard is on the [architecture](/docs/architecture) page; I 
 | ----------------- | ------------------------------------------------------------- | ------------------------------------------------------- |
 | Gateway           | Merchant-hosted, translates existing APIs.                    | Kotlin and Spring Boot, PostgreSQL.                     |
 | Simulator         | Reproduces providers and failures, including a native target. | Kotlin and Spring Boot.                                 |
-| TypeScript client | Client library for the contract.                              | TypeScript, in the repository.                          |
+| SDKs | Client libraries and testing tools. | Kotlin, Java and TypeScript, in the `openfsp` repository. |
 | Conformance suite | Reproducible tests and reports.                               | Kotlin engine and CLI, YAML scenarios and JSON schemas. |
 
 The [project status](/docs/status) gives the state of each component.

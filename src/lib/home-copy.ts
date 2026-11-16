@@ -4,7 +4,7 @@ export const homeCopy = {
   fr: {
     title: "Une norme ouverte pour les paiements en Haïti",
     headline: ["Une norme.", "Une API.", "Un seul SDK."],
-    lead: "OpenFSP propose une norme ouverte entre les applications marchandes et les fournisseurs de services de paiement en Haïti. Chaque opérateur qui l’implémente expose la même API. Les SDK, prochaine étape du projet, permettront au marchand de les intégrer tous avec une seule bibliothèque.",
+    lead: "OpenFSP définit une API commune aux services de paiement en Haïti. Le marchand garde le même code chez les opérateurs compatibles. Les SDK Kotlin, Java et TypeScript sont disponibles.",
     primary: "Lire la norme",
     secondary: "Explorer l’API",
     facts: ["Apache-2.0", "Implémentable par tous", "Paiements en HTG"],
@@ -30,7 +30,7 @@ export const homeCopy = {
       copyError: "Copie indisponible, sélectionnez le code.",
     },
     native: {
-      title: "À terme, chaque opérateur implémente la norme dans son propre système.",
+      title: "Une API que chaque opérateur peut implémenter.",
       caption: "Architecture visée",
       app: "Application marchande",
       contract: "SDK OpenFSP",
@@ -56,7 +56,7 @@ export const homeCopy = {
     },
     contract: {
       title: "Le contrat tient en quelques requêtes HTTP et des webhooks signés.",
-      body: "La spécification décrit ce que votre application envoie, ce qu’elle reçoit et comment réagir quand le réseau coupe. Chaque règle a son propre lien.",
+      body: "Créez un paiement, retrouvez-le après une coupure et vérifiez les notifications reçues.",
       links: [
         {
           title: "API des paiements",
@@ -80,7 +80,7 @@ export const homeCopy = {
     },
     gateway: {
       title: "En attendant l’adoption, une passerelle traduit le contrat.",
-      body: "Aucun opérateur local n’implémente encore OpenFSP. La passerelle de référence reçoit les demandes au format de la norme et les traduit vers les API actuelles de MonCash et NatCash, ce qui permet d’essayer le contrat dès maintenant.",
+      body: "La passerelle de référence reçoit les demandes OpenFSP et les traduit vers les API de MonCash et NatCash. Le marchand peut ainsi utiliser la norme avec ces services dès maintenant.",
       link: "Pourquoi la passerelle existe",
     },
     start: {
@@ -92,15 +92,15 @@ export const homeCopy = {
     },
     status: {
       title: "Où en est le projet",
-      body: "La spécification, les implémentations de référence et la suite de conformité sont publiées et éprouvées avec des opérateurs simulés. Aucun opérateur ni régulateur n’a encore adopté la norme.",
+      body: "La spécification, les SDK et la suite de conformité sont prêts. Le validateur est accessible sur validate.openfsp.org. La démo tourne en local avec des opérateurs simulés.",
       phases: [
         {
           title: "Phase 1, en cours",
           body: "Contrat d’intégration marchande, implémentations de référence et conformité reproductible.",
         },
         {
-          title: "Prochaine étape, les SDK",
-          body: "Des bibliothèques clientes publiées, d’abord Kotlin pour la JVM, puis TypeScript, qui appellent la même API chez chaque opérateur.",
+          title: "SDK disponibles",
+          body: "Kotlin, Java et TypeScript, avec leurs outils de test. Maven Central et npm à partir de la version 0.1.0.",
         },
         {
           title: "Phase 2, envisagée",
@@ -127,7 +127,7 @@ export const homeCopy = {
   en: {
     title: "An open standard for payments in Haiti",
     headline: ["One standard.", "One API.", "One SDK."],
-    lead: "OpenFSP proposes an open standard between merchant applications and payment service providers in Haiti. Every provider that implements it exposes the same API. SDKs, the project’s next step, will let a merchant integrate all of them with a single library.",
+    lead: "OpenFSP defines a shared API for payment services in Haiti. Merchants keep the same integration code across compatible providers. Kotlin, Java and TypeScript SDKs are available.",
     primary: "Read the standard",
     secondary: "Explore the API",
     facts: ["Apache-2.0", "Open to any implementer", "Payments in HTG"],
@@ -153,7 +153,7 @@ export const homeCopy = {
       copyError: "Copy unavailable, select the code.",
     },
     native: {
-      title: "In the long run, each provider implements the standard in its own system.",
+      title: "One API that each provider can implement.",
       caption: "Target architecture",
       app: "Merchant application",
       contract: "OpenFSP SDK",
@@ -179,7 +179,7 @@ export const homeCopy = {
     },
     contract: {
       title: "The contract is a few HTTP requests and signed webhooks.",
-      body: "The specification defines what your application sends, what it receives and what to do when the connection drops. Every rule has its own link.",
+      body: "Create a payment, recover it after a lost connection and verify incoming notifications.",
       links: [
         {
           title: "Payments API",
@@ -203,7 +203,7 @@ export const homeCopy = {
     },
     gateway: {
       title: "Until providers adopt it, a gateway translates the contract.",
-      body: "No local provider implements OpenFSP yet. The reference gateway accepts requests in the standard’s format and translates them into the current MonCash and NatCash APIs, so you can try the contract today.",
+      body: "The reference gateway accepts OpenFSP requests and translates them into the MonCash and NatCash APIs. Merchants can use the standard with these services today.",
       link: "Why the gateway exists",
     },
     start: {
@@ -215,15 +215,15 @@ export const homeCopy = {
     },
     status: {
       title: "Where the project stands",
-      body: "The specification, reference implementations and conformance suite are published and exercised against simulated providers. No provider or regulator has adopted the standard yet.",
+      body: "The specification, SDKs and conformance suite are ready. The validator runs at validate.openfsp.org. The demo runs locally with simulated providers.",
       phases: [
         {
           title: "Phase 1, in progress",
           body: "Merchant integration contract, reference implementations and reproducible conformance.",
         },
         {
-          title: "Next step, SDKs",
-          body: "Published client libraries, Kotlin for the JVM first, then TypeScript, that call the same API at every provider.",
+          title: "SDKs available",
+          body: "Kotlin, Java and TypeScript, with testing tools. Maven Central and npm from release 0.1.0.",
         },
         {
           title: "Phase 2, envisaged",

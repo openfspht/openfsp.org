@@ -1,21 +1,22 @@
 ---
 title: État du projet
-description: L'état de chaque composant d'OpenFSP, disponible ou prévu.
+description: Composants publiés, outils locaux et limites des vérifications.
 ---
 
-Aucun opérateur n'implémente encore OpenFSP nativement. Les [phases du projet](/fr/docs#phases) indiquent la suite.
+Chaque ligne dit ce qui existe et contre quoi c'est testé. Une simulation ne dit rien d'un opérateur réel, et un essai en bac à sable ne dit rien de la production.
 
-| Composant                                       | État                                                                        | Lien                                                                                                  |
-| ----------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Spécification, version du protocole `0.1.0`     | Disponible                                                                  | [Spécification](/fr/docs/spec)                                                                        |
-| Schémas JSON de conformité                      | Disponibles                                                                 | [`conformance/schemas`](https://github.com/openfspht/openfsp/tree/main/conformance/schemas)           |
-| Description OpenAPI                             | Prévue                                                                      | [API des paiements](/fr/docs/spec/payments-api)                                                       |
-| SDK Kotlin pour la JVM                          | Prochaine étape                                                             | [API des paiements](/fr/docs/spec/payments-api)                                                       |
-| SDK TypeScript                                  | Prochaine étape, après Kotlin ; client disponible dans le dépôt, non publié | [`frontend/packages/client`](https://github.com/openfspht/openfsp/tree/main/frontend/packages/client) |
-| SDK PHP et Python                               | Plus tard                                                                   | [API des paiements](/fr/docs/spec/payments-api)                                                       |
-| Serveur simulé, opérateur natif `mock_openfsp`  | Disponible                                                                  | [Opérateur natif](/fr/docs/native-operator)                                                           |
-| Suite de conformité et CLI                      | Disponibles, cibles `gateway` et `native-operator`                          | [Démarrage rapide](/fr/docs/quickstart#4)                                                             |
-| Passerelle de transition, MonCash et NatCash    | Disponible, testée contre les simulateurs ; points de bac à sable ouverts   | [Passerelle](/fr/docs/gateway), [points à vérifier](/fr/docs/gateway#8.5)                             |
-| Console d'administration et boutique de démo    | Disponibles                                                                 | [Démarrage rapide](/fr/docs/quickstart#1)                                                             |
-| Attestations signées et vérificateur navigateur | Disponibles ; le validateur public n'est pas encore en ligne                | [Vérifier une attestation](/fr/docs/verify)                                                           |
-| Remboursement, capture, annulation, proximité   | Noms de capacité réservés, non spécifiés                                    | [Registre des capacités](/fr/docs/spec/capabilities#2)                                                |
+| Composant | État | Lien |
+| --- | --- | --- |
+| Spécification `0.1.0` | Disponible | [Règles](/fr/docs/spec) |
+| Contrat OpenAPI | Disponible | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
+| SDK Kotlin et Java | Terminé, avec `openfsp-sdk-testing` ; paquet Maven Central `org.openfsp:openfsp-sdk` à partir de la version `0.1.0` | [Sources et utilisation](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) |
+| SDK TypeScript | Terminé, avec `@openfsp/sdk/testing` ; paquet npm `@openfsp/sdk` à partir de la version `0.1.0` | [Sources et utilisation](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) |
+| Schémas et scénarios de conformité | Disponibles | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
+| Validateur public | En ligne | [validate.openfsp.org](https://validate.openfsp.org) |
+| Simulateur et opérateur natif `mock_openfsp` | Disponibles en local | [Tests natifs](/fr/docs/native-operator) |
+| Passerelle MonCash et NatCash | Disponible ; simulations et création/lecture en bac à sable documentées | [Adaptateurs et points à vérifier](/fr/docs/gateway#8.5) |
+| Console et boutique de démonstration | Disponibles en local avec `make demo` | [Démo](/fr/docs/quickstart#1) |
+| Attestations signées | Disponibles ; elles consignent une exécution | [Vérification](/fr/docs/verify) |
+| Remboursement, capture, annulation, proximité | Noms réservés, opérations non spécifiées | [Capacités](/fr/docs/spec/capabilities#2) |
+
+Aucun opérateur n'a encore adopté OpenFSP, et aucun régulateur ne l'a examinée. Les [phases](/fr/docs#phases) décrivent le périmètre actuel et les extensions envisagées.

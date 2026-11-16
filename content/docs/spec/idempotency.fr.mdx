@@ -3,7 +3,7 @@ title: Idempotence
 description: "Clés de requête, rejeu et résultats indéterminés : les règles d'idempotence du contrat de paiement."
 ---
 
-Je justifie ces choix dans les [décisions](/fr/docs/decisions#0004).
+J’impose une clé de requête stable pour qu’une réponse perdue ne provoque pas un second paiement. La reprise après un résultat indéterminé découle de la [décision 0004](/fr/docs/decisions#0004).
 
 ## 1. Opérations concernées
 

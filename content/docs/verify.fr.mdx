@@ -3,7 +3,7 @@ title: Vérifier une attestation
 description: Vérifier dans le navigateur la signature d'une attestation de conformité et, si vous le fournissez, l'empreinte de son rapport.
 ---
 
-Une exécution de la suite signe une attestation : un JWS compact (EdDSA) dont la charge utile consigne la cible, la version de la suite et les verdicts. La signature est vérifiée ici, dans votre navigateur, avec la clé que le validateur publie à `/.well-known/openfsp-validator`. Le rapport est facultatif : s'il est fourni, son empreinte SHA-256 (JSON canonique RFC 8785) est comparée à celle de l'attestation.
+Le validateur peut signer les résultats d’une exécution terminée sous forme d’attestation : un JWS compact (EdDSA) dont la charge utile consigne la cible, la version de la suite et les verdicts. La signature est vérifiée ici, dans votre navigateur, avec la clé que le validateur publie à `/.well-known/openfsp-validator`. Le rapport est facultatif : s'il est fourni, son empreinte SHA-256 (JSON canonique RFC 8785) est comparée à celle de l'attestation.
 
 Le formulaire vérifie auprès du validateur public, [validate.openfsp.org](https://validate.openfsp.org). Pour une attestation d'un autre validateur, indiquez son adresse HTTPS.
 

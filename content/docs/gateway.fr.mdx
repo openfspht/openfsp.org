@@ -5,7 +5,7 @@ description: Pourquoi cette implémentation existe, son déploiement et ses adap
 
 La passerelle est une implémentation de la norme OpenFSP. Elle traduit le contrat vers les API existantes de MonCash et NatCash pour que les marchands puissent l'utiliser dès aujourd'hui, avant que les opérateurs l'implémentent nativement.
 
-La conception de la norme est décrite dans [l'architecture](/fr/docs/architecture) ; je justifie mes choix dans les [décisions](/fr/docs/decisions). Cette page documente l'implémentation et ses adaptateurs, avec ses règles d'adaptateur numérotées. Les technologies citées ci-dessous décrivent l'implémentation, pas des exigences du protocole.
+Chaque opérateur a son adaptateur. L’[architecture](/fr/docs/architecture) définit le contrat commun ; les règles numérotées ci-dessous encadrent les adaptateurs. Elle tourne sur Kotlin, Spring Boot et PostgreSQL.
 
 ## Composants
 
@@ -13,7 +13,7 @@ La conception de la norme est décrite dans [l'architecture](/fr/docs/architectu
 | ------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
 | Passerelle          | Hébergée par le marchand, traduit les API existantes.        | Kotlin et Spring Boot, PostgreSQL.                    |
 | Serveur simulé      | Reproduit opérateurs et défaillances, dont une cible native. | Kotlin et Spring Boot.                                |
-| Client TypeScript   | Bibliothèque cliente du contrat.                             | TypeScript, dans le dépôt.                            |
+| SDK | Bibliothèques clientes et outils de test. | Kotlin, Java et TypeScript, dans le dépôt `openfsp`. |
 | Suite de conformité | Tests et rapports reproductibles.                            | Moteur et CLI Kotlin, scénarios YAML et schémas JSON. |
 
 [L'état du projet](/fr/docs/status) donne l'état de chaque composant.

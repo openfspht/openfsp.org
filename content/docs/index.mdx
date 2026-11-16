@@ -1,51 +1,42 @@
 ---
 title: Introduction
-description: The interoperability standard, native adoption, transition tools and project phases.
+description: What OpenFSP is, who it is for and where to start.
 ---
 
-OpenFSP is a proposed open interoperability standard between merchant applications and payment service providers. The goal is for each provider to implement it natively, so merchants use the same SDK and HTTP contract with every compatible provider.
+OpenFSP is an open standard for accepting payments in Haiti. A merchant application integrates it once and works with every payment provider that implements it. A provider implements it once and becomes reachable by every application built on it.
 
-The standard is the deliverable. The reference gateway translates the OpenFSP contract into the existing MonCash and NatCash APIs, so the contract is usable today.
-
-## The problem
-
-Without a shared contract, each of `L` merchant applications integrates each of `O` providers: `O × L` integrations. With OpenFSP, each application speaks one
-protocol and each provider implements that contract once: `O + L`. The benefit depends on adoption.
-
-## The target architecture
-
-With native adoption, the application's SDK connects directly to each compatible provider. Each relationship keeps its credentials, configuration and actual provider capabilities.
+The standard is a small HTTP contract: create a payment, read it, synchronize it with the provider, discover what the provider supports, and receive signed events. Each merchant keeps its own agreement and credentials with each provider.
 
 ```mermaid
 flowchart LR
     A["Merchant application"] --> S["OpenFSP SDK"]
-    S --> P1["Native provider A"]
-    S --> P2["Native provider B"]
+    S --> P1["Provider A"]
+    S --> P2["Provider B"]
 ```
 
-The interoperability addressed here is merchant application integration; the standard does not transfer, clear or settle funds between providers.
+Without a shared contract, `L` applications each integrate `O` providers: `O × L` integrations. With OpenFSP, it is `O + L`.
 
-## Choose a path
+OpenFSP covers how a merchant application talks to a provider. It does not move, clear or settle funds between providers.
 
-- **Payment service provider:** [implement OpenFSP natively](/docs/native-operator), read the contract and test your own target.
-- **Merchant developer:** read the [API](/docs/spec/payments-api), discover your counterparty's capabilities and call it over HTTP, then through the SDK once it is published.
-- **Design reader:** read the [decisions](/docs/decisions) and the [project status](/docs/status).
-- **Explore the tools:** run the [local demo](/docs/quickstart) with the [transition gateway](/docs/gateway).
+## Start here
+
+- **Merchant developer.** Use the [Kotlin and Java SDK](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) or the [TypeScript SDK](https://github.com/openfspht/openfsp/tree/main/sdks/typescript), or call the [API](/docs/spec/payments-api) over HTTP. The [quickstart](/docs/quickstart) runs a full payment on your machine.
+- **Payment provider.** [Implement OpenFSP](/docs/native-operator) in your own system and test it with the [conformance suite](/docs/spec/conformance).
+- **MonCash or NatCash today.** Neither speaks OpenFSP yet. The [gateway](/docs/gateway), which you host, translates the contract to their current APIs.
+- **Reviewer.** Read the [specification](/docs/spec), the [decisions](/docs/decisions) behind it and the [project status](/docs/status).
+
+## What exists
+
+- The specification, version `0.1.0`, in English and French.
+- SDKs for Kotlin, Java and TypeScript, each with a testing module.
+- A simulator for MonCash, NatCash and a native OpenFSP provider, failures included.
+- A conformance suite, a public validator and signed attestations of each run.
+- The gateway for MonCash and NatCash.
+
+Everything is under the Apache-2.0 license. The [project status](/docs/status) gives the detail.
 
 ## Phases
 
-**Phase 1, in progress.** Establish the merchant integration contract, reference tools and reproducible verification. The gateway and adapters make the contract usable with existing APIs; the simulator and conformance suite also exercise a native provider without a gateway.
+**Phase 1, in progress.** The merchant integration contract, its tools and reproducible conformance.
 
-**Next step, SDKs.** Publish client libraries, Kotlin for the JVM first, then TypeScript from the client in the repository. PHP and Python come later. They call the same API at every provider.
-
-**Phase 2, envisaged.** Extend the standard to proximity payments using a short-lived, single-use token presented by the customer. This is outside the current version.
-
-The [project status](/docs/status) gives the state of each component. The specification and the reference implementation are under the Apache-2.0 license.
-
-## Next
-
-- [Specification](/docs/spec): normative rules and vocabulary.
-- [Standard architecture](/docs/architecture): contract, native adoption and invariants.
-- [Decisions](/docs/decisions): the reasons for the design choices.
-- [Transition gateway](/docs/gateway): this tool's role and adapter details.
-- [Quickstart](/docs/quickstart): run the demonstration tools and suite.
+**Phase 2, considered.** In-person payments with a short-lived, single-use token shown by the customer. Not part of the current version.

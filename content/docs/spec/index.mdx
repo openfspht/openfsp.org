@@ -3,7 +3,7 @@ title: Conventions
 description: Keywords, vocabulary and the documents that make up the specification.
 ---
 
-These are the normative rules I propose for OpenFSP. The [decisions](/docs/decisions) give my reasons for them.
+The normative rules of OpenFSP. The [decisions](/docs/decisions) explain why each one exists.
 
 ## Scope of terms
 
@@ -23,11 +23,11 @@ The [native provider guide](/docs/native-operator) connects chapters to implemen
 
 | Term       | Meaning                                                                                                      |
 | ---------- | ------------------------------------------------------------------------------------------------------------ |
-| provider   | Payment service the gateway translates to (MonCash, NatCash). Called FSP in BRH circulars.                   |
+| provider   | Payment service implementing OpenFSP or reached through an adapter, such as MonCash or NatCash. Called FSP in BRH circulars.                   |
 | gateway    | Implementation of OpenFSP that receives client requests. It serves one merchant, who owns all its resources. |
 | operator   | Whoever deploys and runs a gateway.                                                                          |
-| client     | Application that calls the gateway.                                                                          |
-| subscriber | Endpoint that receives a gateway's webhooks.                                                                 |
+| client     | Application that calls an OpenFSP API.                                                                          |
+| subscriber | Endpoint that receives OpenFSP events.                                                                 |
 | verifier   | Party that checks an event signature: subscriber, auditor or library.                                        |
 | principal  | Authenticated identity of a client.                                                                          |
 

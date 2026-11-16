@@ -3,7 +3,7 @@ title: Idempotency
 description: "Request keys, replay and indeterminate outcomes: idempotency rules for the payment contract."
 ---
 
-I explain these choices in [Decisions](/docs/decisions#0004).
+I require a stable request key so a lost response does not cause a second payment. Recovery after an unknown outcome follows [decision 0004](/docs/decisions#0004).
 
 ## 1. Covered operations
 
