@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "index",
+    "architecture",
+    "native-operator",
+    "spec",
+    "decisions",
+    "---Référence---",
+    "registry",
+    "status",
+    "---Implémentations et outils---",
+    "gateway",
+    "quickstart",
+    "verify"
+  ]
+}

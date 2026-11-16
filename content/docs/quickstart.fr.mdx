@@ -1,0 +1,120 @@
+---
+title: Démarrage rapide
+description: Lancer la passerelle de référence, son serveur simulé et la suite de conformité depuis le dépôt openfsp.
+---
+
+Toutes les commandes se lancent à la racine du dépôt [`openfsp`](https://github.com/openfspht/openfsp), qui réunit la passerelle de référence, le serveur simulé, la
+console d'administration, une boutique de démonstration et la suite de conformité. `make` seul liste les cibles.
+
+Un opérateur qui implémente la norme nativement n'a pas besoin de ces outils : commencez par le [parcours opérateur](/fr/docs/native-operator).
+
+## 1. Démonstration avec Docker
+
+Il faut Git, Make et Docker avec le plugin Compose (`docker compose version`). Le premier lancement télécharge les images et compile les services ; prévoyez plusieurs minutes et une connexion Internet.
+
+```bash
+git clone https://github.com/openfspht/openfsp.git
+cd openfsp
+make demo
+```
+
+La cible lance `docker compose --profile demo up --build` et démarre :
+
+| Service                     | Adresse                 |
+| --------------------------- | ----------------------- |
+| Passerelle                  | `http://localhost:8080` |
+| Console                     | `http://localhost:5173` |
+| Interface du serveur simulé | `http://localhost:5175` |
+| Interface du validateur     | `http://localhost:5176` |
+| Boutique                    | `http://localhost:3000` |
+
+PostgreSQL, le serveur simulé et le service de validation tournent aussi, sans port fixe sur l'hôte. La console demande le jeton d'administration :
+`demo-admin-token`. Les clients découvrent les points d'accès sur `/.well-known/openfsp-configuration`.
+
+### Premier paiement simulé
+
+1. Attendez que les services soient prêts, puis ouvrez la [boutique locale](http://localhost:3000).
+2. Ajoutez un produit au panier et choisissez un opérateur portant la mention « (mock) ».
+3. Suivez le parcours proposé par le simulateur. Aucun compte marchand ni argent réel n'est nécessaire.
+4. Ouvrez la [console locale](http://localhost:5173) avec `demo-admin-token` et retrouvez le paiement. Dans le scénario de succès, son état passe de `pending` à `succeeded`.
+
+Les ports de cette démo Docker diffèrent de ceux du mode développement ci-dessous.
+
+Pour arrêter la démo, utilisez Ctrl+C, puis :
+
+```bash
+docker compose --profile demo down
+```
+
+Cette commande conserve les volumes de données. Si un service ne démarre pas, consultez `docker compose --profile demo logs --tail=100`. Si un port est occupé, arrêtez le processus qui l'utilise avant de relancer `make demo`. Vérifiez que Docker est lancé et que les images peuvent être téléchargées.
+
+## 2. Développement
+
+Il faut le JDK 25, Bun et un PostgreSQL sur `127.0.0.1:5432`, avec un rôle `openfsp` propriétaire d'une base `openfsp`. `DB_NAME`, `DB_USER` et `DB_PASSWORD`
+permettent de les changer.
+
+```bash
+make install
+make dev
+```
+
+`make dev` ouvre un terminal à onglets, un processus par onglet, connecte la console avec `demo-admin-token` et fournit à la boutique la clé d'API de
+démonstration.
+
+| Processus                   | Port                |
+| --------------------------- | ------------------- |
+| Passerelle                  | 8080                |
+| Serveur simulé              | 8090                |
+| Validateur                  | 8095                |
+| Console                     | 5173                |
+| Boutique                    | 5174 (API sur 3000) |
+| Interface du serveur simulé | 5175                |
+| Interface du validateur     | 5176                |
+
+`make check` compile, analyse, vérifie les types et teste le backend et le frontend.
+
+## 3. Bacs à sable des opérateurs
+
+`make dev-sandbox` démarre les mêmes processus, sans le validateur, avec une passerelle branchée sur les bacs à sable de MonCash et NatCash. Les identifiants
+viennent de `.env.sandbox` à la racine du dépôt (ignoré par git), un `NOM=valeur` par ligne, ou du shell :
+
+```bash
+MONCASH_CLIENT_ID=
+MONCASH_CLIENT_SECRET=
+NATCASH_USERNAME=
+NATCASH_PASSWORD=
+NATCASH_PARTNER_CODE=
+NATCASH_PRIVATE_KEY=
+NATCASH_FUNCTION_CODE=
+```
+
+La passerelle refuse de démarrer si l'une de ces variables est vide. Mener un paiement à terme demande un portefeuille de bac à sable, et les rappels des
+opérateurs exigent une passerelle joignable depuis Internet.
+
+## 4. Conformité d'une passerelle
+
+Démarrez le serveur simulé, puis la passerelle avec son profil `conformance`, qui ajoute les opérateurs de test `mock_no_source`, `mock_statement_only` et
+`mock_unreachable`, et lancez la suite :
+
+```bash
+make simulator             # terminal 1, port 8090
+make gateway-conformance   # terminal 2, port 8080
+make validate              # terminal 3
+```
+
+`make validate` émet par l'API d'administration les clés dont les scénarios ont besoin et enregistre un récepteur de webhooks sur le port 8099 le temps de
+l'exécution, puis les révoque et le retire. Le rapport est écrit dans `backend/validator/build/conformance-report.json`. Contre une passerelle lancée par
+`make gateway`, la cible signale l'absence des opérateurs de test et saute leurs scénarios.
+
+## 5. Conformité d'un opérateur natif
+
+```bash
+make simulator         # terminal 1
+make validate-native   # terminal 2
+```
+
+`make validate-native` exécute la suite avec la cible `native-operator` contre `mock_openfsp`, l'opérateur natif du serveur simulé, sur
+`http://127.0.0.1:8090/mock_openfsp` (`VALIDATE_NATIVE_BASE_URL`), avec les clés qu'il publie. Le rapport est écrit dans
+`backend/validator/build/conformance-report-native.json`.
+
+Le [guide opérateur](/fr/docs/native-operator) explique comment lire le rapport.

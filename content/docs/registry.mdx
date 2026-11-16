@@ -1,0 +1,33 @@
+---
+title: Provider registry
+description: Provider identifiers in the OpenFSP contract and their assignment, independent of integration mode.
+---
+
+This registry assigns the `provider` identifiers used by [API 3.2](/docs/spec/payments-api#3.2) and announced by [capabilities 3.2](/docs/spec/capabilities#3.2).
+
+A gateway uses the registered identifier for every provider listed here ([capabilities 2.6](/docs/spec/capabilities#2.6)). A local spelling would make clients non-portable from one deployment to another.
+
+Listing `moncash` and `natcash` does not mean these providers expose OpenFSP natively. Simulated providers use the `mock_*` namespace.
+
+## Registered identifiers
+
+| Identifier | Service | Company | Country | Replaced by |
+| ---------- | ------- | ------- | ------- | ----------- |
+| `moncash`  | MonCash | Digicel | Haiti   |             |
+| `natcash`  | NatCash | Natcom  | Haiti   |             |
+
+## Reserved
+
+| Identifier                   | Reason                                                                                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `openfsp`                    | Reserved for the project.                                                                                                                 |
+| `mock_*`                     | Prefix reserved for simulated providers, see [conformance 9.3.4](/docs/spec/conformance#9.3.4). No real provider gets an identifier here. |
+| `test`, `example`, `invalid` | Reserved for documentation and examples. No real deployment may claim them.                                                               |
+
+## Register an identifier
+
+Open a pull request on [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx) that adds a row. I review it without adding a decision, because an identifier is a label with no normative behaviour of its own ([capabilities 2.7](/docs/spec/capabilities#2.7)).
+
+An identifier matches `^[a-z0-9_]{1,32}$` ([API 3.2](/docs/spec/payments-api#3.2)). I accept one that names the payment service as its users know it, not the company that runs it, and that makes no trademark claim. Listing a provider here implies no relationship with it and no endorsement either way.
+
+Identifiers are permanent. A provider that changes name gets a new identifier, and the old row stays with the new identifier under _Replaced by_, because deployments and stored records keep carrying the old value.
