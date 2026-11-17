@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/openfspht/openfsp.org/compare/v0.2.0...v0.3.0) (2026-11-17)
+
+
+### Features
+
+* serve French as the default language ([5fa4180](https://github.com/openfspht/openfsp.org/commit/5fa418031e62d7442acc3a928881df60b7006556))
+
 ## [0.2.0](https://github.com/openfspht/openfsp.org/compare/v0.1.0...v0.2.0) (2026-11-17)
 
 
