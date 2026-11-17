@@ -85,6 +85,16 @@ The following decisions document the choices adopted for the specification versi
 
 **Reference.** [Conformance](/en/docs/spec/conformance).
 
+## 0009. Preparation of conformance runs
+
+**Decision.** Let a server announce a `conformance_endpoint` in its configuration document. The suite sends it the address of its webhook receiver and receives an isolated, short-lived set of test items: a full test key, a key without `statements:read`, a revoked key, an expired key and the identifiers needed by tests that require a particular configuration. The endpoint exists only in a test environment, issues only `ofsp_test_` keys and may require an access code issued by the operator. It remains optional: without it, the items are entered by hand.
+
+**Rationale.** A validation started from the server address alone removes manual copies and makes the tests that were assisted until now runnable. Keeping it optional preserves the rule that the suite runs without modification of the implementation.
+
+**Alternatives considered.** Fixed test keys published in the specification; manual entry as the only mode; preparation through an interface specific to each server; access of the suite to the server administration.
+
+**Reference.** [Conformance 4.8](/en/docs/spec/conformance#4.8.1).
+
 ## References
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

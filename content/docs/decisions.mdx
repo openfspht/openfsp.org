@@ -85,6 +85,16 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 **Référence.** [Conformité](/docs/spec/conformance).
 
+## 0009. Préparation des essais de conformité
+
+**Choix.** Permettre à un serveur d’annoncer, dans son document de configuration, un point d’accès `conformance_endpoint`. La suite y transmet l’adresse de son récepteur de webhooks et reçoit un jeu d’essai isolé et de courte durée : une clé de test complète, une clé sans `statements:read`, une clé révoquée, une clé expirée et les identifiants nécessaires aux tests qui exigent une configuration particulière. Le point d’accès n’existe qu’en environnement de test, ne délivre que des clés `ofsp_test_` et peut exiger un code d’accès remis par l’exploitant. Il reste facultatif : en son absence, les éléments sont saisis à la main.
+
+**Justification.** Une validation lancée à partir de la seule adresse du serveur supprime les copies manuelles et rend exécutables les tests jusque-là assistés. Le caractère facultatif préserve la règle selon laquelle la suite s’exécute sans modification de l’implémentation.
+
+**Alternatives examinées.** Clés de test fixes publiées dans la spécification ; saisie manuelle comme seul mode ; préparation par une interface propre à chaque serveur ; accès de la suite à l’administration du serveur.
+
+**Référence.** [Conformité 4.8](/docs/spec/conformance#4.8.1).
+
 ## Références
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

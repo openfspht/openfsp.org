@@ -68,6 +68,38 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.7.** A test requiring operator intervention is marked as assisted, for example to revoke a key, declare limits or produce a selected outcome. The suite describes the action, the operator performs it through server administration or configuration, and the report records the assistance. This intervention is not a modification under 4.3.
 
+### 4.8. Preparation by the server
+
+**4.8.1.** A server MAY provide the items of 4.4 itself. It then announces the `conformance_endpoint` member in its configuration document ([capabilities 3.1.6](/en/docs/spec/capabilities#3.1.6)). The absence of this member does not affect conformance.
+
+**4.8.2.** The suite sends a `POST` request to that URL. The optional body is a JSON object whose `webhook_url` member identifies the suite’s webhook receiver.
+
+**4.8.3.** The server responds `201 Created` with a JSON object carrying the following members:
+
+| Member       | Type      | Presence | Content                                                             |
+| ------------ | --------- | -------- | ------------------------------------------------------------------- |
+| `api_key`    | string    | REQUIRED | Active test key holding every supported scope.                      |
+| `expires_at` | `Instant` | REQUIRED | Instant from which the provided items are no longer valid.          |
+| `inputs`     | object    | OPTIONAL | Suite inputs, each name of 4.8.4 being associated with a text value. |
+
+**4.8.4.** The server provides the inputs it can produce among the following. The suite ignores any other name and treats a test whose input is missing as assisted under 4.7.
+
+| Input              | Value                                                                                              |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `restricted-key`   | Key of a second principal, with `payments:read` and `payments:write`, without `statements:read`.   |
+| `statements-key`   | Key holding `statements:read`.                                                                     |
+| `revoked-key`      | Key revoked for longer than the delay of [authentication 7.3](/en/docs/spec/authentication#7.3).   |
+| `expired-key`      | Key whose expiry date has passed.                                                                  |
+| `bounded-provider` | Identifier of a payment service declaring `min_amount`, `max_amount` and `amount_step`.            |
+
+**4.8.5.** When `webhook_url` is provided and the server declares `webhooks.emit`, the server delivers to that URL, until `expires_at`, the events of payments created with `api_key`, for every event type.
+
+**4.8.6.** The endpoint MUST issue only keys of the test environment. A deployment that accepts production keys MUST NOT expose it. The issued items MUST stop being valid at `expires_at`, and the keys of one call MUST NOT give access to payments created with those of another call.
+
+**4.8.7.** The server MAY require an access code issued by its operator, sent in `Authorization: Bearer`. Without a valid code, it responds `401` with the `unauthenticated` problem. The server SHOULD limit the number of simultaneous preparations and respond `429` beyond it.
+
+**4.8.8.** The report states that the items were provided by the server. A test run with an input provided this way is not assisted under 4.7, and the use of this endpoint is not a modification under 4.3.
+
 ## 5. Content
 
 **5.1. Shape.** Checks cover media types ([API 1.4](/en/docs/spec/payments-api#1.4)), collection envelopes ([API 1.12](/en/docs/spec/payments-api#1.12)), `Request-Id` ([API 1.8](/en/docs/spec/payments-api#1.8)), error objects ([API 10.1](/en/docs/spec/payments-api#10.1)), integer `Money` values ([data model 3](/en/docs/spec/data-model#3)), UTC timestamps ([data model 7](/en/docs/spec/data-model#7)) and unknown-field handling in requests and responses ([data model 2.3, 2.4](/en/docs/spec/data-model#2.4)).
