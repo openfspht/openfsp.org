@@ -17,7 +17,9 @@ RUN bun run build
 
 FROM nginxinc/nginx-unprivileged:1.31-alpine
 
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+ENV SENTRY_DSN="" SENTRY_ENVIRONMENT="" SENTRY_RELEASE="" SENTRY_TRACES_SAMPLE_RATE=""
+
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 
 COPY --from=build /site/dist/client /usr/share/nginx/html
 

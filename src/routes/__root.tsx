@@ -1,9 +1,10 @@
 import { createRootRoute, HeadContent, Outlet, Scripts, useParams } from "@tanstack/react-router";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { i18nProvider } from "fumadocs-ui/i18n";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import appCss from "@/styles/app.css?url";
 import { asLocale } from "@/lib/i18n";
+import { startMonitoring } from "@/lib/monitoring";
 import { translations } from "@/lib/translations";
 
 export const Route = createRootRoute({
@@ -31,6 +32,9 @@ export const Route = createRootRoute({
 });
 
 function Root() {
+    useEffect(() => {
+        void startMonitoring("site");
+    }, []);
     return (
         <Document>
             <Outlet />
