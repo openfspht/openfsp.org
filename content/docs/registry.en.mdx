@@ -1,0 +1,33 @@
+---
+title: Provider registry
+description: Assignment and stability of payment service identifiers used by the provider field.
+---
+
+This registry defines the `provider` identifiers used by [API 3.2](/en/docs/spec/payments-api#3.2) and published in [capability discovery 3.2](/en/docs/spec/capabilities#3.2). These identifiers designate services independently of the integration method.
+
+A service retains the same identifier across implementations ([capability discovery 2.6](/en/docs/spec/capabilities#2.6)). This stability allows applications to reuse identifiers across deployments.
+
+Registry inclusion is not a declaration of OpenFSP adoption or conformance. The `mock_*` namespace is reserved for simulated services.
+
+## Registered identifiers
+
+| Identifier | Service | Company | Country | Replaced by |
+| ---------- | ------- | ------- | ------- | ----------- |
+| `moncash`  | MonCash | Digicel | Haiti   |             |
+| `natcash`  | NatCash | Natcom  | Haiti   |             |
+
+## Reserved
+
+| Identifier                   | Reason                                                                                                                                    |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `openfsp`                    | Reserved for the project.                                                                                                                 |
+| `mock_*`                     | Prefix reserved for simulated providers, see [conformance 9.3.4](/en/docs/spec/conformance#9.3.4). No real provider gets an identifier here. |
+| `test`, `example`, `invalid` | Reserved for documentation and examples. No real deployment may claim them.                                                               |
+
+## Register an identifier
+
+To request an identifier, add a registry row through a pull request on [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx). The request is reviewed. Assignment alone requires no design decision because it introduces no normative behaviour ([capability discovery 2.7](/en/docs/spec/capabilities#2.7)).
+
+The identifier follows `^[a-z0-9_]{1,32}$` ([API 3.2](/en/docs/spec/payments-api#3.2)). It names the service as known to its users rather than the company operating it and makes no trademark claim. Inclusion establishes neither a contractual relationship nor endorsement between the service and the project.
+
+Assigned identifiers are permanent. When a service changes name, it receives a new identifier and its previous row is retained with a reference in the _Replaced by_ column. Existing deployments and records can therefore continue to refer to the earlier value.

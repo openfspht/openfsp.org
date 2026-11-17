@@ -1,12 +1,12 @@
 {
-  "title": "Spécification",
+  "title": "Specification",
   "pages": [
     "index",
-    "---Fondations---",
+    "---Foundations---",
     "data-model",
     "lifecycle",
     "idempotency",
-    "---Protocole---",
+    "---Protocol---",
     "payments-api",
     "capabilities",
     "webhooks",

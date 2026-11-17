@@ -1,41 +1,41 @@
 ---
 title: Introduction
-description: Purpose, scope, audiences and resources of the OpenFSP specification.
+description: Objet, périmètre, publics et ressources de la spécification OpenFSP.
 ---
 
-OpenFSP is an open specification for interoperability between merchant applications and payment service providers in Haiti. It defines a common interface, shared data models and expected implementation behaviour. Its objective is to enable integrations to be reused across compatible services within the limits of their declared capabilities.
+OpenFSP est une spécification ouverte d’interopérabilité entre les applications marchandes et les fournisseurs de services de paiement en Haïti. Elle définit une interface commune, les modèles de données échangés et les comportements attendus des implémentations. Son objectif est de permettre la réutilisation des intégrations auprès des services compatibles, dans les limites de leurs capacités déclarées.
 
-The interface contract uses HTTP and covers payment creation, retrieval and synchronisation, capability discovery and the receipt of signed events. Each merchant maintains an account, an agreement and credentials with each relevant provider.
+Le contrat d’interface repose sur HTTP et couvre la création, la consultation et la synchronisation des paiements, la découverte des capacités et la réception d’événements signés. Chaque marchand conserve un compte, un contrat et des identifiants auprès de chaque fournisseur concerné.
 
 ```mermaid
 flowchart LR
-    A["Merchant application"] --> S["OpenFSP SDK"]
-    S --> P1["Provider A"]
-    S --> P2["Provider B"]
+    A["Application marchande"] --> S["SDK OpenFSP"]
+    S --> P1["Opérateur A"]
+    S --> P2["Opérateur B"]
 ```
 
-In a model where each of `L` applications implements a separate interface for each of `O` services, the number of service-specific integrations reaches `O × L`. A shared contract allows implementation work to be organised around `O + L` implementations: one per service and one per application. This model assumes adoption of the contract and compatible capabilities; it does not measure configuration, validation or maintenance costs for individual deployments.
+Dans un modèle où chacune des `L` applications développe une interface propre à chacun des `O` services, le nombre d’intégrations spécifiques atteint `O × L`. Un contrat commun permet d’organiser le travail autour de `O + L` implémentations : une par service et une par application. Ce modèle suppose l’adoption du contrat et des capacités compatibles ; il ne mesure pas les coûts de configuration, de validation ou de maintenance de chaque déploiement.
 
-OpenFSP covers application integration between merchant software and a payment service. Inter-provider funds transfers, clearing and settlement are outside this scope.
+Le périmètre d’OpenFSP porte sur l’intégration applicative entre un logiciel marchand et un service de paiement. Les transferts, la compensation et le règlement entre fournisseurs se situent hors de ce périmètre.
 
-## Start here
+## Par où commencer
 
-- **Merchant application development.** Use the [Kotlin and Java SDK](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin), the [TypeScript SDK](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) or the [HTTP API](/docs/spec/payments-api) directly. The [quickstart guide](/docs/quickstart) describes a simulated payment flow in a local environment.
-- **Provider implementation.** Follow the [native implementation guide](/docs/native-operator), then assess applicable requirements with the [conformance suite](/docs/spec/conformance).
-- **MonCash or NatCash integration.** According to the documented project status, these services do not yet implement OpenFSP natively. The [gateway](/docs/gateway), deployed in front of their existing APIs, provides a transitional option.
-- **Technical or methodological review.** Read the [specification](/docs/spec), [design decisions](/docs/decisions) and [project status](/docs/status).
+- **Développement d’une application marchande.** Utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin), le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) ou directement [l’API HTTP](/docs/spec/payments-api). Le [guide de démarrage](/docs/quickstart) décrit un parcours de paiement simulé en environnement local.
+- **Implémentation par un fournisseur.** Suivez le [guide d’implémentation native](/docs/native-operator), puis évaluez les exigences applicables avec la [suite de conformité](/docs/spec/conformance).
+- **Intégration de MonCash ou NatCash.** Ces services ne disposent pas encore d’une implémentation native d’OpenFSP selon l’état documenté du projet. La [passerelle](/docs/gateway), à déployer devant leurs API existantes, constitue une option transitoire.
+- **Revue technique ou méthodologique.** Consultez la [spécification](/docs/spec), les [décisions de conception](/docs/decisions) et [l’état du projet](/docs/status).
 
-## What exists
+## Ce qui existe
 
-- Specification version `0.1.0`, available in French and English.
-- Client libraries with testing modules.
-- The `mock_openfsp` reference mock server, including scenarios that reproduce failures.
-- A conformance suite, a public validator and signed attestations recording execution results.
+- La spécification `0.1.0`, disponible en français et en anglais.
+- Des bibliothèques clientes accompagnées de modules de test.
+- Le serveur simulé de référence `mock_openfsp`, qui permet notamment de reproduire des défaillances.
+- Une suite de conformité, un validateur public et des attestations signées consignant les résultats d’exécution.
 
-Project documents and tools are provided under the Apache-2.0 licence. The [project status](/docs/status) describes component availability and the limits of completed checks.
+Les documents et les outils du projet sont proposés sous licence Apache-2.0. [L’état du projet](/docs/status) précise la disponibilité des composants et les limites des vérifications réalisées.
 
 ## Phases
 
-**Phase 1, in progress.** Definition of the merchant integration contract, development of supporting tools and establishment of reproducible conformance checks.
+**Phase 1, en cours.** Définition du contrat d’intégration marchande, développement des outils associés et mise en place de vérifications de conformité reproductibles.
 
-**Phase 2, proposed.** Extension to proximity payments using a short-lived, single-use token presented by the customer. This flow is outside the current version.
+**Phase 2, envisagée.** Extension au paiement de proximité au moyen d’un jeton éphémère à usage unique présenté par le client. Ce parcours ne relève pas de la version actuelle.

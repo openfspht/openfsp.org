@@ -1,48 +1,48 @@
 ---
 title: Conventions
-description: Requirement scope, normative conventions, terminology and specification structure.
+description: Portée des exigences, conventions normatives, vocabulaire et organisation de la spécification.
 ---
 
-This section defines the conventions for reading OpenFSP’s normative requirements. The [design decisions](/docs/decisions) document their rationale.
+Cette section définit les conventions de lecture des exigences normatives d’OpenFSP. Les [décisions de conception](/docs/decisions) en documentent les justifications.
 
-## Scope of terms
+## Portée des termes
 
-Requirements apply to the server exposing the API and the client using it, according to the subject of each rule. They specify expected interface behaviour; the server’s internal architecture and underlying systems remain implementation choices.
+Les exigences s’appliquent au serveur qui expose l’API et au client qui l’utilise, selon le sujet de chaque règle. Elles spécifient les comportements attendus de l’interface ; l’architecture interne du serveur et les systèmes sous-jacents restent des choix d’implémentation.
 
-## Keywords
+## Mots-clés
 
-The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED and OPTIONAL have the meanings defined in RFC 2119 and RFC 8174 when written in capitals.
+Les mots-clés DOIT, NE DOIT PAS, DEVRAIT, NE DEVRAIT PAS, PEUT, OBLIGATOIRE, RECOMMANDÉ et FACULTATIF correspondent respectivement à MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED et OPTIONAL au sens des RFC 2119 et 8174 lorsqu’ils sont écrits en capitales. Leurs formes accordées (DOIVENT, DEVRAIENT, PEUVENT, OBLIGATOIRES, FACULTATIVE) conservent la même portée normative.
 
-Each rule has a numeric identifier within its document. Cross-references use its anchor, for example [`/docs/spec/idempotency#3.2`](/docs/spec/idempotency#3.2).
+Chaque règle possède un identifiant numérique stable dans le document. Les renvois utilisent son ancre, par exemple [`/docs/spec/idempotency#3.2`](/docs/spec/idempotency#3.2).
 
-## Implementation path
+## Parcours d'implémentation
 
-The [implementation guide](/docs/native-operator) links chapters to development tasks and test scenarios. The [project status](/docs/status) describes component availability. These documents are informative; numbered requirements form the normative reference.
+Le [guide d’implémentation](/docs/native-operator) relie les chapitres aux tâches de développement et aux scénarios de test. [L’état du projet](/docs/status) décrit la disponibilité de chaque composant. Ces documents sont informatifs ; les exigences numérotées constituent la référence normative.
 
-## Vocabulary
+## Vocabulaire
 
-| Term | Definition |
+| Terme | Définition |
 | --- | --- |
-| payment service provider | Organisation providing one or more payment services. Distinct from the service identified by `provider` and from the technical operator of a server. |
-| provider / payment service | Service identified in the [registry](/docs/registry), such as MonCash or NatCash. In existing rules, “provider” denotes this service. |
-| server | Implementation exposing the OpenFSP API for one or more payment services. |
-| merchant account | Set of resources, principals and webhook endpoints belonging to a merchant on a server. A server may manage several merchant accounts. |
-| operator | Party responsible for deploying and administering a server. |
-| client | Application calling an OpenFSP API. This technical role is distinct from the payer. |
-| subscriber | Endpoint receiving OpenFSP events. |
-| verifier | Party verifying an event signature: subscriber, auditor or library. |
-| principal | Authenticated client identity associated with a merchant account. |
+| fournisseur de services de paiement | Organisation qui fournit un ou plusieurs services de paiement. À distinguer du service identifié par le champ `provider` et de l’exploitant technique d’un serveur. |
+| opérateur / service de paiement | Service identifié dans le [registre](/docs/registry), par exemple MonCash ou NatCash. Dans les règles existantes, « opérateur » désigne ce service. |
+| serveur | Implémentation exposant l’API OpenFSP pour un ou plusieurs services de paiement. |
+| compte marchand | Ensemble des ressources, principaux et points d’accès webhook d’un marchand sur un serveur. Un serveur peut gérer plusieurs comptes marchands. |
+| exploitant | Partie responsable du déploiement et de l’administration d’un serveur. |
+| client | Application qui appelle une API OpenFSP. Ce rôle technique se distingue du payeur. |
+| abonné | Point d’accès destinataire des événements OpenFSP. |
+| vérificateur | Partie qui vérifie la signature d’un événement : abonné, auditeur ou bibliothèque. |
+| principal | Identité authentifiée d’un client, rattachée à un compte marchand. |
 
 ## Documents
 
-| Document                                    | Status      |
-| ------------------------------------------- | ----------- |
-| [Data model](/docs/spec/data-model)         | Normative   |
-| [Payment lifecycle](/docs/spec/lifecycle)   | Normative   |
-| [Idempotency](/docs/spec/idempotency)       | Normative   |
-| [Payments API](/docs/spec/payments-api)     | Normative   |
-| [Capabilities](/docs/spec/capabilities)     | Normative   |
-| [Webhooks](/docs/spec/webhooks)             | Normative   |
-| [Authentication](/docs/spec/authentication) | Normative   |
-| [Conformance](/docs/spec/conformance)       | Normative   |
-| [Architecture](/docs/architecture)          | Informative |
+| Document                                              | Nature     |
+| ----------------------------------------------------- | ---------- |
+| [Modèle de données](/docs/spec/data-model)         | Normatif   |
+| [Cycle de vie du paiement](/docs/spec/lifecycle)   | Normatif   |
+| [Idempotence](/docs/spec/idempotency)              | Normatif   |
+| [API HTTP : paiements](/docs/spec/payments-api)    | Normatif   |
+| [Découverte de capacités](/docs/spec/capabilities) | Normatif   |
+| [Webhooks](/docs/spec/webhooks)                    | Normatif   |
+| [Authentification](/docs/spec/authentication)      | Normatif   |
+| [Conformité](/docs/spec/conformance)               | Normatif   |
+| [Architecture et périmètre](/docs/architecture)    | Informatif |

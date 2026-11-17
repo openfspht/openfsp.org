@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useParams } from "@tanstack/react-router";
+import { asLocale } from "@/lib/i18n";
 
 const TOKENS = [
     "background",
@@ -78,7 +79,7 @@ export function Mermaid({ chart }: { chart: string }) {
     const [visible, setVisible] = useState(false);
     const container = useRef<HTMLDivElement>(null);
     const { lang } = useParams({ strict: false }) as { lang?: string };
-    const fr = lang === "fr";
+    const fr = asLocale(lang) === "fr";
 
     useEffect(() => {
         const observer = new IntersectionObserver(

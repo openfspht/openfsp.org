@@ -1,63 +1,63 @@
 ---
-title: Implement OpenFSP
-description: Steps for implementing the OpenFSP API natively and assessing applicable conformance requirements.
+title: Implémenter OpenFSP
+description: Étapes d’implémentation native de l’API OpenFSP et évaluation des exigences de conformité applicables.
 ---
 
-A native implementation exposes the OpenFSP interface within the payment service provider’s system. Merchant applications can communicate directly with this interface over HTTP or through a client library. Each merchant retains its account, keys and agreement with the provider.
+Une implémentation native expose l’interface OpenFSP dans le système du fournisseur de services de paiement. Les applications marchandes peuvent alors communiquer directement avec cette interface, en HTTP ou au moyen d’une bibliothèque cliente. Chaque marchand conserve son compte, ses clés et son contrat auprès du fournisseur.
 
-This guide organises implementation tasks and related checks. Applicable requirements are defined in the [specification](/docs/spec).
+Ce guide organise les tâches d’implémentation et les vérifications associées. Les exigences applicables sont définies dans la [spécification](/docs/spec).
 
-## Read the contract in order
+## Lire le contrat dans l'ordre
 
-| Step                      | Decision to make                                                                                          | Reference                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Identify the layer        | Distinguish merchant integration, API translation and inter-provider settlement.                          | [Standard architecture](/docs/architecture) and [decision 0001](/docs/decisions#0001) |
-| Represent a payment       | Integer amounts in gourde cents, opaque identifiers, merchant references, timestamps and terminal states. | [Data model](/docs/spec/data-model), [lifecycle](/docs/spec/lifecycle)                |
-| Expose exchanges          | Creation, retrieval, synchronisation, errors and recovery after connection loss.                          | [Payments API](/docs/spec/payments-api), [idempotency](/docs/spec/idempotency)        |
-| Announce actual functions | Discovery, optional capabilities and limits, without emulating missing functions.                         | [Capabilities](/docs/spec/capabilities)                                               |
-| Authenticate and notify   | Keys, scopes, signing-key publication, event verification and delivery.                                   | [Authentication](/docs/spec/authentication), [webhooks](/docs/spec/webhooks)          |
-| Check applicable scope    | Target `server`, Core and profiles matching announced capabilities.                                       | [Conformance 3](/docs/spec/conformance#3)                                             |
+| Étape                             | Décision à prendre                                                                                                 | Référence                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Identifier la couche traitée      | Distinguer intégration marchande, traduction d'API et règlement entre opérateurs.                                  | [Architecture de la norme](/docs/architecture) et [décision 0001](/docs/decisions#0001) |
+| Représenter un paiement           | Montant entier en centimes de gourde, identifiants opaques, référence du marchand, horodatages et états terminaux. | [Modèle de données](/docs/spec/data-model), [cycle de vie](/docs/spec/lifecycle)        |
+| Exposer les échanges              | Création, lecture, synchronisation, erreurs et reprise après coupure.                                              | [API des paiements](/docs/spec/payments-api), [idempotence](/docs/spec/idempotency)     |
+| Annoncer les possibilités réelles | Découverte, capacités optionnelles et limites, sans émulation de fonction absente.                                 | [Capacités](/docs/spec/capabilities)                                                       |
+| Authentifier et notifier          | Clés, portées, publication des clés de signature, vérification et livraison des événements.                        | [Authentification](/docs/spec/authentication), [webhooks](/docs/spec/webhooks)          |
+| Vérifier le périmètre applicable  | Cible `server`, Core et profils correspondant aux capacités annoncées.                                             | [Conformité 3](/docs/spec/conformance#3)                                                   |
 
-## Prepare the HTTP surface
+## Préparer la surface HTTP
 
-| Surface                                                    | Role                                                                 | Native-target consideration                                                                                                      |
-| ---------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `/.well-known/openfsp-configuration`                       | Public discovery of the issuer, endpoints, methods and webhook keys. | Read the [configuration structure](/docs/spec/capabilities#3.1) and [signing keys](/docs/spec/webhooks#6.1).                   |
-| `GET /v1/capabilities`                                     | Actual capabilities and limits.                                      | Announce each provider you serve under its registered identifier ([2.6](/docs/spec/capabilities#2.6)). |
-| `POST /v1/payments`                                        | Contract-defined creation, with an idempotency key.                  | Follow formats, refusals, replay and unknown-effect rules; a creation without a response is not a certain failure.               |
-| `GET /v1/payments/{id}` and `GET /v1/payments?reference=…` | Retrieve a payment and recover after a lost response.                | The merchant knows its reference before the call; it must not need to reconstruct an opaque identifier.                          |
-| `POST /v1/payments/{id}/synchronize`                       | Synchronise state according to the contract.                         | Read native-target requirements alongside lifecycle rules and announced capabilities.                                            |
-| Statements and notifications                               | Functions conditional on corresponding capabilities.                 | A reserved or unsupported function must not be presented as available.                                                           |
+| Surface                                                   | Rôle                                                                                        | Point d'attention pour la cible native                                                                                                    |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `/.well-known/openfsp-configuration`                      | Découverte publique de l'émetteur, des points d'accès, des méthodes et des clés de webhook. | Lisez la [structure de configuration](/docs/spec/capabilities#3.1) et les [clés de signature](/docs/spec/webhooks#6.1).           |
+| `GET /v1/capabilities`                                    | Capacités et limites effectivement exposées.                                                | Annoncez chaque opérateur servi sous son identifiant enregistré ([2.6](/docs/spec/capabilities#2.6)).     |
+| `POST /v1/payments`                                       | Création selon le contrat, avec clé d'idempotence.                                          | Respecter le format, les refus, les rejouements et les effets inconnus ; ne pas traiter une création sans réponse comme un échec certain. |
+| `GET /v1/payments/{id}` et `GET /v1/payments?reference=…` | Lecture du paiement et récupération après perte d'une réponse.                              | Le marchand connaît sa référence avant l'appel ; il ne doit pas avoir besoin de reconstruire un identifiant opaque.                       |
+| `POST /v1/payments/{id}/synchronize`                      | Synchronisation de l'état selon le contrat.                                                 | Lire les règles applicables à la cible native avec le cycle de vie et les capacités annoncées.                                            |
+| Relevés et notifications                                  | Fonctions conditionnées par les capacités correspondantes.                                  | Une fonction réservée ou non prise en charge ne doit pas être présentée comme disponible.                                                 |
 
-The URLs shown correspond to endpoints defined by the specification. Client applications should use the URLs published in the discovery document ([3.1.3](/docs/spec/capabilities#3.1.3)). The [`provider` identifier](/docs/registry) identifies the registered service and remains distinct from its displayed commercial name.
+Les URL présentées correspondent aux points d’accès définis par la spécification. Les applications clientes devraient utiliser les URL publiées dans le document de découverte ([3.1.3](/docs/spec/capabilities#3.1.3)). L’[identifiant `provider`](/docs/registry) désigne le service enregistré et reste distinct de son nom commercial affiché.
 
-## Handle payment notifications
+## Traiter la notification d'un paiement
 
-When payment creation uses `callback_url`, apply the conditions in [API 5.1.8](/docs/spec/payments-api#5.1.8). Native conformance scenarios check the delivery of a signed `payment.succeeded` event, the publication of Ed25519 keys and the rejection of HTTP notification URLs outside the loopback exceptions.
+Lorsque la création utilise le champ `callback_url`, appliquez les conditions de l’[API 5.1.8](/docs/spec/payments-api#5.1.8). Les scénarios de conformité native vérifient notamment la livraison d’un événement `payment.succeeded` signé, la publication des clés Ed25519 et le rejet d’une URL de notification HTTP hors des exceptions de bouclage.
 
-The [webhook specification](/docs/spec/webhooks) defines events, signatures, handling of out-of-order arrival and deduplication. Simulator behaviour introduces no implicit extension. Associated checks are described in [conformance 5.4](/docs/spec/conformance#5.4) and [5.10](/docs/spec/conformance#5.10).
+La spécification des [webhooks](/docs/spec/webhooks) définit les événements, leur signature, leur traitement en cas de réception désordonnée et leur déduplication. Le comportement du simulateur ne crée aucune extension implicite. Les vérifications associées sont décrites en [conformité 5.4](/docs/spec/conformance#5.4) et [5.10](/docs/spec/conformance#5.10).
 
-## Observe a simulated native implementation
+## Observer une implémentation native simulée
 
-The reference repository includes `mock_openfsp`, a fictitious payment service that exposes the OpenFSP API directly.
+Le dépôt de référence comprend `mock_openfsp`, un service de paiement fictif qui expose directement l’API OpenFSP.
 
-From the [openfsp](https://github.com/openfspht/openfsp) repository, after installing the [development prerequisites](/docs/quickstart#2), run the following commands in two separate terminals:
+Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp), et après installation des [prérequis de développement](/docs/quickstart#2), exécutez les commandes suivantes dans deux terminaux distincts :
 
-```bash title="Terminal 1: simulated provider"
+```bash title="Terminal 1 : opérateur simulé"
 make simulator
 ```
 
-```bash title="Terminal 2: suite against the native target"
+```bash title="Terminal 2 : suite contre la cible native"
 make validate-native
 ```
 
-By default, the suite targets `http://127.0.0.1:8090/mock_openfsp` and uses the simulator’s published test keys. The report is saved to `backend/validator/infrastructure/build/conformance-report-native.json`. The Makefile starts the suite’s webhook receiver on port 8098, configurable through `VALIDATE_NATIVE_WEBHOOK_PORT`.
+Par défaut, la suite cible `http://127.0.0.1:8090/mock_openfsp` et utilise les clés de test publiées par le simulateur. Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report-native.json`. Le Makefile démarre le récepteur de webhooks de la suite sur le port 8098, configurable par `VALIDATE_NATIVE_WEBHOOK_PORT`.
 
-The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
+Les [sources de l’implémentation native simulée](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) et le [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) documentent respectivement son comportement et les paramètres d’exécution.
 
-## Test your implementation
+## Tester votre implémentation
 
-Prepare a dedicated test instance, the required keys and the capabilities to assess. Then build the command-line interface from the reference repository:
+Préparez une instance dédiée aux tests, les clés nécessaires et la liste des capacités à évaluer. Compilez ensuite l’interface en ligne de commande à partir du dépôt de référence :
 
 ```bash
 cd backend
@@ -65,7 +65,7 @@ cd backend
 cd ..
 ```
 
-Run the suite against this instance using the following command. Replace `operator.example` and set the variables containing your test environment’s keys:
+Exécutez la suite contre cette instance avec la commande suivante. Remplacez `operator.example` et renseignez les variables contenant les clés de votre environnement de test :
 
 ```bash
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
@@ -82,27 +82,27 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
   --webhook-url https://receiver.example/webhooks
 ```
 
-| Input            | Key                                                                   |
-| ---------------- | --------------------------------------------------------------------- |
-| `statements-key` | A key with the `statements:read` scope.                               |
-| `restricted-key` | A key of another principal with `payments:read` and `payments:write`. |
-| `revoked-key`    | A key you have revoked.                                               |
-| `expired-key`    | A key past its expiry.                                                |
+| Entrée           | Clé                                                                    |
+| ---------------- | ---------------------------------------------------------------------- |
+| `statements-key` | Une clé avec la portée `statements:read`.                              |
+| `restricted-key` | Une clé d'un autre principal avec `payments:read` et `payments:write`. |
+| `revoked-key`    | Une clé que vous avez révoquée.                                        |
+| `expired-key`    | Une clé arrivée à expiration.                                          |
 
-The command-line interface has no default receiver port. Without `--webhook-port`, no receiver starts and the signed `payment.succeeded` delivery scenario does not run. The `--webhook-url` option supplies the public HTTPS address, forwarded to that port, used by the assessed instance for notifications. Without it, the announced address is `http://127.0.0.1:8098/webhooks`, which is accessible only to a local instance.
+L’interface en ligne de commande ne définit aucun port de réception par défaut. Sans `--webhook-port`, aucun récepteur ne démarre et le scénario de livraison du `payment.succeeded` signé ne s’exécute pas. L’option `--webhook-url` fournit l’adresse HTTPS publique, redirigée vers ce port, que l’instance évaluée utilise pour les notifications. En son absence, l’adresse annoncée est `http://127.0.0.1:8098/webhooks`, accessible uniquement depuis une instance locale.
 
-The `make validate-native` target is configured for `mock_openfsp`. To assess a real service, use an explicit configuration appropriate to its test environment.
+La cible `make validate-native` est configurée pour `mock_openfsp`. Pour évaluer un service réel, utilisez une configuration explicite adaptée à son environnement de test.
 
-Some scenarios require a rejection, an expiration or a state transition to be triggered. If the environment cannot automate that action, the suite marks the scenario as assisted and describes the required intervention ([suite configuration](/docs/spec/conformance#4)).
+Certains scénarios nécessitent de provoquer un refus, une expiration ou une transition d’état. Si l’environnement ne permet pas d’automatiser cette action, la suite marque le scénario comme assisté et décrit l’intervention requise ([configuration de la suite](/docs/spec/conformance#4)).
 
-## Read and publish the result
+## Lire et publier le résultat
 
-`make validate-native` can return exit code 0 while Core remains incomplete because of assisted scenarios. Assessment must therefore rely on the report and its verdicts, defined in [conformance 6](/docs/spec/conformance#6), rather than on the exit code alone.
+`make validate-native` peut retourner le code de sortie 0 alors que le niveau Core reste incomplet du fait de scénarios assistés. L’évaluation doit donc s’appuyer sur le rapport et ses verdicts, définis en [conformité 6](/docs/spec/conformance#6), plutôt que sur le seul code de sortie.
 
-A published conformance claim should identify the assessed scope and include the report, configuration with secrets removed and versions used. A [signed attestation](/docs/verify) allows the origin and integrity of one execution’s results to be verified; it does not certify the product.
+Toute déclaration de conformité publiée doit préciser le périmètre évalué et être accompagnée du rapport, de la configuration expurgée des secrets et des versions utilisées. Une [attestation signée](/docs/verify) permet de vérifier l’origine et l’intégrité des résultats d’une exécution ; elle ne certifie pas le produit.
 
-## Next
+## Pour continuer
 
-- [Project status](/docs/status): component availability and verified scopes.
-- [Decisions](/docs/decisions): rationale for design choices.
-- [Conformance specification](/docs/spec/conformance): applicable requirements and contents of a conformance claim.
+- [État du projet](/docs/status) : disponibilité des composants et périmètres vérifiés.
+- [Décisions](/docs/decisions) : justifications des choix de conception.
+- [Spécification de conformité](/docs/spec/conformance) : exigences applicables et contenu d’une déclaration de conformité.

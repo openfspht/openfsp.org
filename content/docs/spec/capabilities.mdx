@@ -1,64 +1,64 @@
 ---
-title: Capabilities and limits
-description: Declaration and discovery of capabilities and limits applicable to each payment service.
+title: Capacités et bornes
+description: Déclaration et découverte des capacités et des limites applicables à chaque service de paiement.
 ---
 
-Discovery exposes supported operations and applicable account limits before payment creation. [Decision 0005](/docs/decisions#0005) explains why unsupported functions are not emulated.
+La découverte expose les opérations prises en charge et les limites applicables au compte avant la création d’un paiement. La [décision 0005](/docs/decisions#0005) justifie le principe de non-émulation des fonctions absentes.
 
-## 1. Capability
+## 1. Capacité
 
-**1.1.** A capability designates a named function whose support is defined for a particular provider.
+**1.1.** Une capacité désigne une fonction nommée dont la prise en charge est définie pour un opérateur donné.
 
-**1.2.** Capabilities are declared separately for each provider rather than globally for the server.
+**1.2.** Les capacités sont déclarées séparément pour chaque opérateur et non globalement pour le serveur.
 
-**1.3.** The server MUST declare a capability for a provider only when that provider performs the operation itself. It MUST NOT declare a capability obtained through emulation, approximation or composition of other operations.
+**1.3.** Le serveur DOIT déclarer une capacité pour un opérateur uniquement si cet opérateur réalise lui-même l’opération. Il NE DOIT PAS déclarer une capacité obtenue par émulation, approximation ou composition d’autres opérations.
 
-**1.4.** The `payments` capability is defined in [API 2.1](/docs/spec/payments-api#2.1).
+**1.4.** La capacité `payments` est définie dans l’[API 2.1](/docs/spec/payments-api#2.1).
 
-## 2. Names and registry
+## 2. Noms et registre
 
-**2.1.** A capability name follows `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$`, with a domain followed by the operation.
+**2.1.** Le nom d’une capacité respecte `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)*$`, avec un domaine suivi de l’opération.
 
-**2.2.** The registry distinguishes specified, reserved and withdrawn names. A _reserved_ name has no specification yet and MUST NOT be declared. A _withdrawn_ name MUST NOT be declared and cannot be reassigned (2.5).
+**2.2.** Le registre distingue les noms spécifiés, réservés et retirés. Un nom _réservé_ n’a pas encore de spécification et NE DOIT PAS être déclaré. Un nom _retiré_ NE DOIT PAS être déclaré et ne peut être réattribué (2.5).
 
-| Name                           | Status              | Meaning                                                                                                                  |
-| ------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `payments`                     | specified, required | Create, read, sync a payment ([API](/docs/spec/payments-api)).                                                           |
-| `payments.lookup`              | specified           | Authoritative lookup of the state at the provider (5).                                                                   |
-| `payments.statement`           | specified           | Daily statement of the merchant account at the provider, readable by the client ([lifecycle 10](/docs/spec/lifecycle#10)). |
-| `payments.fee`                 | specified           | The provider reports fees ([data model 8](/docs/spec/data-model#8)).                                                     |
-| `payments.refund`              | reserved            | Refund of a captured payment.                                                                                            |
-| `payments.capture`             | reserved            | Separate authorisation and capture.                                                                                      |
-| `payments.cancel`              | reserved            | Cancellation before completion.                                                                                          |
-| `payments.proximity_cpm`       | reserved            | Native resolution of tokens presented by the payer.                                                                      |
-| `confirmation_requests`        | reserved            | Timed confirmation by the payer.                                                                                         |
-| `confirmation_requests.cancel` | reserved            | Withdrawal of a request before the payer answers.                                                                        |
-| `transfers`                    | reserved            | Sending funds to a beneficiary.                                                                                          |
-| `webhooks.emit`                | specified           | Signed events to the client ([webhooks](/docs/spec/webhooks)).                                                           |
-| `webhooks.verify`              | withdrawn           | None.                                                                                                                    |
-| `webhooks.per_payment_url`     | specified           | The provider accepts a `callback_url` at creation and delivers that payment's events to it ([API 5.1.8](/docs/spec/payments-api#5.1.8)). |
+| Nom                            | Statut                | Sens                                                                                                                       |
+| ------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `payments`                     | spécifié, obligatoire | Créer, lire, synchroniser un paiement ([API](/docs/spec/payments-api)).                                                 |
+| `payments.lookup`              | spécifié              | Consultation faisant foi de l'état chez l'opérateur (5).                                                                   |
+| `payments.statement`           | spécifié              | Relevé quotidien du compte marchand chez l'opérateur, lisible par le client ([cycle de vie 10](/docs/spec/lifecycle#10)). |
+| `payments.fee`                 | spécifié              | L'opérateur communique les frais ([modèle de données 8](/docs/spec/data-model#8)).                                      |
+| `payments.refund`              | réservé               | Remboursement d'un paiement capturé.                                                                                       |
+| `payments.capture`             | réservé               | Autorisation et capture séparées.                                                                                          |
+| `payments.cancel`              | réservé               | Annulation avant achèvement.                                                                                               |
+| `payments.proximity_cpm`       | réservé               | Résolution native de jetons présentés par le payeur.                                                                       |
+| `confirmation_requests`        | réservé               | Confirmation minutée par le payeur.                                                                                        |
+| `confirmation_requests.cancel` | réservé               | Retrait d'une demande avant réponse du payeur.                                                                             |
+| `transfers`                    | réservé               | Envoi de fonds à un bénéficiaire.                                                                                          |
+| `webhooks.emit`                | spécifié              | Événements signés vers le client ([webhooks](/docs/spec/webhooks)).                                                     |
+| `webhooks.verify`              | retiré                | Aucun.                                                                                                                     |
+| `webhooks.per_payment_url`     | spécifié              | L'opérateur accepte une `callback_url` à la création et y livre les événements de ce paiement ([API 5.1.8](/docs/spec/payments-api#5.1.8)). |
 
-**2.3.** Adding a name requires a decision record. Such an addition is not an incompatible change (4.3).
+**2.3.** L’ajout d’un nom nécessite une décision écrite. Cet ajout ne constitue pas une rupture de compatibilité (4.3).
 
-**2.4.** The server MAY declare names outside the registry under a reversed DNS prefix it controls (`com.example.payments.instalments`) and MUST NOT create names without that prefix.
+**2.4.** Le serveur PEUT déclarer des noms hors registre sous un préfixe DNS inversé qu’il contrôle (`com.example.payments.instalments`) et NE DOIT PAS créer de noms sans ce préfixe.
 
-**2.5.** Capabilities have no separate versions. A change in meaning requires a new name.
+**2.5.** Les capacités ne disposent pas de versions distinctes. Une modification de signification nécessite un nouveau nom.
 
-**2.6.** For each provider, the server MUST use the identifier recorded in the [registry](/docs/registry).
+**2.6.** Pour chaque opérateur, le serveur DOIT utiliser l’identifiant inscrit au [registre](/docs/registry).
 
-**2.7.** Assignment of a provider identifier is requested through a registry pull request and requires no decision record.
+**2.7.** L’attribution d’un identifiant d’opérateur s’effectue par pull request sur le registre et ne nécessite pas de décision écrite.
 
-**2.8.** Assigned identifiers are permanent. A renamed provider receives a new identifier; the previous identifier is retained and marked as superseded.
+**2.8.** Les identifiants attribués sont permanents. Un opérateur renommé reçoit un nouvel identifiant ; l’ancien est conservé avec la mention de son remplacement.
 
-## 3. Discovery
+## 3. Découverte
 
-### 3.1. Configuration document
+### 3.1. Document de configuration
 
 ```
 GET /.well-known/openfsp-configuration
 ```
 
-This endpoint is public and unauthenticated (RFC 8615). Its structure follows OpenID Connect discovery conventions: absolute URLs with `_endpoint` or `_uri` suffixes, and lists with the `_supported` suffix.
+Ce point d’accès est public et non authentifié (RFC 8615). Sa structure suit les conventions de découverte OpenID Connect : URL absolues portant les suffixes `_endpoint` ou `_uri`, et listes portant le suffixe `_supported`.
 
 ```json
 {
@@ -79,23 +79,23 @@ This endpoint is public and unauthenticated (RFC 8615). Its structure follows Op
 }
 ```
 
-**3.1.1.** The document MUST NOT disclose the providers in use, merchant information, the server software version or the administration interface.
+**3.1.1.** Le document NE DOIT PAS divulguer les opérateurs utilisés, des informations sur le marchand, la version du logiciel serveur ou l’interface d’administration.
 
-**3.1.2.** The `protocol_version` field identifies the targeted specification version. The client MUST NOT infer available capabilities from it.
+**3.1.2.** Le champ `protocol_version` désigne la version de spécification visée. Le client NE DOIT PAS en déduire les capacités disponibles.
 
-**3.1.3.** The `issuer` field contains the server’s public URL without a trailing slash. The client SHOULD use the endpoints published in this document rather than reconstruct them.
+**3.1.3.** Le champ `issuer` contient l’URL publique du serveur, sans barre oblique finale. Le client DEVRAIT utiliser les points d’accès publiés dans ce document plutôt que les reconstruire.
 
-**3.1.4.** The `capabilities_supported` field lists the capabilities in section 2 that the server software can expose. This list MUST NOT depend on configured providers. Capabilities actually declared per provider are available from `/v1/capabilities` (3.2).
+**3.1.4.** Le champ `capabilities_supported` énumère les capacités du 2 que le logiciel serveur sait exposer. Cette liste NE DOIT PAS dépendre des opérateurs configurés. Les capacités effectivement déclarées par opérateur sont accessibles dans `/v1/capabilities` (3.2).
 
-**3.1.5.** The `webhook_keys` field contains public webhook signing keys ([webhooks 6.1](/docs/spec/webhooks#6.1)). This document is their sole publication point.
+**3.1.5.** Le champ `webhook_keys` contient les clés publiques de signature des webhooks ([webhooks 6.1](/docs/spec/webhooks#6.1)). Ce document constitue leur unique point de publication.
 
-### 3.2. Capabilities
+### 3.2. Capacités
 
 ```
 GET /v1/capabilities
 ```
 
-This endpoint requires authentication.
+Ce point d’accès nécessite une authentification.
 
 ```json
 {
@@ -117,64 +117,64 @@ This endpoint requires authentication.
 }
 ```
 
-**3.2.1.** A provider description contains the following fields:
+**3.2.1.** La description d’un opérateur comporte les champs suivants :
 
-| Field          | Type             | Presence | Notes                                                        |
-| -------------- | ---------------- | -------- | ------------------------------------------------------------ |
-| `id`           | string           | REQUIRED | Registered identifier. Equal to the `provider` of a payment. |
-| `display_name` | string           | REQUIRED | For display, not an identifier.                              |
-| `logo_url`     | string           | OPTIONAL | Absolute URL of a logo to display next to `display_name`.    |
-| `capabilities` | array of strings | REQUIRED | Always contains `payments`.                                  |
-| `payments`     | object           | REQUIRED | 3.2.2.                                                       |
+| Champ          | Type               | Présence    | Notes                                                     |
+| -------------- | ------------------ | ----------- | --------------------------------------------------------- |
+| `id`           | chaîne             | OBLIGATOIRE | Identifiant enregistré ; égal à `provider` d'un paiement. |
+| `display_name` | chaîne             | OBLIGATOIRE | Affichage, pas un identifiant.                            |
+| `logo_url`     | chaîne             | FACULTATIF  | URL absolue d'un logo à afficher près de `display_name`.  |
+| `capabilities` | tableau de chaînes | OBLIGATOIRE | Contient toujours `payments`.                             |
+| `payments`     | objet              | OBLIGATOIRE | 3.2.2.                                                    |
 
-**3.2.2.** The `payments` object describes the payment profile using the following fields:
+**3.2.2.** L’objet `payments` décrit le profil de paiement avec les champs suivants :
 
-| Field                 | Type             | Meaning                                                                              |
-| --------------------- | ---------------- | ------------------------------------------------------------------------------------ |
-| `next_actions`        | array of strings | `next_action` types produced ([API 4.2](/docs/spec/payments-api#4.2)).               |
-| `payer_required`      | boolean          | `payer` required at creation.                                                        |
-| `return_url_required` | boolean          | `return_url` required at creation.                                                   |
-| `expiry_guaranteed`   | boolean          | Guarantee of [lifecycle 5.3](/docs/spec/lifecycle#5.3) (b).                          |
-| `limits`              | object           | OPTIONAL. Amount limits (6.4).                                                       |
-| `locales`             | array of strings | `locale` values supported for the payer's page ([API 5.1.7](/docs/spec/payments-api#5.1.7)). |
+| Champ                 | Type               | Sens                                                                                          |
+| --------------------- | ------------------ | --------------------------------------------------------------------------------------------- |
+| `next_actions`        | tableau de chaînes | Types de `next_action` produits ([API 4.2](/docs/spec/payments-api#4.2)).                  |
+| `payer_required`      | booléen            | `payer` exigé à la création.                                                                  |
+| `return_url_required` | booléen            | `return_url` exigée à la création.                                                            |
+| `expiry_guaranteed`   | booléen            | Garantie du [cycle de vie 5.3](/docs/spec/lifecycle#5.3) (b).                              |
+| `limits`              | objet              | FACULTATIF. Bornes de montant (6.4).                                                          |
+| `locales`             | tableau de chaînes | Valeurs de `locale` prises en charge pour la page du payeur ([API 5.1.7](/docs/spec/payments-api#5.1.7)). |
 
-**3.2.3.** The value of `expiry_guaranteed` MUST be `false` unless the provider guarantees that a payment incomplete at `expires_at` can never complete.
+**3.2.3.** La valeur de `expiry_guaranteed` DOIT être `false`, sauf si l’opérateur garantit qu’un paiement non achevé à `expires_at` ne pourra plus s’achever.
 
-**3.2.4.** The response SHOULD contain `Cache-Control` with a `max-age` value no greater than one hour.
+**3.2.4.** La réponse DEVRAIT contenir `Cache-Control` avec une valeur `max-age` n’excédant pas une heure.
 
-**3.2.5.** As an exception to 1.3, `webhooks.emit` is declared for each provider whose events are emitted by the server.
+**3.2.5.** Par exception au 1.3, la capacité `webhooks.emit` est déclarée pour chaque opérateur dont les événements sont émis par le serveur.
 
 ## 4. Obligations
 
-**4.1.** The client MUST NOT call an operation whose capability is not declared for the selected provider.
+**4.1.** Le client NE DOIT PAS appeler une opération dont la capacité n’est pas déclarée pour l’opérateur sélectionné.
 
-**4.2.** The client MUST handle `capability-not-supported` at any time and SHOULD then refresh the capabilities.
+**4.2.** Le client DOIT pouvoir traiter `capability-not-supported` à tout moment et DEVRAIT alors actualiser les capacités.
 
-**4.3.** The client MUST ignore capability names it does not recognise.
+**4.3.** Le client DOIT ignorer les noms de capacités qu’il ne reconnaît pas.
 
-**4.4.** The server MUST return `capability-not-supported` for an operation whose capability it does not declare, even if execution is technically possible.
+**4.4.** Le serveur DOIT retourner `capability-not-supported` pour une opération dont il ne déclare pas la capacité, même si son exécution est techniquement possible.
 
-**4.5.** The server MAY detect that a provider has suspended a capability. When it detects this, it MUST NOT continue to declare the capability.
+**4.5.** Le serveur PEUT détecter la suspension d’une capacité par un opérateur. Lorsqu’il la détecte, il NE DOIT PAS continuer à déclarer cette capacité.
 
 ## 5. `payments.lookup`
 
-**5.1.** The `payments.lookup` capability indicates that a lookup can establish the authoritative current state at the provider.
+**5.1.** La capacité `payments.lookup` indique qu’une consultation peut établir l’état courant faisant autorité auprès de l’opérateur.
 
-**5.2.** When this capability is declared, synchronisation ([API 5.3](/docs/spec/payments-api#5.3)) MUST query the state at the provider.
+**5.2.** Lorsque cette capacité est déclarée, la synchronisation ([API 5.3](/docs/spec/payments-api#5.3)) DOIT consulter l’état auprès de l’opérateur.
 
-**5.3.** Without this capability, synchronisation MUST return `capability-not-supported` and MUST NOT present stored state as the result of a new lookup.
+**5.3.** En l’absence de cette capacité, la synchronisation DOIT retourner `capability-not-supported` et NE DOIT PAS présenter l’état enregistré comme le résultat d’une nouvelle consultation.
 
-**5.3.1.** As an exception, a terminal payment is returned unchanged with `200` ([API 5.3.3](/docs/spec/payments-api#5.3.3)).
+**5.3.1.** Par exception, un paiement terminal est retourné inchangé avec `200` ([API 5.3.3](/docs/spec/payments-api#5.3.3)).
 
-## 6. Amount limits
+## 6. Bornes de montant
 
-**6.1.** A provider’s limits represent the minimum and maximum transaction amounts for the merchant account, as set by the provider for that merchant.
+**6.1.** Les bornes d’un opérateur représentent les montants minimal et maximal autorisés par transaction pour le compte marchand, tels que fixés par l’opérateur pour ce marchand.
 
-**6.2.** The mechanism by which the server obtains limits is outside the specification’s scope. No administration endpoint is prescribed.
+**6.2.** Le mécanisme d’acquisition des bornes par le serveur se situe hors du périmètre de la spécification. Aucun point d’accès d’administration n’est imposé.
 
-**6.3.** The server MUST NOT assign an unestablished limit or infer a limit from previous failures.
+**6.3.** Le serveur NE DOIT PAS attribuer de borne non établie ni déduire une borne des échecs antérieurs.
 
-**6.4.** The provider’s `payments` object (3.2.2) contains an OPTIONAL `limits` member:
+**6.4.** L’objet `payments` de l’opérateur (3.2.2) contient un membre FACULTATIF `limits` :
 
 ```json
 "limits": {
@@ -184,17 +184,17 @@ This endpoint requires authentication.
 }
 ```
 
-| Field         | Type    | Presence | Notes                                                      |
-| ------------- | ------- | -------- | ---------------------------------------------------------- |
-| `min_amount`  | `Money` | OPTIONAL | 6.5.                                                       |
-| `max_amount`  | `Money` | OPTIONAL | 6.5.                                                       |
-| `amount_step` | `Money` | OPTIONAL | The amount MUST be a multiple of it. `100`: whole gourdes. |
+| Champ         | Type    | Présence   | Notes                                                          |
+| ------------- | ------- | ---------- | -------------------------------------------------------------- |
+| `min_amount`  | `Money` | FACULTATIF | 6.5.                                                           |
+| `max_amount`  | `Money` | FACULTATIF | 6.5.                                                           |
+| `amount_step` | `Money` | FACULTATIF | Le montant DOIT en être un multiple. `100` : gourdes entières. |
 
-**6.5.** An absent limit means its value is unknown. The client MUST NOT present it as the absence of a cap.
+**6.5.** L’absence d’une borne signifie que sa valeur est inconnue. Le client NE DOIT PAS la présenter comme l’absence de plafond.
 
-**6.6.** When both `min_amount` and `max_amount` are present, `min_amount` MUST be less than or equal to `max_amount`.
+**6.6.** Lorsque `min_amount` et `max_amount` sont tous deux présents, `min_amount` DOIT être inférieur ou égal à `max_amount`.
 
-**6.7.** At creation ([API 5.1](/docs/spec/payments-api#5.1)), the server MUST reject with `amount-out-of-range`, without creating a payment, any amount below `min_amount`, above `max_amount` or not a multiple of `amount_step`. The response contains the limits in the following extension members:
+**6.7.** À la création ([API 5.1](/docs/spec/payments-api#5.1)), le serveur DOIT rejeter avec `amount-out-of-range`, sans créer de paiement, tout montant inférieur à `min_amount`, supérieur à `max_amount` ou non multiple de `amount_step`. La réponse contient les bornes dans les membres d’extension suivants :
 
 ```json
 {
@@ -210,24 +210,24 @@ This endpoint requires authentication.
 }
 ```
 
-**6.7.1.** A zero or negative amount rejected by [data model 3.6](/docs/spec/data-model#3.6) produces `invalid-field` before limit checking, even when limits are declared.
+**6.7.1.** Un montant nul ou négatif rejeté par le [modèle de données 3.6](/docs/spec/data-model#3.6) produit `invalid-field` avant la vérification des bornes, même lorsque celles-ci sont déclarées.
 
-**6.8.** The `amount-out-of-range` error results from the request; its response is retained under [idempotency 5.1](/docs/spec/idempotency#5.1). After limits change, the client MUST use a new `Idempotency-Key` to submit creation again.
+**6.8.** L’erreur `amount-out-of-range` résulte de la requête ; sa réponse est conservée selon l’[idempotence 5.1](/docs/spec/idempotency#5.1). Après modification des bornes, le client DOIT utiliser une nouvelle `Idempotency-Key` pour soumettre de nouveau la création.
 
-**6.9.** A provider refusal caused by a payer cap or an undeclared limit moves the payment to `failed` with `limit_exceeded` ([lifecycle 7.2](/docs/spec/lifecycle#7.2)). The server MUST NOT convert this refusal into `amount-out-of-range`.
+**6.9.** Un refus de l’opérateur dû à un plafond du payeur ou à une borne non déclarée fait passer le paiement à `failed` avec `limit_exceeded` ([cycle de vie 7.2](/docs/spec/lifecycle#7.2)). Le serveur NE DOIT PAS convertir ce refus en `amount-out-of-range`.
 
-## 7. Conformance
+## 7. Conformité
 
-**7.1.** A conforming server MUST expose both endpoints defined in section 3.
+**7.1.** Le serveur conforme DOIT exposer les deux points d’accès définis au 3.
 
-**7.2.** The conformance suite verifies the requirements of 2.2.
+**7.2.** La suite de conformité vérifie les exigences du 2.2.
 
-**7.3.** The suite verifies 6.7 at both limits: acceptance at the boundary, then rejection when exceeded by one cent, with no payment created for the rejected amount.
+**7.3.** La suite vérifie le 6.7 aux deux bornes : acceptation de la borne, puis rejet après dépassement d’un centime, sans création de paiement pour le montant rejeté.
 
-## 8. Security
+## 8. Sécurité
 
-**8.1.** Access to the configuration document SHOULD be rate-limited.
+**8.1.** L’accès au document de configuration DEVRAIT être soumis à une limitation de débit.
 
-**8.2.** Declaring a capability grants no authorisation. The server MUST independently verify the key’s scope ([authentication 6](/docs/spec/authentication#6)).
+**8.2.** La déclaration d’une capacité n’accorde aucune autorisation. Le serveur DOIT vérifier séparément la portée de la clé ([authentification 6](/docs/spec/authentication#6)).
 
-**8.3.** Limits are published only through the authenticated endpoint in 3.2 and remain absent from the configuration document (3.1.1).
+**8.3.** Les bornes sont publiées uniquement par le point d’accès authentifié du 3.2 et restent absentes du document de configuration (3.1.1).

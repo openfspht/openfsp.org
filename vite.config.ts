@@ -36,7 +36,7 @@ export default defineConfig({
             prerender: { enabled: true, crawlLinks: true, failOnError: true },
             pages: [
                 { path: "/" },
-                { path: "/fr" },
+                { path: "/en" },
                 { path: "/api/search-index/en" },
                 { path: "/api/search-index/fr" },
             ],

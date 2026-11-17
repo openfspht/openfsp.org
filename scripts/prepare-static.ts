@@ -28,14 +28,14 @@ const xml = (value: string) => value.replace(/[&"<>]/g, (char) => XML_ENTITIES[c
 const sitemap = [...pages.keys()]
     .sort()
     .map((path) => {
-        const base = path === "/fr" ? "/" : path.startsWith("/fr/") ? path.slice(3) : path;
-        const fr = base === "/" ? "/fr" : `/fr${base}`;
-        if (!pages.has(base) || !pages.has(fr)) {
+        const base = path === "/en" ? "/" : path.startsWith("/en/") ? path.slice(3) : path;
+        const en = base === "/" ? "/en" : `/en${base}`;
+        if (!pages.has(base) || !pages.has(en)) {
             throw new Error(`Missing translation: ${path}`);
         }
         const alternates = [
-            ["en", base],
-            ["fr", fr],
+            ["fr", base],
+            ["en", en],
             ["x-default", base],
         ]
             .map(
@@ -60,7 +60,7 @@ if (!css) {
 }
 await writeFile(
     join(root, "404.html"),
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>404 | OpenFSP</title><link rel="stylesheet" href="/${relative(root, css)}"><link rel="icon" href="/favicon.svg"></head><body><main class="mx-auto max-w-xl px-6 py-24"><a href="/" class="text-xl font-bold">OpenFSP</a><p class="mt-12 font-mono">404</p><h1 class="mt-4 text-3xl font-bold">Page not found</h1><p class="mt-4">This page does not exist or has moved.</p><nav aria-label="English" class="mt-6 flex flex-wrap gap-3"><a class="btn btn-primary" href="/">Home</a><a class="btn" href="/docs">Documentation</a></nav><section lang="fr" class="mt-12"><h2 class="text-2xl font-bold">Page introuvable</h2><p class="mt-4">Cette page n’existe pas ou a changé d’adresse.</p><nav aria-label="Français" class="mt-6 flex flex-wrap gap-3"><a class="btn btn-primary" href="/fr">Accueil</a><a class="btn" href="/fr/docs">Documentation</a></nav></section></main></body></html>`,
+    `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>404 | OpenFSP</title><link rel="stylesheet" href="/${relative(root, css)}"><link rel="icon" href="/favicon.svg"></head><body><main class="mx-auto max-w-xl px-6 py-24"><a href="/" class="text-xl font-bold">OpenFSP</a><p class="mt-12 font-mono">404</p><h1 class="mt-4 text-3xl font-bold">Page introuvable</h1><p class="mt-4">Cette page n’existe pas ou a changé d’adresse.</p><nav aria-label="Français" class="mt-6 flex flex-wrap gap-3"><a class="btn btn-primary" href="/">Accueil</a><a class="btn" href="/docs">Documentation</a></nav><section lang="en" class="mt-12"><h2 class="text-2xl font-bold">Page not found</h2><p class="mt-4">This page does not exist or has moved.</p><nav aria-label="English" class="mt-6 flex flex-wrap gap-3"><a class="btn btn-primary" href="/en">Home</a><a class="btn" href="/en/docs">Documentation</a></nav></section></main></body></html>`,
 );
 
 const clean = (html: string) => html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
@@ -95,7 +95,7 @@ for (const [path, html] of documents) {
         }
         const destination = documents.get(target);
         if (!destination) {
-            const problem = target.match(/^(\/fr)?\/problems\/([a-z0-9-]+)$/);
+            const problem = target.match(/^(\/en)?\/problems\/([a-z0-9-]+)$/);
             if (problem) {
                 if (
                     !documents
@@ -118,16 +118,16 @@ for (const [path, html] of documents) {
     }
 }
 for (const [path, html] of documents) {
-    if (path.startsWith("/fr")) {
+    if (path === "/en" || path.startsWith("/en/")) {
         continue;
     }
-    const french = documents.get(path === "/" ? "/fr" : `/fr${path}`);
+    const english = documents.get(path === "/" ? "/en" : `/en${path}`);
     const ruleIds = (content: string) =>
         [...content.matchAll(/<p\b[^>]*id="([0-9.]+)"[^>]*class="[^"]*rule[^"]*"/g)]
             .map((match) => match[1])
             .sort()
             .join(",");
-    if (french && ruleIds(html) !== ruleIds(french)) {
+    if (english && ruleIds(html) !== ruleIds(english)) {
         errors.push(`${path}: English/French rule IDs differ`);
     }
 }
@@ -156,7 +156,7 @@ const meta = (html: string, property: string) => {
     return undefined;
 };
 const sectionOf = (path: string) => {
-    const french = path === "/fr" || path.startsWith("/fr/");
+    const french = path !== "/en" && !path.startsWith("/en/");
     if (/\/docs\/spec(\/|$)/.test(path)) {
         return french ? "Spécification" : "Specification";
     }
@@ -187,7 +187,7 @@ await Promise.all(
 );
 for (const asset of [
     "og/index.png",
-    "og/fr.png",
+    "og/en.png",
     "404.html",
     "robots.txt",
     "sitemap.xml",

@@ -1,22 +1,22 @@
 ---
-title: Project status
-description: Component availability, test environments and limits of documented results for version 0.1.0.
+title: État du projet
+description: Disponibilité des composants, environnements de test et limites des résultats documentés pour la version 0.1.0.
 ---
 
-The table describes component availability and the environments in which they have been assessed. Simulation results characterise the scenarios executed. Sandbox tests provide observations about that environment; they do not establish production deployment behaviour.
+Le tableau décrit la disponibilité des composants et les environnements dans lesquels ils ont été évalués. Les résultats de simulation caractérisent les scénarios exécutés. Les essais en bac à sable apportent des observations sur cet environnement ; ils ne suffisent pas à établir le comportement d’un déploiement en production.
 
-| Component | Documented status | Reference |
+| Composant | État documenté | Référence |
 | --- | --- | --- |
-| Specification `0.1.0` | Available in French and English; development version preceding 1.0.0 | [Rules](/docs/spec) |
-| OpenAPI contract | Available to describe the interface | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
-| Kotlin and Java SDK | Implemented with `openfsp-sdk-testing`; Maven Central distribution `org.openfsp:openfsp-sdk` from version `0.1.0` | [Source and usage](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) |
-| TypeScript SDK | Implemented with `@openfsp/sdk/testing`; npm distribution `@openfsp/sdk` from version `0.1.0` | [Source and usage](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) |
-| Conformance schemas and scenarios | Available; verification scope defined by the suite | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
-| Public validator | Accessible online | [validate.openfsp.org](https://validate.openfsp.org) |
-| Reference mock server `mock_openfsp` | Runnable locally for implementation tests | [Implementation tests](/docs/native-operator) |
-| [Gateway](/docs/gateway) for MonCash and NatCash | Available; simulations and sandbox creation and retrieval operations documented | [Open checks](/docs/gateway#sandbox-checks) |
-| Console and demonstration merchant application | Runnable locally with `make demo`; merchant application in a separate repository | [Demonstration](/docs/quickstart#1), [demo](https://github.com/openfspht/demo) |
-| Signed attestations | Available to record execution results | [Verification](/docs/verify) |
-| Refunds, capture, cancellation and proximity payments | Reserved capability names; operations not specified in the current version | [Capabilities](/docs/spec/capabilities#2) |
+| Spécification `0.1.0` | Disponible en français et en anglais ; version de développement antérieure à 1.0.0 | [Règles](/docs/spec) |
+| Contrat OpenAPI | Disponible pour décrire l’interface | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
+| SDK Kotlin et Java | Implémentés avec `openfsp-sdk-testing` ; distribution Maven Central `org.openfsp:openfsp-sdk` à partir de la version `0.1.0` | [Sources et utilisation](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) |
+| SDK TypeScript | Implémenté avec `@openfsp/sdk/testing` ; distribution npm `@openfsp/sdk` à partir de la version `0.1.0` | [Sources et utilisation](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) |
+| Schémas et scénarios de conformité | Disponibles ; périmètre de vérification défini par la suite | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
+| Validateur public | Accessible en ligne | [validate.openfsp.org](https://validate.openfsp.org) |
+| Serveur simulé de référence `mock_openfsp` | Exécutable localement pour les tests d’implémentation | [Tests d’implémentation](/docs/native-operator) |
+| [Passerelle](/docs/gateway) pour MonCash et NatCash | Disponible ; simulations et opérations de création et de consultation en bac à sable documentées | [Points à vérifier](/docs/gateway#sandbox-checks) |
+| Console et application marchande de démonstration | Exécutables localement avec `make demo` ; application marchande dans un dépôt distinct | [Démonstration](/docs/quickstart#1), [demo](https://github.com/openfspht/demo) |
+| Attestations signées | Disponibles pour consigner les résultats d’une exécution | [Vérification](/docs/verify) |
+| Remboursement, capture, annulation et paiement de proximité | Noms de capacités réservés ; opérations non spécifiées dans la version actuelle | [Capacités](/docs/spec/capabilities#2) |
 
-The documented project status records no native provider adoption or regulatory review. The [development phases](/docs#phases) distinguish the current version’s scope from proposed extensions.
+L’état documenté du projet ne fait état d’aucune adoption native par un fournisseur ni d’aucun examen par un régulateur. Les [phases](/docs#phases) distinguent le périmètre de la version actuelle des extensions envisagées.

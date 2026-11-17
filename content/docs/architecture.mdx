@@ -1,85 +1,85 @@
 ---
-title: Standard architecture
-description: Position of the merchant interface, native integration architecture, invariants and specification limits.
+title: Architecture de la norme
+description: Positionnement de l’interface marchande, architecture d’intégration native, invariants et limites de la spécification.
 ---
 
-OpenFSP defines the interface between a merchant application server and a payment service. In a native integration, the provider exposes the common HTTP contract in its own system. The application uses the merchant’s credentials and can communicate directly over HTTP or through a client library.
+OpenFSP définit l’interface entre le serveur d’une application marchande et un service de paiement. Dans une intégration native, le fournisseur expose le contrat HTTP commun dans son propre système. L’application utilise les identifiants du marchand et peut effectuer les échanges directement en HTTP ou au moyen d’une bibliothèque cliente.
 
-## The application-to-provider layer
+## Le segment application vers opérateur
 
-The problem addressed is the multiplication of service-specific integrations between applications and payment services. When each application integrates each service separately, the number of implemented interfaces is proportional to `providers × applications`. A shared contract allows this work to be organised around `providers + applications` implementations. This is a design model; actual benefits depend on adoption, supported capabilities and deployment constraints.
+Le problème étudié est la multiplication des intégrations spécifiques entre applications et services de paiement. Dans le modèle où chaque application intègre chaque service séparément, le nombre d’interfaces développées est proportionnel à `opérateurs × applications`. Un contrat commun permet de mutualiser ce travail autour de `opérateurs + applications` implémentations. Il s’agit d’un modèle de conception, dont les bénéfices effectifs dépendent de l’adoption, des capacités prises en charge et des contraintes de déploiement.
 
-The interoperability defined here concerns the merchant integration interface. Each merchant retains its account and agreement with each provider. Inter-provider funds transfers, clearing and settlement require separate mechanisms.
+L’interopérabilité définie ici concerne l’interface d’intégration marchande. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur. Les transferts, la compensation et le règlement entre fournisseurs relèvent d’autres mécanismes.
 
-## Native architecture
+## Architecture native
 
 ```mermaid
 flowchart LR
-    A["Merchant application"] --> S["OpenFSP SDK or HTTP"]
-    S -- "OpenFSP contract" --> P1["Native provider A"]
-    S -- "same OpenFSP contract" --> P2["Native provider B"]
+    A["Application marchande"] --> S["SDK OpenFSP ou HTTP"]
+    S -- "contrat OpenFSP" --> P1["Opérateur natif A"]
+    S -- "même contrat OpenFSP" --> P2["Opérateur natif B"]
 ```
 
-The application selects the payment service and uses the corresponding credentials and configuration. The client library prepares exchanges according to the interface contract. It introduces no central service and does not replace the provider’s system.
+L’application sélectionne le service de paiement et utilise les identifiants et la configuration correspondants. La bibliothèque cliente prépare les échanges conformément au contrat d’interface. Elle n’ajoute aucun service central à l’architecture et ne se substitue pas au système du fournisseur.
 
-## Contract and invariants
+## Contrat et invariants
 
-| Design decision                                                                                   | Reference                                       |
-| ------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| A payment has an integer amount in gourde cents, a currency and distinct identifiers.             | [Data model](/docs/spec/data-model)             |
-| The merchant's reference allows correlation, including after a lost response.                     | [Merchant reference](/docs/spec/data-model#6.2) |
-| Payment states are explicit; terminal states cannot be left.                                      | [Lifecycle](/docs/spec/lifecycle)               |
-| Replayed creation follows idempotency rules; an indeterminate outcome is not turned into success. | [Idempotency](/docs/spec/idempotency)           |
-| The API exposes creation, retrieval and synchronisation over HTTP and JSON.                       | [Payments API](/docs/spec/payments-api)         |
-| Errors distinguish, in particular, no effect from an unknown effect.                              | [Errors and effect](/docs/spec/payments-api#10) |
-| Notifications have verifiable signatures, ordering and deduplication rules.                       | [Webhooks](/docs/spec/webhooks)                 |
-| Access to the contract is authenticated and restricted by scopes.                                 | [Authentication](/docs/spec/authentication)     |
+| Décision de conception                                                                                       | Document de référence                                 |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Un paiement possède un montant entier en centimes de gourde, une devise et des identifiants distincts.       | [Modèle de données](/docs/spec/data-model)         |
+| La référence choisie par le marchand permet la corrélation, y compris après la perte d'une réponse.          | [Référence du marchand](/docs/spec/data-model#6.2) |
+| Les états du paiement sont explicites ; un état terminal n'est pas quitté.                                   | [Cycle de vie](/docs/spec/lifecycle)               |
+| Une création rejouée suit les règles d'idempotence ; un résultat indéterminé n'est pas transformé en succès. | [Idempotence](/docs/spec/idempotency)              |
+| L'API expose la création, la lecture et la synchronisation par HTTP et JSON.                                 | [API des paiements](/docs/spec/payments-api)       |
+| Une erreur distingue notamment l'absence d'effet d'un effet inconnu.                                         | [Erreurs et effet](/docs/spec/payments-api#10)     |
+| Les notifications possèdent une signature vérifiable, des règles d'ordre et de déduplication.                | [Webhooks](/docs/spec/webhooks)                    |
+| L'accès au contrat est authentifié et limité par des portées.                                                | [Authentification](/docs/spec/authentication)      |
 
-The [design decisions](/docs/decisions) document the selected approaches, their rationale and the alternatives considered. Numbered requirements are defined in the corresponding normative chapters.
+Les [décisions de conception](/docs/decisions) documentent les choix retenus, leurs justifications et les alternatives examinées. Les exigences numérotées sont définies dans les chapitres normatifs correspondants.
 
-## Capability discovery
+## Découverte des capacités
 
-A common interface can be implemented by services offering different functions. Each server declares the capabilities it actually supports. The application discovers these capabilities to determine applicable flows; unsupported functions are not emulated.
+Une interface commune peut être implémentée par des services offrant des fonctions différentes. Chaque serveur déclare les capacités effectivement prises en charge. L’application les découvre pour déterminer les parcours applicables ; une fonction non prise en charge n’est pas émulée.
 
-[Capability discovery](/docs/spec/capabilities) defines endpoints, declared limits and applicable rejection behaviour. Available operations depend on the specification version and the target implementation’s capabilities. Refunds remain a reserved extension and are not specified in the current version.
+La [découverte des capacités](/docs/spec/capabilities) définit les points d’accès, les limites annoncées et les refus applicables. Les opérations disponibles dépendent de la version de la spécification et des capacités de l’implémentation visée. Le remboursement reste une extension réservée et n’est pas spécifié dans la version actuelle.
 
-## Verifying conformance
+## Vérification de conformité
 
-A conformance claim identifies a target, a level and a protocol version. The `client` and `server` targets, the Core level and capability profiles are defined in the [conformance specification](/docs/spec/conformance).
+Une déclaration de conformité identifie une cible, un niveau et une version du protocole. Les cibles `client` et `server`, le niveau Core et les profils associés aux capacités sont définis dans la [spécification de conformité](/docs/spec/conformance).
 
-An attestation records the results of a particular suite execution. Its signature allows its origin and integrity to be verified; it does not certify the implementation.
+Une attestation consigne les résultats d’une exécution donnée de la suite. Sa signature permet d’en vérifier l’origine et l’intégrité ; elle ne constitue pas une certification de l’implémentation.
 
 ## Versions
 
-The project uses semantic versioning. The API path includes the major version (`/v1`); capabilities expose available additions. Before `1.0.0`, a minor release may introduce incompatible changes. Behavioural changes are documented in the [published decisions](/docs/decisions).
+Le projet utilise un versionnement sémantique. Le chemin de l’API contient la version majeure (`/v1`) ; les capacités permettent de découvrir les ajouts disponibles. Avant `1.0.0`, une version mineure peut introduire une rupture de compatibilité. Les modifications de comportement sont documentées dans les [décisions publiées](/docs/decisions).
 
-## Standards
+## Normes
 
-The specification draws on RFCs 2119 and 8174 for normative keywords, RFC 9457 for errors, RFC 3339 for UTC timestamps, ISO 4217 for the HTG currency and ITU-T E.164 for phone numbers. Other references include RFC 9562 for version 7 UUIDs, RFC 9421 for HTTP message signatures, the IETF `Idempotency-Key` draft, OpenAPI 3.1, the RFC 9110 `Bearer` scheme ([authentication 3](/docs/spec/authentication#3)) and RFC 8615 for discovery endpoints. Switching mechanisms, such as those associated with Mojaloop or PRONAP in the context studied, address a separate layer: payment exchange between services. Their integration with OpenFSP requires an architecture broader than the merchant interface.
+La spécification s’appuie notamment sur les RFC 2119 et 8174 pour les mots-clés normatifs, la RFC 9457 pour les erreurs, la RFC 3339 pour les horodatages UTC, ISO 4217 pour la devise HTG et la recommandation UIT-T E.164 pour les numéros de téléphone. Les autres références comprennent la RFC 9562 pour les UUID version 7, la RFC 9421 pour les signatures de messages HTTP, le projet IETF `Idempotency-Key`, OpenAPI 3.1, le schéma `Bearer` de la RFC 9110 ([authentification 3](/docs/spec/authentication#3)) et la RFC 8615 pour les points d’accès de découverte. Les mécanismes de commutation, tels que ceux associés à Mojaloop ou à PRONAP dans le contexte étudié, traitent une couche distincte : l’échange de paiements entre services. Leur articulation avec OpenFSP relève d’une architecture plus large que l’interface marchande.
 
-## Security
+## Sécurité
 
-- Exchanges use TLS ([API 1.1](/docs/spec/payments-api#1.1), [webhooks 7.2](/docs/spec/webhooks#7.2)).
-- API keys are retained as digests and excluded from logs ([authentication 4](/docs/spec/authentication#4)).
-- Transitions are timestamped through `updated_at` and `completed_at`. The API does not allow the client to set payment state ([lifecycle 6.1](/docs/spec/lifecycle#6.1)).
+- Les échanges utilisent TLS ([API 1.1](/docs/spec/payments-api#1.1), [webhooks 7.2](/docs/spec/webhooks#7.2)).
+- Les clés d’API sont conservées sous forme de condensés et exclues des journaux ([authentification 4](/docs/spec/authentication#4)).
+- Les transitions sont horodatées par `updated_at` et `completed_at`. L’API ne permet pas au client de fixer l’état du paiement ([cycle de vie 6.1](/docs/spec/lifecycle#6.1)).
 
-## Regulation
+## Cadre réglementaire
 
-Protocol conformance and regulatory compliance require separate assessments. Payment data and statements support reconciliation and audit; their presence does not establish that a deployment meets its operator’s applicable obligations.
+La conformité au protocole et le respect des obligations réglementaires constituent deux évaluations distinctes. Les données de paiement et les relevés contribuent au rapprochement et à l’audit ; leur présence ne démontre pas que le déploiement satisfait les obligations applicables à son exploitant.
 
-## Out of scope
+## Hors périmètre
 
-The scope is justified in [decision 0001](/docs/decisions#0001). Extending this scope requires a new design decision.
+Le périmètre est justifié dans la [décision 0001](/docs/decisions#0001). Toute extension de ce périmètre nécessite une nouvelle décision de conception.
 
-- The specification provides for no holding, transfer or custody of funds by the project.
-- The project does not operate a hosted payment service. Any hosted offering based on OpenFSP is the responsibility of its operator under the applicable regulatory obligations.
-- OpenFSP is not a licensed payment institution and does not replace required licences or agreements with providers.
-- Switching, clearing and settlement are outside the defined scope.
-- The project does not issue provider certifications.
-- The specification does not prescribe a user interface.
+- La spécification ne prévoit ni détention, ni transfert, ni conservation de fonds par le projet.
+- Le projet n’exploite pas de service de paiement hébergé. Toute offre hébergée fondée sur OpenFSP relève de son exploitant et des obligations réglementaires qui lui sont applicables.
+- OpenFSP ne constitue pas un établissement de paiement agréé et ne se substitue ni aux agréments requis ni aux contrats avec les fournisseurs.
+- La commutation, la compensation et le règlement sont extérieurs au périmètre défini.
+- Le projet ne délivre pas de certification aux fournisseurs.
+- La spécification ne prescrit pas d’interface utilisateur.
 
-The extension to proximity payments belongs to a [later phase](/docs#phases).
+L’extension au paiement de proximité appartient à une [phase ultérieure](/docs#phases).
 
-## Reference implementations
+## Implémentations de référence
 
-The specification is independent of programming languages and infrastructure choices. The reference mock server supports experimentation with exchanges; the conformance suite assesses observable requirements in the scenarios executed. The [implementation guide](/docs/native-operator) describes how to build an OpenFSP server.
+La spécification est indépendante des langages de programmation et des choix d’infrastructure. Le serveur simulé de référence permet d’expérimenter les échanges ; la suite de conformité évalue les exigences observables dans les scénarios exécutés. Le [guide d’implémentation](/docs/native-operator) décrit la réalisation d’un serveur OpenFSP.

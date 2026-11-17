@@ -1,97 +1,97 @@
 ---
-title: Decisions
-description: OpenFSP design choices, rationale, alternatives considered and implementation consequences.
+title: Décisions
+description: Choix de conception d’OpenFSP, justifications, alternatives examinées et conséquences pour l’implémentation.
 ---
 
-The following decisions document the choices adopted for the specification version described here. They remain open to discussion and revision through the project’s change process. Each entry sets out the choice, rationale and alternatives considered, then links to the relevant chapters. Numbered requirements remain the normative reference.
+Les décisions suivantes documentent les choix retenus pour la version décrite de la spécification. Elles sont ouvertes à la discussion et à l’évolution selon le processus de modification du projet. Chaque entrée précise le choix, sa justification et les alternatives examinées, puis renvoie aux chapitres concernés. Les exigences numérotées restent la référence normative.
 
-## 0001. Architecture and scope
+## 0001. Architecture et périmètre
 
-**Decision.** Define a common interface contract that each provider can expose within its payment system. Merchant applications use this interface directly or through client libraries. A reference mock server and a conformance suite accompany the specification.
+**Choix.** Définir un contrat d’interface commun que chaque fournisseur peut exposer dans son système de paiement. Les applications marchandes utilisent cette interface directement ou au moyen de bibliothèques clientes. Un serveur simulé de référence et une suite de conformité accompagnent la spécification.
 
-**Rationale.** Sharing the contract aims to reduce the multiplication of service-specific interfaces. In a fully connected integration model, work can be organised around `providers + applications` implementations rather than `providers × applications` service-specific integrations. This reasoning assumes adoption and compatible capabilities; it is not an empirical cost measurement or a guarantee that no adaptation will be required.
+**Justification.** La mutualisation du contrat vise à réduire la multiplication des interfaces spécifiques. Dans le modèle d’intégration complète, le travail peut être organisé autour de `opérateurs + applications` implémentations plutôt que de `opérateurs × applications` intégrations spécifiques. Ce raisonnement suppose une adoption et des capacités compatibles ; il ne constitue pas une mesure empirique des coûts ni une garantie d’absence d’adaptation.
 
-**Alternatives considered.** Language-specific libraries without a shared server contract; a specification without a reference implementation; a central hosted service; direct adoption of the GSMA Mobile Money API; use of Mojaloop. The selected approach prioritises the definition and distributed implementation of the merchant interface. The comparison concerns this scope and is not a general assessment of these solutions.
+**Alternatives examinées.** Bibliothèques propres à chaque langage sans contrat serveur commun ; spécification sans implémentation de référence ; service central hébergé ; adoption directe de GSMA Mobile Money API ; utilisation de Mojaloop. Le choix retenu privilégie la définition et l’implémentation distribuée de l’interface marchande. La comparaison porte sur ce périmètre : elle ne constitue pas une évaluation générale de ces solutions.
 
-**Reference.** [Architecture](/docs/architecture).
+**Référence.** [Architecture](/docs/architecture).
 
-## 0002. Data model
+## 0002. Modèle de données
 
-**Decision.** Represent amounts as integer HTG cents, bounded to ±(2⁵³ - 1), with an explicit currency fixed to `"HTG"`. Storage and calculations must preserve exactness without rounding; binary64 remains permitted for integer cents under the data model’s conditions. Phone numbers use E.164, timestamps use RFC 3339 in UTC with `Z`, and identifiers are opaque, with UUIDv7 recommended. Unknown fields are ignored in responses and rejected in requests.
+**Choix.** Représenter les montants par un nombre entier de centimes de gourde, borné à ±(2⁵³ - 1), avec une devise explicite fixée à `"HTG"`. L’exactitude doit être conservée pendant le stockage et les calculs, sans arrondi ; le type binary64 reste admis pour les centimes entiers selon les conditions du modèle de données. Les numéros de téléphone utilisent E.164, les horodatages RFC 3339 en UTC avec `Z`, et les identifiants sont opaques, avec UUIDv7 recommandé. Les champs inconnus sont ignorés dans les réponses et rejetés dans les requêtes.
 
-**Rationale.** These representations establish shared primitives for the other chapters. The amount bound permits exact representation of integer cents in JSON environments using double precision. Treating requests and responses differently addresses input errors while allowing response formats to evolve.
+**Justification.** Ces représentations établissent les primitives communes aux autres chapitres. La borne des montants permet leur représentation exacte en centimes entiers dans les environnements JSON utilisant la double précision. La distinction entre requêtes et réponses encadre les erreurs de saisie et l’évolution des formats.
 
-**Alternatives considered.** Decimal-string amounts, fractional floating-point amounts, combined currency-and-amount strings (`"HTG 1250.00"`), multi-currency support in this version, server-side conversion of national phone formats, epoch timestamps and `camelCase` field names.
+**Alternatives examinées.** Montants en chaînes décimales, montants fractionnaires en virgule flottante, chaîne combinant devise et montant (`"HTG 1250.00"`), prise en charge multidevise dans cette version, conversion des formats téléphoniques nationaux par le serveur, horodatages epoch et noms de champs en `camelCase`.
 
-**Reference.** [Data model](/docs/spec/data-model).
+**Référence.** [Modèle de données](/docs/spec/data-model).
 
-## 0003. Payment lifecycle
+## 0003. Cycle de vie du paiement
 
-**Decision.** Define five states: `pending`, the only non-terminal state, and `succeeded`, `failed`, `expired`, `canceled`. A terminal transition relies on authoritative evidence and cannot be reversed. The `pending` state includes indeterminate outcomes. Elapsed time alone does not establish expiry, except under the provider guarantees and conditions specified in the lifecycle.
+**Choix.** Définir cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Le seul écoulement du temps ne suffit pas à établir une expiration, sauf dans les conditions garanties par l’opérateur et précisées dans le cycle de vie.
 
-**Rationale.** A merchant application may trigger delivery of goods or services based on payment state. Stable terminal states provide a consistent basis for that decision. Contradictory information received later must be handled through the specified mechanisms without rewriting the terminal state.
+**Justification.** L’application marchande peut déclencher la livraison d’un bien ou d’un service à partir de l’état du paiement. La stabilité des états terminaux fournit une base cohérente à cette décision. Une information contradictoire reçue ultérieurement doit être traitée selon les mécanismes prévus, sans réécrire l’état terminal.
 
-**Alternatives considered.** Revisable terminal states; additional `unknown` and `processing` states; state machines reproducing each service’s specific behaviour; clock-only expiry; a `refunded` payment state; a single terminal `closed` state.
+**Alternatives examinées.** États terminaux révisables ; états supplémentaires `unknown` et `processing` ; machine à états reproduisant les particularités de chaque service ; expiration fondée uniquement sur l’horloge ; état `refunded` pour le paiement ; état terminal unique `closed`.
 
-**Reference.** [Lifecycle](/docs/spec/lifecycle).
+**Référence.** [Cycle de vie](/docs/spec/lifecycle).
 
-## 0004. Payments API
+## 0004. API des paiements
 
-**Decision.** Expose the API over HTTPS under `/v1`, using JSON representations and a closed RFC 9457 error catalogue extended with `retryable` and `effect`. The base `payments` capability covers creation, retrieval by `id` or `reference`, and synchronisation. The client selects the payment service. `Idempotency-Key` is required for operations subject to idempotency.
+**Choix.** Exposer l’API en HTTPS sous `/v1`, avec des représentations JSON et un catalogue fermé d’erreurs conforme au format RFC 9457, enrichi de `retryable` et `effect`. La capacité de base `payments` couvre la création, la consultation par `id` ou `reference` et la synchronisation. Le client sélectionne le service de paiement. L’en-tête `Idempotency-Key` est obligatoire pour les opérations soumises à idempotence.
 
-**Rationale.** These operations cover payment creation, recovery through a reference already known to the merchant after a lost response, and state retrieval when a notification is missing. The `retryable` and `effect` properties distinguish whether another attempt is appropriate from uncertainty about the initial operation’s effects. Synchronisation remains subject to supported capabilities.
+**Justification.** Ces opérations couvrent la création du paiement, sa récupération par une référence connue du marchand après la perte d’une réponse et la consultation de son état lorsqu’une notification manque. Les propriétés `retryable` et `effect` distinguent la possibilité d’une nouvelle tentative de l’incertitude sur les effets de l’opération initiale. La synchronisation reste soumise aux capacités effectivement prises en charge.
 
-**Alternatives considered.** Server-side service selection; synchronisation through `GET ?synchronize=true`; `404` for an unknown reference; a `/by-reference` path; a URL-only `next_action`; a general payment-listing endpoint in this version.
+**Alternatives examinées.** Sélection du service par le serveur ; synchronisation par `GET ?synchronize=true` ; réponse `404` pour une référence inconnue ; chemin `/by-reference` ; champ `next_action` limité à une URL ; point d’accès de liste générale des paiements dans cette version.
 
-**References.** [Payments API](/docs/spec/payments-api) and [Idempotency](/docs/spec/idempotency).
+**Références.** [API des paiements](/docs/spec/payments-api) et [Idempotence](/docs/spec/idempotency).
 
-## 0005. Capability discovery
+## 0005. Découverte de capacités
 
-**Decision.** Declare only capabilities supported by the service and reject unannounced operations. Discovery uses two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per service. Service-specific behaviour and merchant account limits (`limits`) are represented in machine-readable fields.
+**Choix.** Déclarer uniquement les capacités prises en charge par le service et refuser les opérations non annoncées. La découverte utilise deux points d’accès : `/.well-known/openfsp-configuration`, public et inspiré de la découverte OpenID Connect, puis `/v1/capabilities`, authentifié et détaillé par service. Les comportements propres au service et les limites du compte marchand (`limits`) sont représentés par des champs lisibles par machine.
 
-**Rationale.** Explicit capability declarations allow the application to identify available operations before creating a payment. Emulating an unsupported function would conceal a behavioural difference; checking availability by attempting a payment could have financial effects.
+**Justification.** La déclaration explicite des capacités permet à l’application d’identifier les opérations disponibles avant de créer un paiement. L’émulation d’une fonction absente masquerait une différence de comportement ; une vérification par tentative de paiement pourrait avoir des effets financiers.
 
-**Alternatives considered.** Fixed capabilities per version; HTTP `OPTIONS`; discovery by attempting an operation and handling its error; separately versioned capabilities; capabilities repeated in every payment response; server-wide capabilities; hard-coded limits.
+**Alternatives examinées.** Capacités fixes par version ; méthode HTTP `OPTIONS` ; découverte par tentative suivie du traitement d’une erreur ; versionnement séparé des capacités ; répétition des capacités dans chaque réponse de paiement ; capacités globales au serveur ; limites codées en dur.
 
-**Reference.** [Capabilities](/docs/spec/capabilities).
+**Référence.** [Capacités](/docs/spec/capabilities).
 
-## 0006. Webhooks and event delivery
+## 0006. Webhooks et livraison des événements
 
-**Decision.** Use at-least-once delivery without guaranteed arrival order, with a per-resource `sequence` and an `id` for deduplication. Events are signed under RFC 9421 using Ed25519, a 300-second freshness window and a nonce. The body contains a complete resource snapshot. Five event types are defined; retries follow a minimum schedule with jitter. Polling provides recovery for missed changes.
+**Choix.** Utiliser une livraison au moins une fois, sans garantie d’ordre de réception, avec une `sequence` par ressource et un `id` pour la déduplication. Les événements sont signés selon la RFC 9421 avec Ed25519, une fenêtre de fraîcheur de 300 secondes et un nonce. Le corps contient un instantané complet de la ressource. Cinq types d’événement sont définis ; les nouvelles tentatives suivent un calendrier minimal avec variation aléatoire. L’interrogation périodique permet de récupérer les changements non reçus.
 
-**Rationale.** Public-key signatures allow event integrity and cryptographic origin to be checked using published keys, including by a third party with the required evidence. This verification concerns the signed message; it does not by itself establish the financial accuracy of its contents. Sequence numbers and identifiers support handling of out-of-order arrival and duplicates.
+**Justification.** La signature à clé publique permet de vérifier l’intégrité et l’origine cryptographique d’un événement avec les clés publiées, y compris par un tiers disposant des éléments nécessaires. Cette vérification concerne le message signé ; elle ne démontre pas, à elle seule, l’exactitude financière de son contenu. La séquence et l’identifiant permettent de traiter les réceptions désordonnées et les doublons.
 
-**Alternatives considered.** Shared-secret HMAC; project-specific signature headers; mutual TLS alone; exactly-once delivery; reference-only events; batch delivery; guaranteed ordering.
+**Alternatives examinées.** HMAC à secret partagé ; en-tête de signature spécifique au projet ; TLS mutuel utilisé seul ; livraison exactement une fois ; événements ne contenant qu’une référence ; livraison par lots ; garantie d’ordre.
 
-**Reference.** [Webhooks](/docs/spec/webhooks).
+**Référence.** [Webhooks](/docs/spec/webhooks).
 
-## 0007. Authentication and credentials
+## 0007. Authentification et secrets
 
-**Decision.** Authenticate clients using an `ofsp_<env>_<secret>` key with at least 128 bits of entropy, transmitted exclusively in `Authorization: Bearer`. The server stores a SHA-256 digest, compares values in constant time and returns the single `unauthenticated` error for authentication failures. Four independent scopes are defined. Multiple keys may belong to a principal; revocation takes effect within 60 seconds.
+**Choix.** Authentifier le client au moyen d’une clé `ofsp_<env>_<secret>` offrant au moins 128 bits d’entropie, transmise exclusivement dans `Authorization: Bearer`. Le serveur conserve un condensé SHA-256, effectue les comparaisons en temps constant et renvoie l’erreur unique `unauthenticated` pour les échecs d’authentification. Quatre portées indépendantes sont définies. Plusieurs clés peuvent être associées à un principal ; une révocation prend effet dans un délai maximal de 60 secondes.
 
-**Rationale.** Shared requirements govern key storage, comparisons and authentication responses. They address cleartext storage and disclosure of differences between unknown and revoked keys.
+**Justification.** Des exigences communes encadrent le stockage des clés, les comparaisons et les réponses d’authentification. Elles visent notamment à éviter le stockage en clair et la divulgation de différences entre une clé inconnue et une clé révoquée.
 
-**Alternatives considered.** OAuth 2.0 client credentials; self-issued JWTs; HMAC request signing; mutual TLS as the primary identity mechanism; a single unscoped key; slow key hashing; per-service scopes. These options are not selected for this version’s authentication mechanism.
+**Alternatives examinées.** OAuth 2.0 client credentials ; JWT autoémis ; signature HMAC des requêtes ; TLS mutuel comme mécanisme principal d’identification ; clé unique sans portée ; hachage lent des clés ; portées propres à chaque service. Ces options ne sont pas retenues pour le mécanisme d’authentification de cette version.
 
-**Reference.** [Authentication](/docs/spec/authentication).
+**Référence.** [Authentification](/docs/spec/authentication).
 
-## 0008. Conformance
+## 0008. Conformité
 
-**Decision.** Define conformance by a target (`client` or `server`), a level and a protocol version. Core is mandatory; a profile applies to each announced capability. Scores and rankings do not replace satisfaction of the requirements. The suite can run locally, offline and without modifying the implementation. The `mock_openfsp` reference server reproduces declared scenarios; the report is machine-readable and explicitly states verification limits.
+**Choix.** Définir la conformité par une cible (`client` ou `server`), un niveau et une version du protocole. Le niveau Core est obligatoire ; un profil s’applique à chaque capacité annoncée. Aucun score ni classement ne remplace la satisfaction des exigences. La suite peut être exécutée localement, hors ligne et sans modification de l’implémentation. Le serveur de référence `mock_openfsp` reproduit les scénarios déclarés ; le rapport est lisible par machine et explicite les limites des vérifications.
 
-**Rationale.** Black-box scenarios compare declared capabilities with observable behaviour in the assessed environment. The report retains the list of unverified obligations, distinguishing test results from general claims about an implementation.
+**Justification.** Les scénarios en boîte noire comparent les capacités déclarées aux comportements observables dans l’environnement évalué. Le rapport conserve la liste des obligations non vérifiées, afin de distinguer un résultat de test d’une affirmation générale sur l’implémentation.
 
-**Alternatives considered.** Paid certification by the project; bronze-to-gold rankings; percentage scores; dependence on provider sandboxes for the reference suite; amount-selected scenarios; random failures; implementation instrumentation.
+**Alternatives examinées.** Certification payante par le projet ; niveaux de classement bronze à or ; score en pourcentage ; dépendance aux bacs à sable des fournisseurs pour la suite de référence ; scénario sélectionné par le montant ; défaillances aléatoires ; instrumentation de l’implémentation.
 
-**Reference.** [Conformance](/docs/spec/conformance).
+**Référence.** [Conformité](/docs/spec/conformance).
 
-## References
+## Références
 
 - RFC 3339, Date and Time on the Internet: Timestamps.
 - RFC 9421, HTTP Message Signatures.
 - RFC 9457, Problem Details for HTTP APIs.
 - RFC 9562, Universally Unique IDentifiers (UUIDs).
-- ITU-T E.164, The international public telecommunication numbering plan.
+- UIT-T E.164, The international public telecommunication numbering plan.
 - ISO 4217, Currency codes.
 - OpenID Connect Discovery 1.0.
 - GSMA Mobile Money API Specification 1.2.

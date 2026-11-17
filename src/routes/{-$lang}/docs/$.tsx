@@ -68,7 +68,10 @@ export const Route = createFileRoute("/{-$lang}/docs/$")({
 function AccessibleTOCPopover(props: TOCPopoverProps) {
     const { lang } = Route.useParams();
     return (
-        <nav className="contents" aria-label={lang === "fr" ? "Sommaire" : "Table of contents"}>
+        <nav
+            className="contents"
+            aria-label={asLocale(lang) === "fr" ? "Sommaire" : "Table of contents"}
+        >
             <TOCPopover {...props} />
         </nav>
     );

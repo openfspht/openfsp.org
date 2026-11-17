@@ -29,7 +29,7 @@ one language.
 
 ## Edit the specification
 
-Each chapter is an MDX page in `content/docs/`: `page.mdx` in English, `page.fr.mdx` in French. Edit both together.
+Each chapter is an MDX page in `content/docs/`: `page.mdx` in French, `page.en.mdx` in English. Edit both together.
 Every rule number is an anchor, such as `/docs/spec/idempotency#3.2`, and the conformance suite in
 [openfspht/openfsp](https://github.com/openfspht/openfsp) cites rules by number: never renumber one.
 

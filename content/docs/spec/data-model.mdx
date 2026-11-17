@@ -1,145 +1,145 @@
 ---
-title: Data model
-description: Shared types, JSON representations and constraints on exchanged data.
+title: Modèle de données
+description: Types communs, représentations JSON et contraintes applicables aux données échangées.
 ---
 
-The interface contract uses integer amounts, an explicit currency and opaque identifiers. [Decision 0002](/docs/decisions#0002) documents the constraints and rationale for these representations.
+Le contrat d’interface utilise des montants entiers, une devise explicite et des identifiants opaques. La [décision 0002](/docs/decisions#0002) documente les contraintes et les justifications de ces représentations.
 
 ## 1. Types
 
-| Type                | JSON form                     | Example                                                                 |
-| ------------------- | ----------------------------- | ----------------------------------------------------------------------- |
-| `Money`             | object                        | `{"amount": 125000, "currency": "HTG"}`                                 |
-| `Currency`          | string, single value `HTG`    | `"HTG"`                                                                 |
-| `PhoneNumber`       | string, E.164                 | `"+50934567890"`                                                        |
-| `ResourceId`        | opaque string                 | `"pay_01J9ZK3QF8XN2M7VYB4C6D8E0G"`                                      |
-| `Reference`         | string chosen by the merchant | `"INV-2026-00184"`                                                      |
-| `Timestamp`         | string, RFC 3339 UTC          | `"2026-08-17T14:32:07.412Z"`                                            |
-| `Date`              | string, RFC 3339 `full-date`  | `"2026-09-28"` ([lifecycle 10.1](/docs/spec/lifecycle#10.1))            |
-| `Fee`               | object                        | `{"amount": {"amount": 1250, "currency": "HTG"}, "bearer": "merchant"}` |
-| `Metadata`          | object of strings             | `{"order_id": "184"}`                                                   |
+| Type                | Forme JSON                     | Exemple                                                                 |
+| ------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| `Money`             | objet                          | `{"amount": 125000, "currency": "HTG"}`                                 |
+| `Currency`          | chaîne, valeur unique `HTG`    | `"HTG"`                                                                 |
+| `PhoneNumber`       | chaîne, E.164                  | `"+50934567890"`                                                        |
+| `ResourceId`        | chaîne opaque                  | `"pay_01J9ZK3QF8XN2M7VYB4C6D8E0G"`                                      |
+| `Reference`         | chaîne choisie par le marchand | `"INV-2026-00184"`                                                      |
+| `Timestamp`         | chaîne, RFC 3339 UTC           | `"2026-08-17T14:32:07.412Z"`                                            |
+| `Date`              | chaîne, `full-date` RFC 3339   | `"2026-09-28"` ([cycle de vie 10.1](/docs/spec/lifecycle#10.1))      |
+| `Fee`               | objet                          | `{"amount": {"amount": 1250, "currency": "HTG"}, "bearer": "merchant"}` |
+| `Metadata`          | objet de chaînes               | `{"order_id": "184"}`                                                   |
 
-## 2. JSON conventions
+## 2. Conventions JSON
 
-**2.1.** Request and response bodies use JSON (RFC 8259) with UTF-8 encoding.
+**2.1.** Les corps des requêtes et des réponses utilisent JSON (RFC 8259) avec un encodage UTF-8.
 
-**2.2.** Field names use `lower_snake_case` and MUST NOT be changed within the same major version.
+**2.2.** Les noms des champs utilisent `lower_snake_case` et NE DOIVENT PAS être modifiés au sein d’une même version majeure.
 
-**2.3.** The client MUST ignore any unknown response field.
+**2.3.** Le client DOIT ignorer tout champ de réponse inconnu.
 
-**2.4.** The server MUST reject any request body containing an unknown field with `400` and identify the field concerned.
+**2.4.** Le serveur DOIT rejeter avec le statut `400` tout corps de requête contenant un champ inconnu et indiquer le champ concerné.
 
-**2.5.** For an OPTIONAL field, omission and the value `null` are equivalent. Implementations SHOULD omit the field rather than transmit `null`. A REQUIRED field MUST NOT have the value `null`.
+**2.5.** Pour un champ FACULTATIF, l’absence du champ et la valeur `null` sont équivalentes. Les implémentations DEVRAIENT omettre le champ plutôt que transmettre `null`. Un champ OBLIGATOIRE NE DOIT PAS prendre la valeur `null`.
 
-**2.6.** Strings, except for `Metadata` values (9.3), SHOULD be normalised to NFC before storage and comparison. Length limits are measured in Unicode code points.
+**2.6.** Les chaînes, à l’exception des valeurs de `Metadata` (9.3), DEVRAIENT être normalisées en NFC avant leur stockage et leur comparaison. Les limites de longueur sont exprimées en points de code Unicode.
 
-**2.7.** Boolean and numeric values use their native JSON types rather than string representations.
+**2.7.** Les valeurs booléennes et numériques utilisent leurs types JSON natifs ; elles ne sont pas représentées par des chaînes.
 
 ## 3. `Money`
 
-**3.1.** The fields `amount` and `currency` are REQUIRED.
+**3.1.** Les champs `amount` et `currency` sont OBLIGATOIRES.
 
-**3.2.** The `amount` field represents an integer number of HTG cents: `125000` corresponds to 1,250.00 HTG.
+**3.2.** Le champ `amount` représente un nombre entier de centimes de gourde : `125000` correspond à 1 250,00 HTG.
 
-**3.3.** The `amount` field MUST be represented as a JSON number without a fractional part or exponent.
+**3.3.** Le champ `amount` DOIT être représenté par un nombre JSON dépourvu de partie fractionnaire et d’exposant.
 
-**3.4.** The value of `amount` MUST lie in the inclusive range from -(2⁵³ - 1) to 2⁵³ - 1. Implementations MUST reject values outside this range.
+**3.4.** La valeur de `amount` DOIT appartenir à l’intervalle fermé [-(2⁵³ - 1), 2⁵³ - 1]. Les implémentations DOIVENT rejeter toute valeur extérieure à cet intervalle.
 
-**3.5.** An implementation MUST NOT represent an amount in a form that could lose a cent, even temporarily; fractional gourde values are excluded. A binary64 floating-point type MAY represent the integer number of cents because every integer in the range defined in 3.4 is exact in that type. All arithmetic on that number MUST preserve integer values within the range.
+**3.5.** Une implémentation NE DOIT PAS représenter un montant sous une forme susceptible de perdre un centime, même temporairement ; les valeurs fractionnaires en gourdes sont exclues. Un type à virgule flottante binary64 PEUT représenter le nombre entier de centimes, car tous les entiers de l’intervalle défini au 3.4 y sont exacts. Tout calcul sur ce nombre DOIT conserver des valeurs entières dans cet intervalle.
 
-**3.6.** Unless another specification provides otherwise, a request amount MUST be strictly positive. The server MUST reject a zero amount.
+**3.6.** Sauf disposition contraire d’une autre spécification, le montant d’une requête DOIT être strictement positif. Le serveur DOIT rejeter un montant nul.
 
-**3.7.** Two `Money` values are equal when their `amount` values are equal.
+**3.7.** Deux valeurs `Money` sont égales lorsque leurs valeurs `amount` sont égales.
 
-**3.8.** An implementation MUST NOT apply rounding to an amount.
+**3.8.** Une implémentation NE DOIT PAS appliquer d’arrondi à un montant.
 
-## 4. Currency
+## 4. Devise
 
-**4.1.** The gourde is the only supported currency: `currency` MUST equal `"HTG"` (ISO 4217, exponent 2). Any other value MUST be rejected with `invalid-field`.
+**4.1.** La gourde est l’unique devise prise en charge : `currency` DOIT valoir `"HTG"` (ISO 4217, exposant 2). Toute autre valeur DOIT être rejetée avec `invalid-field`.
 
-**4.2.** Adding support for a currency requires a decision record.
+**4.2.** L’ajout d’une devise nécessite une décision écrite.
 
-## 5. Phone number
+## 5. Numéro de téléphone
 
-**5.1.** The number follows E.164 and the expression `^\+[1-9]\d{1,14}$`.
+**5.1.** Le numéro respecte le format E.164 et l’expression `^\+[1-9]\d{1,14}$`.
 
-**5.2.** Valid example: `"+50934567890"`. Invalid examples: `"34567890"`, `"+509 34 56 78 90"`, `"+509-3456-7890"` and `"050934567890"`.
+**5.2.** Exemple valide : `"+50934567890"`. Exemples invalides : `"34567890"`, `"+509 34 56 78 90"`, `"+509-3456-7890"` et `"050934567890"`.
 
-**5.3.** The server MUST NOT infer a country code from a national number and MUST reject values that do not conform to 5.1. An SDK MAY convert local input to E.164. A merchant interface MAY display a Haitian number as `+509 40 00 0000`; the exchanged value retains E.164 format (`+50940000000`).
+**5.3.** Le serveur NE DOIT PAS déduire l’indicatif pays d’un numéro national et DOIT rejeter toute valeur non conforme au 5.1. Un SDK PEUT convertir une saisie locale au format E.164. Une interface marchande PEUT afficher un numéro haïtien sous la forme `+509 40 00 0000` ; la valeur échangée conserve le format E.164 (`+50940000000`).
 
-**5.4.** Syntactic validity MUST NOT be treated as verification of the number.
+**5.4.** La validité syntaxique d’un numéro NE DOIT PAS être considérée comme une vérification de ce numéro.
 
-## 6. Identifiers
+## 6. Identifiants
 
 ### 6.1. `ResourceId`
 
-**6.1.1.** The identifier contains 1 to 64 characters from `A-Za-z0-9_-`. It is assigned by the server at creation and remains immutable.
+**6.1.1.** L’identifiant comprend de 1 à 64 caractères appartenant à `A-Za-z0-9_-`. Il est attribué par le serveur à la création et reste immuable.
 
-**6.1.2.** The identifier is opaque: the client MUST NOT parse it, infer ordering from it or construct a value.
+**6.1.2.** L’identifiant est opaque : le client NE DOIT PAS l’analyser, en déduire un ordre ou en construire une valeur.
 
-**6.1.3.** Implementations SHOULD generate a version 7 UUID (RFC 9562). Any other generator satisfying 6.1.1 and 6.1.4 is permitted.
+**6.1.3.** Les implémentations DEVRAIENT générer un UUID version 7 (RFC 9562). Tout autre générateur respectant les 6.1.1 et 6.1.4 est admis.
 
-**6.1.4.** The identifier MUST NOT be predictable. Sequential integers and counters are prohibited.
+**6.1.4.** L’identifiant NE DOIT PAS être prévisible. Les entiers séquentiels et les compteurs sont interdits.
 
-**6.1.5.** A type prefix followed by an underscore (`pay_`, `rfd_`) is RECOMMENDED. This prefix belongs to the opaque value.
+**6.1.5.** Un préfixe de type suivi d’un tiret bas (`pay_`, `rfd_`) est RECOMMANDÉ. Ce préfixe appartient à la valeur opaque.
 
 ### 6.2. `Reference`
 
-**6.2.1.** The reference contains 1 to 128 characters from `A-Za-z0-9._:/-`. It is supplied by the merchant at creation and remains immutable.
+**6.2.1.** La référence comprend de 1 à 128 caractères appartenant à `A-Za-z0-9._:/-`. Elle est fournie par le marchand à la création et reste immuable.
 
-**6.2.2.** A `Reference` MUST be unique among resources of the same type within a merchant account, regardless of the principal that created them. The server MUST reject creation using an existing reference.
+**6.2.2.** Une `Reference` DOIT être unique pour les ressources de même type d’un compte marchand, indépendamment du principal à l’origine de leur création. Le serveur DOIT rejeter toute création réutilisant une référence existante.
 
-**6.2.3.** The `Reference` is the primary correlation key, particularly for recovering a payment when its creation received no response.
+**6.2.3.** La `Reference` constitue la clé de corrélation principale, notamment pour retrouver un paiement après l’absence de réponse à sa création.
 
-**6.2.4.** The `Reference` MUST NOT include personal data or a secret identifier.
+**6.2.4.** La `Reference` NE DOIT PAS inclure de données personnelles ni d’identifiant secret.
 
-**6.2.5.** The relationship with `Idempotency-Key` is defined in [idempotency 6](/docs/spec/idempotency#6).
+**6.2.5.** L’articulation avec `Idempotency-Key` est définie en [idempotence 6](/docs/spec/idempotency#6).
 
 ### 6.3. `IdempotencyKey`
 
-**6.3.1.** The key contains 1 to 255 characters from `A-Za-z0-9_-` and is transmitted in the `Idempotency-Key` header. Its semantics are defined in [Idempotency](/docs/spec/idempotency).
+**6.3.1.** La clé comprend de 1 à 255 caractères appartenant à `A-Za-z0-9_-` et est transmise dans l’en-tête `Idempotency-Key`. Sa sémantique est définie dans le chapitre [Idempotence](/docs/spec/idempotency).
 
-## 7. Timestamp
+## 7. Horodatage
 
-**7.1.** Timestamps use the RFC 3339 `date-time` format in UTC with an uppercase `Z`: `"2026-08-17T14:32:07.412Z"`.
+**7.1.** L’horodatage utilise le format `date-time` de la RFC 3339, en UTC avec un `Z` majuscule : `"2026-08-17T14:32:07.412Z"`.
 
-**7.2.** Numeric offsets, a lowercase `z` suffix and dates without a time MUST be rejected.
+**7.2.** Les décalages numériques, le suffixe `z` minuscule et les dates sans heure DOIVENT être rejetés.
 
-**7.3.** Seconds are REQUIRED; fractional seconds down to milliseconds are OPTIONAL. The client MUST accept these fractions and the server MUST NOT require them.
+**7.3.** Les secondes sont OBLIGATOIRES ; les fractions de seconde jusqu’à la milliseconde sont FACULTATIVES. Le client DOIT accepter ces fractions et le serveur NE DOIT PAS les exiger.
 
-**7.4.** Timestamps MUST NOT define a total order across events. The client MUST NOT derive a sequence from them.
+**7.4.** Les horodatages NE DOIVENT PAS définir un ordre total entre événements. Le client NE DOIT PAS en déduire une séquence.
 
 ## 8. `Fee`
 
-**8.1.** The object describes fees applied by the provider to a payment.
+**8.1.** L’objet décrit les frais appliqués par l’opérateur à un paiement.
 
-| Field    | Type    | Presence | Notes                  |
-| -------- | ------- | -------- | ---------------------- |
-| `amount` | `Money` | REQUIRED | In HTG.                |
-| `bearer` | string  | REQUIRED | `merchant` or `payer`. |
+| Champ    | Type    | Présence    | Notes                  |
+| -------- | ------- | ----------- | ---------------------- |
+| `amount` | `Money` | OBLIGATOIRE | En HTG.                |
+| `bearer` | chaîne  | OBLIGATOIRE | `merchant` ou `payer`. |
 
-**8.2.** An absent `Fee` means fees are unknown; zero fees are represented by a zero amount. The client MUST NOT display absent fees as zero or calculate them by subtraction.
+**8.2.** L’absence de `Fee` signifie que les frais sont inconnus ; des frais nuls sont représentés par un montant nul. Le client NE DOIT PAS afficher des frais absents comme nuls ni les calculer par soustraction.
 
-**8.3.** The `bearer` field identifies the party that bore the fees according to the provider. The server MUST NOT allow the client to set it.
+**8.3.** Le champ `bearer` indique la partie ayant supporté les frais selon l’opérateur. Le serveur NE DOIT PAS permettre au client de le fixer.
 
-**8.4.** The server MUST NOT defer a terminal transition while waiting for fee data or assign an unestablished fee value.
+**8.4.** Le serveur NE DOIT PAS différer une transition terminale dans l’attente des frais ni attribuer aux frais une valeur non établie.
 
-**8.5.** A server unable to report a provider’s fees MUST NOT declare `payments.fee` for that provider.
+**8.5.** Le serveur qui ne peut pas communiquer les frais d’un opérateur NE DOIT PAS déclarer `payments.fee` pour cet opérateur.
 
 ## 9. `Metadata`
 
-**9.1.** This OPTIONAL object maps strings to strings and accompanies every resource representation. The client supplies it at creation; the server MAY add its own keys under 9.4.
+**9.1.** Cet objet FACULTATIF associe des chaînes à des chaînes et accompagne chaque représentation de la ressource. Le client le fournit à la création ; le serveur PEUT ajouter ses propres clés selon le 9.4.
 
-**9.2.** The object contains at most 20 keys. Each key contains 1 to 40 characters from `A-Za-z0-9_.-`; each value contains at most 500 characters. Non-string values are invalid.
+**9.2.** L’objet contient au plus 20 clés. Chaque clé comprend de 1 à 40 caractères appartenant à `A-Za-z0-9_.-` ; chaque valeur comprend au plus 500 caractères. Les valeurs autres que des chaînes sont invalides.
 
-**9.3.** The server MUST store and return the client’s keys unchanged, MUST NOT remove them and MUST NOT assign semantics to them.
+**9.3.** Le serveur DOIT stocker et restituer les clés du client sans modification, NE DOIT PAS les supprimer et NE DOIT PAS leur attribuer de sémantique.
 
-**9.4.** The server documents the keys it adds. It MUST NOT add a key already supplied by the client. Server keys are excluded from the limits in 9.2.
+**9.4.** Le serveur documente les clés qu’il ajoute. Il NE DOIT PAS ajouter une clé déjà fournie par le client. Les clés du serveur sont exclues des limites définies au 9.2.
 
-**9.5.** Merchants SHOULD NOT include personal data in this object and MUST NOT include secret identifiers.
+**9.5.** Les marchands NE DEVRAIENT PAS inclure de données personnelles dans cet objet et NE DOIVENT PAS y inclure d’identifiants secrets.
 
-## 10. Security
+## 10. Sécurité
 
-**10.1.** Phone numbers MUST NOT appear in any log other than the audit log ([authentication 9](/docs/spec/authentication#9)), or in error messages or telemetry.
+**10.1.** Les numéros de téléphone NE DOIVENT apparaître dans aucun journal autre que le journal d’audit ([authentification 9](/docs/spec/authentication#9)), ni dans les messages d’erreur ou la télémétrie.
 
-**10.2.** The server SHOULD state in its documentation that metadata is not encrypted at rest unless the operator applies such encryption.
+**10.2.** Le serveur DEVRAIT préciser dans sa documentation que les métadonnées ne sont pas chiffrées au repos, sauf si l’exploitant applique ce chiffrement.

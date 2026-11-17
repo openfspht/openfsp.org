@@ -1,17 +1,17 @@
 ---
-title: Quickstart
-description: Client library installation, simulated payment execution and an initial conformance assessment.
+title: Démarrage rapide
+description: Installation d’une bibliothèque cliente, exécution d’un paiement simulé et première évaluation de conformité.
 ---
 
-The `make demo` command starts an environment for experimenting with OpenFSP payments without a merchant account or real funds. Run the following commands from the root of the [`openfsp`](https://github.com/openfspht/openfsp) repository.
+La commande `make demo` démarre un environnement permettant d’expérimenter un paiement OpenFSP sans compte marchand ni mouvement de fonds réels. Exécutez les commandes suivantes depuis la racine du dépôt [`openfsp`](https://github.com/openfspht/openfsp).
 
-To integrate a merchant application server, use the [Kotlin and Java SDK](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) or the [TypeScript SDK](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`). These packages are intended for Maven Central and npm from version `0.1.0`, according to the documented publication status. Set `OPENFSP_BASE_URL` and `OPENFSP_API_KEY`, and keep the key exclusively on the server.
+Pour intégrer le serveur d’une application marchande, utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) ou le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`). Ces paquets sont prévus sur Maven Central et npm à partir de la version `0.1.0`, selon l’état de publication documenté. Renseignez `OPENFSP_BASE_URL` et `OPENFSP_API_KEY`, et conservez la clé exclusivement côté serveur.
 
-To expose the provider-side API, follow the [implementation guide](/docs/native-operator). The [public validator](https://validate.openfsp.org) also supports assessment of the requirements covered by the suite.
+Pour exposer l’API côté fournisseur, suivez le [guide d’implémentation](/docs/native-operator). Le [validateur public](https://validate.openfsp.org) permet également d’évaluer les exigences prises en charge par la suite.
 
-## 1. Demo with Docker
+## 1. Démonstration avec Docker
 
-Requirements: Git, Make and Docker with the Compose plugin. Verify the plugin with `docker compose version`. The first launch downloads images and builds services, requiring an Internet connection and potentially several minutes.
+Prérequis : Git, Make et Docker avec le plugin Compose. Vérifiez ce dernier avec `docker compose version`. Au premier lancement, le téléchargement des images et la compilation des services nécessitent une connexion Internet et peuvent prendre plusieurs minutes.
 
 ```bash
 git clone https://github.com/openfspht/openfsp.git
@@ -19,64 +19,64 @@ cd openfsp
 make demo
 ```
 
-This target executes `docker compose --profile demo up --build` and starts the following services:
+Cette cible exécute `docker compose --profile demo up --build` et démarre les services suivants :
 
-| Service      | Address                 |
-| ------------ | ----------------------- |
-| OpenFSP server | `http://localhost:8080` |
-| Console      | `http://localhost:5173` |
-| Simulator UI | `http://localhost:5175` |
-| Validator UI | `http://localhost:5176` |
-| Demo shop    | `http://localhost:3000` |
+| Service                     | Adresse                 |
+| --------------------------- | ----------------------- |
+| Serveur OpenFSP             | `http://localhost:8080` |
+| Console                     | `http://localhost:5173` |
+| Interface du serveur simulé | `http://localhost:5175` |
+| Interface du validateur     | `http://localhost:5176` |
+| Boutique                    | `http://localhost:3000` |
 
-The simulator is also available at `127.0.0.1:8090`. PostgreSQL and the validation service use non-fixed host ports. Use the `demo-admin-token` administration token to access the console. Endpoint discovery is available at `/.well-known/openfsp-configuration`. The server on port 8080 is the [gateway](/docs/gateway), connected to the simulator’s payment services.
+Le simulateur est également accessible sur `127.0.0.1:8090`. PostgreSQL et le service de validation utilisent des ports hôtes non fixes. Pour accéder à la console, utilisez le jeton d’administration `demo-admin-token`. La découverte des points d’accès est disponible à `/.well-known/openfsp-configuration`. Le serveur sur le port 8080 correspond à la [passerelle](/docs/gateway), connectée aux services de paiement du simulateur.
 
-### First simulated payment
+### Premier paiement simulé
 
-1. Wait for the services to start, then open the [local shop](http://localhost:3000).
-2. Add a product to the cart and select a service marked “(mock)”.
-3. Complete the simulated flow without a merchant account or real funds.
-4. Open the [local console](http://localhost:5173) using `demo-admin-token`, then retrieve the payment. The success scenario produces a transition from `pending` to `succeeded`.
+1. Attendez le démarrage des services, puis ouvrez la [boutique locale](http://localhost:3000).
+2. Ajoutez un produit au panier et sélectionnez un service portant la mention « (mock) ».
+3. Suivez les étapes du parcours simulé, sans compte marchand ni fonds réels.
+4. Accédez à la [console locale](http://localhost:5173) avec `demo-admin-token`, puis consultez le paiement. Le scénario de réussite produit la transition de `pending` vers `succeeded`.
 
-The Docker environment and the development mode described below use different ports.
+L’environnement Docker et le mode développement décrit ci-dessous utilisent des ports distincts.
 
-To stop the demonstration, press Ctrl+C, then run:
+Pour arrêter la démonstration, appuyez sur Ctrl+C, puis exécutez :
 
 ```bash
 docker compose --profile demo down
 ```
 
-Data volumes are retained. If startup fails, inspect the logs with `docker compose --profile demo logs --tail=100`. If a required port is occupied, release it before running `make demo` again. Also verify that Docker is running and images are accessible.
+Les volumes de données sont conservés. En cas d’échec au démarrage, consultez les journaux avec `docker compose --profile demo logs --tail=100`. Si un port requis est occupé, libérez-le avant de relancer `make demo`. Vérifiez également que Docker fonctionne et que les images sont accessibles.
 
-## 2. Development
+## 2. Développement
 
-The development environment requires JDK 25, Bun and a PostgreSQL instance accessible at `127.0.0.1:5432`. By default, the `openfsp` role owns the `openfsp` database. Use `DB_NAME`, `DB_USER` and `DB_PASSWORD` to adapt this configuration.
+L’environnement de développement nécessite le JDK 25, Bun et une instance PostgreSQL accessible sur `127.0.0.1:5432`. Par défaut, le rôle `openfsp` est propriétaire de la base `openfsp`. Les variables `DB_NAME`, `DB_USER` et `DB_PASSWORD` permettent d’adapter cette configuration.
 
 ```bash
 make install
 make dev
 ```
 
-`make dev` opens a terminal with one process per tab and authenticates the console with `demo-admin-token`. The demonstration merchant application is maintained in [openfspht/demo](https://github.com/openfspht/demo). Run it alongside the services using the demonstration API key.
+`make dev` ouvre un terminal avec un processus par onglet et authentifie la console avec `demo-admin-token`. L’application marchande de démonstration se trouve dans le dépôt [openfspht/demo](https://github.com/openfspht/demo). Exécutez-la en parallèle avec la clé d’API de démonstration.
 
-| Process      | Port               |
-| ------------ | ------------------ |
-| OpenFSP server | 8080             |
-| Simulator    | 8090               |
-| Validator    | 8095               |
-| Console      | 5173               |
-| Simulator UI | 5175               |
-| Validator UI | 5176               |
+| Processus                   | Port                |
+| --------------------------- | ------------------- |
+| Serveur OpenFSP             | 8080                |
+| Serveur simulé              | 8090                |
+| Validateur                  | 8095                |
+| Console                     | 5173                |
+| Interface du serveur simulé | 5175                |
+| Interface du validateur     | 5176                |
 
-`make check` runs compilation, static analysis, type checking and tests for the backend and frontend components.
+`make check` exécute la compilation, les analyses statiques, la vérification des types et les tests des composants serveur et des interfaces clientes.
 
-## 3. Conformance of an implementation
+## 3. Conformité d'une implémentation
 
 ```bash
 make simulator         # terminal 1
 make validate-native   # terminal 2
 ```
 
-`make validate-native` assesses the `server` target against the `mock_openfsp` reference mock server at `http://127.0.0.1:8090/mock_openfsp`, as defined by `VALIDATE_NATIVE_BASE_URL`. The command uses the server’s published keys and saves the report to `backend/validator/infrastructure/build/conformance-report-native.json`.
+`make validate-native` évalue la cible `server` contre le serveur simulé de référence `mock_openfsp`, à l’adresse `http://127.0.0.1:8090/mock_openfsp` définie par `VALIDATE_NATIVE_BASE_URL`. La commande utilise les clés publiées par ce serveur et enregistre le rapport dans `backend/validator/infrastructure/build/conformance-report-native.json`.
 
-The [implementation guide](/docs/native-operator) explains how to interpret verdicts and the report’s limitations.
+Le [guide d’implémentation](/docs/native-operator) précise l’interprétation des verdicts et les limites du rapport.

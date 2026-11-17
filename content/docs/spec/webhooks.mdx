@@ -1,23 +1,23 @@
 ---
 title: Webhooks
-description: Structure, signing, delivery and processing of event notifications.
+description: Structure, signature, livraison et traitement des notifications d’événements.
 ---
 
-Payment events are signed. Event processing accounts for duplicate delivery and arrival in a different order from emission. [Decision 0006](/docs/decisions#0006) documents the delivery and signature mechanisms.
+Les événements de paiement sont signés. Leur traitement tient compte des livraisons multiples et des réceptions dans un ordre différent de celui de leur émission. La [décision 0006](/docs/decisions#0006) documente les mécanismes de livraison et de signature.
 
-## 1. Event
+## 1. Événement
 
-**1.1.** An event reports the state reached by a resource at a given time. A delivery is an HTTP request carrying that event; multiple deliveries may carry the same event.
+**1.1.** Un événement notifie l’état atteint par une ressource à un instant donné. Une livraison correspond à une requête HTTP contenant cet événement ; plusieurs livraisons peuvent concerner le même événement.
 
-**1.2.** Signature verification under section 5 establishes the message’s cryptographic origin and the integrity of its body.
+**1.2.** La vérification de la signature selon le 5 établit l’origine cryptographique du message et l’intégrité de son corps.
 
-**1.3.** An event represents the resource at emission time. If it contradicts a retrieval result, the subscriber MUST treat the retrieval result as authoritative.
+**1.3.** L’événement représente la ressource au moment de son émission. En cas de contradiction avec une consultation, l’abonné DOIT retenir le résultat de la consultation comme référence.
 
-**1.4.** The server MUST NOT emit an event describing a state the resource has not reached.
+**1.4.** Le serveur NE DOIT PAS émettre d’événement décrivant un état que la ressource n’a pas atteint.
 
-## 2. `event` object
+## 2. Objet `event`
 
-Each delivery body contains one JSON object, without an array or event batch.
+Le corps de chaque livraison contient un objet JSON unique, sans tableau ni regroupement d’événements.
 
 ```json
 {
@@ -33,91 +33,91 @@ Each delivery body contains one JSON object, without an array or event batch.
 }
 ```
 
-**2.1.** The event contains the following fields:
+**2.1.** L’événement comporte les champs suivants :
 
-| Field             | Type         | Presence    | Notes                                                                   |
-| ----------------- | ------------ | ----------- | ----------------------------------------------------------------------- |
-| `id`              | `ResourceId` | REQUIRED    | Identifies the event (2.2).                                             |
-| `type`            | string       | REQUIRED    | Registry in 3.2.                                                        |
-| `created_at`      | `Timestamp`  | REQUIRED    | When the creation or transition was recorded, not the delivery attempt. |
-| `sequence`        | integer      | REQUIRED    | Per-resource ordinal (8).                                               |
-| `resource_type`   | string       | REQUIRED    | `payment`.                                                              |
-| `resource_id`     | `ResourceId` | REQUIRED    | Resource concerned.                                                     |
-| `reference`       | `Reference`  | REQUIRED    | Merchant reference.                                                     |
-| `previous_status` | string       | conditional | REQUIRED for a status change.                                           |
-| `data`            | object       | REQUIRED    | Full resource at `created_at` ([API 3](/docs/spec/payments-api#3)).     |
+| Champ             | Type         | Présence     | Notes                                                                             |
+| ----------------- | ------------ | ------------ | --------------------------------------------------------------------------------- |
+| `id`              | `ResourceId` | OBLIGATOIRE  | Identifie l'événement (2.2).                                                      |
+| `type`            | chaîne       | OBLIGATOIRE  | Registre du 3.2.                                                                  |
+| `created_at`      | `Timestamp`  | OBLIGATOIRE  | Enregistrement de la création ou de la transition, pas la tentative de livraison. |
+| `sequence`        | entier       | OBLIGATOIRE  | Ordinal par ressource (8).                                                        |
+| `resource_type`   | chaîne       | OBLIGATOIRE  | `payment`.                                                                        |
+| `resource_id`     | `ResourceId` | OBLIGATOIRE  | Ressource concernée.                                                              |
+| `reference`       | `Reference`  | OBLIGATOIRE  | Référence du marchand.                                                            |
+| `previous_status` | chaîne       | conditionnel | OBLIGATOIRE pour un changement de statut.                                         |
+| `data`            | objet        | OBLIGATOIRE  | Ressource complète à `created_at` ([API 3](/docs/spec/payments-api#3)).        |
 
-**2.2.** The `id` field follows the `ResourceId` format ([data model 6.1](/docs/spec/data-model#6.1)) and MUST retain the same value for all deliveries of the same event.
+**2.2.** Le champ `id` respecte le format `ResourceId` ([modèle de données 6.1](/docs/spec/data-model#6.1)) et DOIT conserver la même valeur pour toutes les livraisons du même événement.
 
-**2.3.** The value of `reference` is also present at the event’s top level, in addition to `data`.
+**2.3.** La valeur de `reference` est également présente au premier niveau de l’événement, en complément de `data`.
 
-**2.4.** The `data` member contains a complete resource snapshot rather than a differential representation.
+**2.4.** Le membre `data` contient un instantané complet de la ressource, et non une représentation différentielle.
 
-**2.5.** The subscriber MUST accept unknown members of the object and of `data`. The server MUST NOT remove an object member without a decision record.
+**2.5.** L’abonné DOIT accepter les membres inconnus de l’objet et de `data`. Le serveur NE DOIT PAS retirer de membre de l’objet sans décision écrite.
 
-**2.6.** The subscriber MUST NOT reject an event solely because `previous_status` differs from its recorded state; it SHOULD then retrieve the resource again.
+**2.6.** L’abonné NE DOIT PAS rejeter un événement uniquement parce que `previous_status` diffère de son état enregistré ; il DEVRAIT alors consulter de nouveau la ressource.
 
 ## 3. Types
 
-**3.1.** The value of `type` follows `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`, combining `resource_type` with the event name.
+**3.1.** La valeur de `type` respecte `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$` : elle associe `resource_type` au nom de l’événement.
 
-**3.2.** Event types are defined by the following registry:
+**3.2.** Les types d’événements sont définis par le registre suivant :
 
-| Type                | Emitted when                       | `previous_status` |
+| Type                | Émis quand                         | `previous_status` |
 | ------------------- | ---------------------------------- | ----------------- |
-| `payment.created`   | A payment is created in `pending`. | absent            |
-| `payment.succeeded` | A payment enters `succeeded`.      | REQUIRED          |
-| `payment.failed`    | A payment enters `failed`.         | REQUIRED          |
-| `payment.expired`   | A payment enters `expired`.        | REQUIRED          |
-| `payment.canceled`  | A payment enters `canceled`.       | REQUIRED          |
+| `payment.created`   | Un paiement est créé en `pending`. | absent            |
+| `payment.succeeded` | Un paiement entre en `succeeded`.  | OBLIGATOIRE       |
+| `payment.failed`    | Un paiement entre en `failed`.     | OBLIGATOIRE       |
+| `payment.expired`   | Un paiement entre en `expired`.    | OBLIGATOIRE       |
+| `payment.canceled`  | Un paiement entre en `canceled`.   | OBLIGATOIRE       |
 
-**3.3.** The subscriber MUST ignore an unknown `type` and MUST nevertheless acknowledge it with `2xx`.
+**3.3.** L’abonné DOIT ignorer un `type` inconnu et DOIT néanmoins accuser réception avec `2xx`.
 
-**3.4.** No `payment.updated` event is defined. A field change without a state transition produces no event.
+**3.4.** Aucun événement `payment.updated` n’est défini. La modification d’un champ sans transition d’état ne produit pas d’événement.
 
-**3.5.** Adding an event type requires a decision record without a major version change.
+**3.5.** L’ajout d’un type nécessite une décision écrite, sans changement de version majeure.
 
-**3.6.** The server MUST NOT deliver an event type to an endpoint that is not subscribed to that type (7.1).
+**3.6.** Le serveur NE DOIT PAS livrer à un point d’accès un type d’événement auquel ce point d’accès n’est pas abonné (7.1).
 
-## 4. Delivery
+## 4. Livraison
 
-**4.1.** Each delivery uses `POST` to the configured URL with `Content-Type: application/json` and a signature conforming to section 5.
+**4.1.** Chaque livraison utilise `POST` vers l’URL configurée, avec `Content-Type: application/json` et une signature conforme au 5.
 
-**4.2.** The delivery contains the following headers:
+**4.2.** La livraison contient les en-têtes suivants :
 
-| Header                     | Value                                                     |
-| -------------------------- | --------------------------------------------------------- |
-| `Content-Digest`           | SHA-256 of the body (RFC 9530). Covered by the signature. |
-| `OpenFSP-Event-Id`         | Event `id`. Covered by the signature.                     |
-| `OpenFSP-Event-Type`       | Event `type`. Covered by the signature.                   |
-| `OpenFSP-Delivery-Attempt` | Attempt number, starting at `1`. Not covered.             |
+| En-tête                    | Valeur                                                 |
+| -------------------------- | ------------------------------------------------------ |
+| `Content-Digest`           | SHA-256 du corps (RFC 9530). Couvert par la signature. |
+| `OpenFSP-Event-Id`         | `id` de l'événement. Couvert par la signature.         |
+| `OpenFSP-Event-Type`       | `type` de l'événement. Couvert par la signature.       |
+| `OpenFSP-Delivery-Attempt` | Rang de la tentative, à partir de `1`. Non couvert.    |
 
-The subscriber MUST NOT establish trust from a header not covered by the signature. Authoritative values are contained in the signed body.
+L’abonné NE DOIT PAS accorder sa confiance à partir d’un en-tête non couvert par la signature. Les valeurs de référence figurent dans le corps signé.
 
-**4.3.** Delivery succeeds when a `2xx` status is received within the time limit in 4.5. The server MUST NOT interpret the response body, act on its contents or log it in full.
+**4.3.** La livraison réussit si un statut `2xx` est reçu dans le délai du 4.5. Le serveur NE DOIT PAS interpréter le corps de la réponse, agir sur son contenu ou le journaliser intégralement.
 
-**4.4.** Any other status, connection failure, TLS failure or timeout constitutes delivery failure and triggers retries under section 9. Exception: `410 Gone` is final. The server MUST stop attempts for that event and SHOULD stop deliveries to the endpoint, recording that decision (9.6).
+**4.4.** Tout autre statut, échec de connexion, échec TLS ou dépassement de délai constitue un échec de livraison et déclenche les nouvelles tentatives du 9. Exception : `410 Gone` est définitif. Le serveur DOIT arrêter les tentatives pour cet événement et DEVRAIT arrêter les livraisons au point d’accès concerné en consignant cette décision (9.6).
 
-**4.5.** The server MUST limit connection and response durations; their total MUST NOT exceed 10 seconds.
+**4.5.** Le serveur DOIT limiter les durées de connexion et de réponse ; leur total NE DOIT PAS excéder 10 secondes.
 
-**4.6.** A `3xx` status MUST be interpreted as failure; redirects are not followed.
+**4.6.** Un statut `3xx` DOIT être interprété comme un échec ; aucune redirection n’est suivie.
 
-**4.7.** The body MUST remain identical byte for byte across attempts; only the signature is recomputed.
+**4.7.** Le corps DOIT rester identique à l’octet près entre les tentatives ; seule la signature est recalculée.
 
-**4.8.** The server MAY deliver events concurrently and in any order. It MUST NOT block one resource’s deliveries while waiting for another’s.
+**4.8.** Le serveur PEUT livrer les événements en parallèle et dans un ordre quelconque. Il NE DOIT PAS bloquer les livraisons d’une ressource dans l’attente de celles d’une autre.
 
 ## 5. Signature
 
-**5.1.** Every delivery MUST contain an RFC 9421 HTTP signature in `Signature-Input` and `Signature`, including in development mode.
+**5.1.** Toute livraison DOIT contenir une signature HTTP conforme à la RFC 9421 dans `Signature-Input` et `Signature`, y compris en mode développement.
 
-**5.2.** The signature covers exactly the following components, in the order shown:
+**5.2.** La signature couvre exactement les composants suivants, dans l’ordre indiqué :
 
 ```
 ("@method" "@target-uri" "content-type" "content-digest" "openfsp-event-id"
  "openfsp-event-type")
 ```
 
-**5.3.** The parameters `keyid`, `created`, `expires`, `nonce` and `alg` are REQUIRED. The `tag` parameter MUST equal `openfsp-webhook`.
+**5.3.** Les paramètres `keyid`, `created`, `expires`, `nonce` et `alg` sont OBLIGATOIRES. Le paramètre `tag` DOIT valoir `openfsp-webhook`.
 
 ```
 Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
@@ -126,27 +126,27 @@ Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
 Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 ```
 
-**5.4.** The server MUST support and default to `ed25519`. It MAY also offer `ecdsa-p256-sha256` and MUST NOT offer any other algorithm.
+**5.4.** Le serveur DOIT prendre en charge et utiliser par défaut `ed25519`. Il PEUT également proposer `ecdsa-p256-sha256` et NE DOIT PAS proposer d’autre algorithme.
 
-**5.5.** The `Content-Digest` header is REQUIRED and uses `sha-256`. The verifier MUST recompute the received body’s digest and compare it with the header value.
+**5.5.** L’en-tête `Content-Digest` est OBLIGATOIRE et utilise `sha-256`. Le vérificateur DOIT recalculer le condensé du corps reçu et le comparer à la valeur de l’en-tête.
 
-**5.6.** The `created` parameter MUST identify the attempt time, and `expires` cannot exceed `created` + 300 seconds. The verifier MUST reject an expired signature or one whose `created` is more than 300 seconds in the future.
+**5.6.** Le paramètre `created` DOIT correspondre à l’instant de la tentative, et `expires` ne peut dépasser `created` + 300 secondes. Le vérificateur DOIT rejeter toute signature expirée ou dont `created` se situe à plus de 300 secondes dans le futur.
 
-**5.7.** The `nonce` parameter MUST contain at least 128 unpredictable bits, base64url-encoded and renewed for each attempt. The verifier MUST retain accepted nonces for at least the window in 5.6 and MUST reject any previously accepted nonce.
+**5.7.** Le paramètre `nonce` DOIT contenir au moins 128 bits imprévisibles, encodés en base64url et renouvelés à chaque tentative. Le vérificateur DOIT conserver les nonces acceptés pendant au moins la fenêtre du 5.6 et DOIT rejeter tout nonce déjà accepté.
 
-**5.8.** The nonce cache and `id` deduplication (8.4) serve distinct purposes; the subscriber MUST apply both mechanisms.
+**5.8.** Le cache des nonces et la déduplication par `id` (8.4) remplissent des fonctions distinctes ; l’abonné DOIT appliquer les deux mécanismes.
 
-**5.9.** Before acting, the subscriber MUST perform checks in this order: resolve `keyid`, rejecting an unknown `keyid`; check `alg` against the key; then verify freshness, the nonce, the digest and the signature.
+**5.9.** Avant toute action, l’abonné DOIT effectuer les vérifications dans cet ordre : résoudre `keyid` en rejetant tout `keyid` inconnu, contrôler `alg` par rapport à la clé, puis vérifier la fraîcheur, le nonce, le condensé et la signature.
 
-**5.10.** The verifier MUST NOT select the algorithm from `alg`. The key determines the algorithm; `alg` is used only for a consistency check.
+**5.10.** Le vérificateur NE DOIT PAS sélectionner l’algorithme à partir de `alg`. La clé détermine l’algorithme ; `alg` sert uniquement au contrôle de cohérence.
 
-**5.11.** Comparison of digests and signatures MUST be performed in constant time.
+**5.11.** La comparaison des condensés et des signatures DOIT être effectuée en temps constant.
 
-**5.12.** If verification fails, the subscriber MUST reject the delivery without acting, MUST NOT return `2xx` and SHOULD return `400`.
+**5.12.** Si la vérification échoue, l’abonné DOIT rejeter la livraison sans agir, NE DOIT PAS retourner `2xx` et DEVRAIT retourner `400`.
 
-## 6. Keys
+## 6. Clés
 
-**6.1.** The server MUST publish its verification keys as a JWK array (RFC 7517) in the configuration document’s `webhook_keys` member ([capabilities 3.1](/docs/spec/capabilities#3.1)), with no other publication point.
+**6.1.** Le serveur DOIT publier ses clés de vérification sous la forme d’un tableau de JWK (RFC 7517) dans le membre `webhook_keys` du document de configuration ([capacités 3.1](/docs/spec/capabilities#3.1)), à l’exclusion de tout autre point de publication.
 
 ```json
 {
@@ -164,100 +164,100 @@ Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 }
 ```
 
-**6.2.** The value of `kid` MUST equal the `keyid` in 5.3. The verifier MUST accept the mapping between the JOSE name `EdDSA` and the RFC 9421 name `ed25519`.
+**6.2.** La valeur de `kid` DOIT être égale au `keyid` du 5.3. Le vérificateur DOIT accepter la correspondance entre le nom JOSE `EdDSA` et le nom RFC 9421 `ed25519`.
 
-**6.3.** The `openfsp_status` field is `active` for a signing key or `retired` for a verification-only key. A key that is neither `active` nor `retired` MUST NOT be published.
+**6.3.** Le champ `openfsp_status` vaut `active` pour une clé de signature ou `retired` pour une clé réservée à la vérification. Une clé qui n’est ni `active` ni `retired` NE DOIT PAS être publiée.
 
-**6.4.** Outside the compromise case in 12.3, a new key MUST be published at least 24 hours before its first signature, and every key MUST remain published for at least 24 hours after its last use.
+**6.4.** Hors du cas de compromission prévu au 12.3, une nouvelle clé DOIT être publiée au moins 24 heures avant sa première signature, et toute clé DOIT rester publiée au moins 24 heures après sa dernière utilisation.
 
-**6.5.** The subscriber SHOULD cache the key set and refresh it, with rate limiting, on an unknown `keyid`. It MUST NOT refresh the set for every delivery.
+**6.5.** L’abonné DEVRAIT mettre les clés en cache et les actualiser, avec limitation de débit, lorsqu’il reçoit un `keyid` inconnu. Il NE DOIT PAS actualiser cet ensemble à chaque livraison.
 
-**6.6.** The subscriber MUST obtain keys only from the configured base URL. It MUST NOT use a key, key URL or certificate supplied in a delivery.
+**6.6.** L’abonné DOIT obtenir les clés uniquement depuis l’URL de base configurée. Il NE DOIT PAS utiliser une clé, une URL de clé ou un certificat fournis dans une livraison.
 
-**6.7.** The configuration document containing the keys is accessible without authentication. The server MAY rate-limit it.
+**6.7.** Le document de configuration contenant les clés est accessible sans authentification. Le serveur PEUT en limiter le débit.
 
-**6.8.** Private keys are held by the operator. The server MUST NOT log them or make them available through an endpoint.
+**6.8.** Les clés privées relèvent de l’exploitant. Le serveur NE DOIT PAS les journaliser ni les rendre accessibles par un point d’accès.
 
-## 7. Subscriber endpoint
+## 7. Point d'accès de l'abonné
 
-**7.1.** The server MUST allow each endpoint’s URL, event types and enabled state to be configured.
+**7.1.** Le serveur DOIT permettre de configurer l’URL, les types d’événement et l’état d’activation de chaque point d’accès.
 
-**7.2.** Outside development mode, the server MUST reject any URL that does not use `https`.
+**7.2.** En dehors du mode développement, le serveur DOIT refuser toute URL qui n’utilise pas `https`.
 
-**7.3.** The server MUST validate the endpoint’s TLS certificate and MUST NOT provide an option to disable validation.
+**7.3.** Le serveur DOIT valider le certificat TLS du point d’accès et NE DOIT PAS proposer de désactiver cette validation.
 
-**7.4.** The subscriber SHOULD verify and persist the event, respond with `2xx`, then process it asynchronously.
+**7.4.** L’abonné DEVRAIT vérifier et conserver durablement l’événement, répondre `2xx`, puis effectuer le traitement de manière asynchrone.
 
-**7.5.** The subscriber MUST NOT grant authorisation solely because a request reaches its endpoint.
+**7.5.** L’abonné NE DOIT PAS accorder d’autorisation sur la seule base de la réception d’une requête à son point d’accès.
 
-**7.6.** The subscriber MUST accept the types defined in 3.2 at any time, including for an unknown resource.
+**7.6.** L’abonné DOIT accepter à tout moment les types définis au 3.2, y compris pour une ressource qu’il ne connaît pas.
 
-**7.7.** Each endpoint belongs to a merchant account. The server MUST NOT send it events belonging to another merchant account.
+**7.7.** Chaque point d’accès appartient à un compte marchand. Le serveur NE DOIT PAS lui transmettre d’événements appartenant à un autre compte marchand.
 
-## 8. Ordering and duplicates
+## 8. Ordre et doublons
 
-**8.1.** The value of `sequence` starts at `1` for a resource’s first event and increases by one for each subsequent event of that resource. It defines no ordering across resources.
+**8.1.** La valeur de `sequence` commence à `1` pour le premier événement d’une ressource et augmente de un pour chaque événement suivant de cette ressource. Elle ne définit aucun ordre entre ressources.
 
-**8.2.** The server MUST assign `sequence` when recording the event and MUST NOT reuse a value for the same resource.
+**8.2.** Le serveur DOIT attribuer `sequence` lors de l’enregistrement de l’événement et NE DOIT PAS réutiliser une valeur pour la même ressource.
 
-**8.3.** The subscriber MUST ignore an event whose `sequence` is less than or equal to the highest value already processed for that `resource_id`.
+**8.3.** L’abonné DOIT ignorer tout événement dont `sequence` est inférieur ou égal à la plus grande valeur déjà traitée pour ce `resource_id`.
 
-**8.4.** The `id` field is the deduplication key. The subscriber MUST be able to process the same `id` twice without producing a second effect.
+**8.4.** Le champ `id` constitue la clé de déduplication. L’abonné DOIT pouvoir traiter deux fois le même `id` sans produire un second effet.
 
-**8.5.** The subscriber MUST NOT move a resource out of a terminal state based on an event. It SHOULD retrieve the resource again and raise an alert.
+**8.5.** L’abonné NE DOIT PAS faire sortir une ressource d’un état terminal sur la base d’un événement. Il DEVRAIT consulter de nouveau la ressource et déclencher une alerte.
 
-**8.6.** If `sequence` has a gap, the subscriber SHOULD retrieve the resource again and SHOULD NOT wait for the missing event.
+**8.6.** En cas de discontinuité de `sequence`, l’abonné DEVRAIT consulter de nouveau la ressource et NE DEVRAIT PAS attendre l’événement manquant.
 
-## 9. Retries
+## 9. Renvois
 
-**9.1.** A failed delivery MUST be retried with exponential backoff and jitter.
+**9.1.** Une livraison échouée DOIT faire l’objet de nouvelles tentatives avec temporisation exponentielle et gigue.
 
-**9.2.** The minimum schedule is defined below. Each delay is measured from the preceding attempt, totalling 31 h 12 min 30 s excluding jitter.
+**9.2.** Le calendrier minimal est défini ci-dessous. Chaque délai est calculé depuis la tentative précédente, pour un total de 31 h 12 min 30 s hors gigue.
 
-| Attempt | Delay      |
-| ------- | ---------- |
-| 1       | immediate  |
-| 2       | 30 seconds |
-| 3       | 2 minutes  |
-| 4       | 10 minutes |
-| 5       | 1 hour     |
-| 6       | 6 hours    |
-| 7       | 24 hours   |
+| Tentative | Délai       |
+| --------- | ----------- |
+| 1         | immédiat    |
+| 2         | 30 secondes |
+| 3         | 2 minutes   |
+| 4         | 10 minutes  |
+| 5         | 1 heure     |
+| 6         | 6 heures    |
+| 7         | 24 heures   |
 
-**9.3.** Each delay MUST be increased by positive random jitter with an amplitude of at least 20%. The server MAY extend intervals further and MUST NOT attempt delivery earlier.
+**9.3.** Chaque délai DOIT être augmenté d’une gigue aléatoire positive d’amplitude au moins égale à 20 %. Le serveur PEUT allonger davantage les intervalles et NE DOIT PAS effectuer de tentative plus tôt.
 
-**9.4.** After the final attempt, the server MUST stop retrying and MUST make the abandonment visible to the operator. It MUST NOT delete the event and MUST NOT modify the resource.
+**9.4.** Après la dernière tentative, le serveur DOIT arrêter les tentatives et DOIT rendre cet abandon visible à l’exploitant. Il NE DOIT PAS supprimer l’événement et NE DOIT PAS modifier la ressource.
 
-**9.5.** For `429` and `503` responses, the server MUST honour `Retry-After` up to a maximum it defines.
+**9.5.** Pour les réponses `429` et `503`, le serveur DOIT respecter `Retry-After` dans la limite maximale qu’il définit.
 
-**9.6.** The server MAY disable an endpoint after prolonged failure; it MUST then record the reason visibly for the operator.
+**9.6.** Le serveur PEUT désactiver un point d’accès en échec prolongé ; il DOIT alors consigner la raison de manière visible pour l’exploitant.
 
-**9.7.** The server MUST set a maximum delivery-queue size and reject additional deliveries to the failing endpoint beyond that size without deleting events.
+**9.7.** Le serveur DOIT fixer une taille maximale à sa file de livraisons et, au-delà, refuser les nouvelles livraisons au point d’accès défaillant sans supprimer d’événement.
 
-## 10. Polling
+## 10. Sondage
 
-**10.1.** Event reception does not replace polling.
+**10.1.** La réception d’événements ne se substitue pas à l’interrogation périodique.
 
-**10.2.** The client MUST have access to current state independently of events, through retrieval or synchronisation ([API 5.2, 5.3](/docs/spec/payments-api#5.3)).
+**10.2.** Le client DOIT disposer d’un accès à l’état courant indépendant des événements, par consultation ou synchronisation ([API 5.2, 5.3](/docs/spec/payments-api#5.3)).
 
-**10.3.** The client SHOULD reconcile payments still in `pending` after a delay it defines.
+**10.3.** Le client DEVRAIT rapprocher les paiements toujours `pending` après un délai qu’il définit.
 
-## 11. Conformance
+## 11. Conformité
 
-**11.1.** A conforming server emits the types in 3.2 associated with declared capabilities, applies signatures under section 5, publishes keys under section 6 and retries delivery under section 9. It emits events only on creation or transition (1.4, 3.4).
+**11.1.** Un serveur conforme émet les types du 3.2 associés aux capacités déclarées, applique les signatures du 5, publie les clés selon le 6 et réessaie les livraisons selon le 9. Il émet un événement uniquement lors d’une création ou d’une transition (1.4, 3.4).
 
-**11.2.** A conforming subscriber applies verification under 5.9, rejection under 5.12, deduplication under 8.4 and ordering under 8.3. It follows 8.5 and has the access defined in 10.2.
+**11.2.** Un abonné conforme applique les vérifications du 5.9, les rejets du 5.12, la déduplication du 8.4 et l’ordre du 8.3. Il respecte le 8.5 et dispose de l’accès défini au 10.2.
 
-**11.3.** The `webhooks.emit` capability declares emission to configured endpoints. The server MUST NOT deliver events to those endpoints for a provider that does not declare this capability. Delivery to `callback_url` belongs to `webhooks.per_payment_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)).
+**11.3.** La capacité `webhooks.emit` déclare l’émission vers les points d’accès configurés. Le serveur NE DOIT PAS y livrer les événements d’un opérateur pour lequel cette capacité n’est pas déclarée. Les livraisons à `callback_url` relèvent de `webhooks.per_payment_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)).
 
-## 12. Security
+## 12. Sécurité
 
-**12.1.** Outside development mode, the server MUST reject endpoint URLs resolving to loopback, link-local, private or hosting-metadata addresses. It MUST repeat this check for every delivery.
+**12.1.** Hors mode développement, le serveur DOIT refuser toute URL de point d’accès résolue vers une adresse de bouclage, de lien local, privée ou de métadonnées d’hébergeur. Il DOIT répéter cette vérification à chaque livraison.
 
-**12.2.** Mutual TLS MAY supplement the signature and MUST NOT replace it.
+**12.2.** Le TLS mutuel PEUT compléter la signature et NE DOIT PAS la remplacer.
 
-**12.3.** On suspected compromise, the server SHOULD allow immediate signing with a new key, as an exception to 6.4, and immediate removal of the compromised key from the published set.
+**12.3.** En cas de suspicion de compromission, le serveur DEVRAIT permettre la signature immédiate avec une nouvelle clé, par exception au 6.4, et le retrait immédiat de la clé compromise de l’ensemble publié.
 
-**12.4.** The subscriber SHOULD log `id`, `type` and `sequence`, and SHOULD NOT log the body. Signature values and nonces SHOULD NOT be logged.
+**12.4.** L’abonné DEVRAIT journaliser `id`, `type` et `sequence`, et NE DEVRAIT PAS journaliser le corps. Les signatures et les nonces NE DEVRAIENT PAS être journalisés.
 
-**12.5.** The resource is the authoritative record of operations (1.3).
+**12.5.** La ressource constitue le registre de référence des opérations (1.3).

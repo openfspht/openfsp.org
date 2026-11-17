@@ -1,153 +1,153 @@
 ---
-title: Authentication
-description: Bearer-key authentication, identities, authorisation and key lifecycle.
+title: Authentification
+description: Authentification par clé porteuse, identités, autorisations et cycle de vie des clés.
 ---
 
-Clients are authenticated using bearer keys; scopes determine the permitted operations. [Decision 0007](/docs/decisions#0007) documents key management, storage and rotation.
+L’authentification des clients repose sur des clés porteuses ; les portées déterminent les opérations autorisées. La [décision 0007](/docs/decisions#0007) documente la gestion, le stockage et la rotation des clés.
 
-## 1. Scheme
+## 1. Schéma
 
-**1.1.** The client authenticates using an API key presented as a bearer token. All endpoints require authentication except the configuration document ([capabilities 3.1](/docs/spec/capabilities#3.1)), which publishes webhook keys ([webhooks 6.1](/docs/spec/webhooks#6.1)), and a health check outside `/v1`.
+**1.1.** Le client s’authentifie au moyen d’une clé d’API présentée comme jeton porteur. Tous les points d’accès exigent une authentification, à l’exception du document de configuration ([capacités 3.1](/docs/spec/capabilities#3.1)), qui publie les clés de webhook ([webhooks 6.1](/docs/spec/webhooks#6.1)), et d’un contrôle de santé extérieur à `/v1`.
 
-**1.2.** The server MUST NOT permit unauthenticated access to other endpoints, including in development mode.
+**1.2.** Le serveur NE DOIT PAS permettre d’accès non authentifié aux autres points d’accès, y compris en mode développement.
 
-**1.3.** A deployment MAY additionally require mutual TLS, an address allowlist or an upstream authorisation server. These mechanisms MUST NOT replace the requirements in section 3.
+**1.3.** Un déploiement PEUT imposer en complément un TLS mutuel, une liste d’adresses autorisées ou un serveur d’autorisation en amont. Ces mécanismes NE DOIVENT PAS se substituer aux exigences de la section 3.
 
-## 2. Key format
+## 2. Format de clé
 
-**2.1.** The key follows the form `ofsp_<env>_<secret>`. The value of `<env>` is `live` or `test`; `<secret>` contains at least 34 characters from `A-Za-z0-9`, so the part not retained in cleartext under 4.4 represents at least 128 bits:
+**2.1.** La clé respecte la forme `ofsp_<env>_<secret>`. La valeur de `<env>` est `live` ou `test` ; `<secret>` comprend au moins 34 caractères appartenant à `A-Za-z0-9`, afin que la partie non conservée en clair selon le 4.4 représente au moins 128 bits :
 
 ```
 ofsp_live_7Kq2NfPzR4wYb9LdHt3XvA6mSjE0uCgBp8
 ```
 
-**2.2.** The value of `<secret>` MUST be produced by a cryptographic generator and provide at least 128 bits of entropy. It MUST NOT be derived from predictable data.
+**2.2.** La valeur de `<secret>` DOIT être produite par un générateur cryptographique et présenter au moins 128 bits d’entropie. Elle NE DOIT PAS être dérivée de données prévisibles.
 
-**2.3.** The server is configured for a single environment and MUST reject keys belonging to another environment with `unauthenticated`.
+**2.3.** Le serveur est configuré pour un seul environnement et DOIT rejeter avec `unauthenticated` toute clé appartenant à un autre environnement.
 
-**2.4.** The key is opaque: it MUST NOT encode a principal, scope or expiration date.
+**2.4.** La clé est opaque : elle NE DOIT encoder ni principal, ni portée, ni date d’expiration.
 
-**2.5.** The server MAY increase the length of `<secret>` or add a checksum, provided 2.1 remains satisfied.
+**2.5.** Le serveur PEUT augmenter la longueur de `<secret>` ou ajouter une somme de contrôle, sous réserve de respecter le 2.1.
 
-## 3. Presentation
+## 3. Présentation
 
-**3.1.** The client MUST send the key in the `Authorization` header using the `Bearer` scheme (RFC 9110):
+**3.1.** Le client DOIT transmettre la clé dans l’en-tête `Authorization` avec le schéma `Bearer` (RFC 9110) :
 
 ```
 Authorization: Bearer ofsp_live_7Kq2NfPzR4wYb9LdHt3XvA6mSjE0uCgBp8
 ```
 
-**3.2.** The server MUST NOT accept the key in a query parameter, body, cookie or another header.
+**3.2.** Le serveur NE DOIT PAS accepter la clé dans un paramètre de requête, un corps, un cookie ou un autre en-tête.
 
-**3.3.** If `Authorization` is absent, unreadable or uses a scheme other than `Bearer`, the server MUST return `unauthenticated` with `WWW-Authenticate: Bearer`.
+**3.3.** En l’absence d’`Authorization`, si l’en-tête est illisible ou si son schéma diffère de `Bearer`, le serveur DOIT retourner `unauthenticated` avec `WWW-Authenticate: Bearer`.
 
-**3.4.** The scheme name is case-insensitive; the key value is case-sensitive.
+**3.4.** La casse n’est pas significative pour le nom du schéma ; elle l’est pour la valeur de la clé.
 
-**3.5.** The server MUST reject any request containing multiple keys with `unauthenticated`.
+**3.5.** Le serveur DOIT rejeter avec `unauthenticated` toute requête contenant plusieurs clés.
 
-## 4. Storage and comparison
+## 4. Stockage et comparaison
 
-**4.1.** The server MUST NOT retain a key in a reversible representation. It retains a digest of the key.
+**4.1.** Le serveur NE DOIT PAS conserver une clé sous une représentation réversible. Il en conserve un condensé.
 
-**4.2.** The digest MUST be computed over the complete key using SHA-256 or a stronger algorithm.
+**4.2.** Le condensé DOIT être calculé sur l’intégralité de la clé avec SHA-256 ou un algorithme plus fort.
 
-**4.3.** A slow password-hashing algorithm, such as Argon2id, scrypt or bcrypt, SHOULD NOT be used.
+**4.3.** Un algorithme lent de hachage de mots de passe, tel qu’Argon2id, scrypt ou bcrypt, NE DEVRAIT PAS être utilisé.
 
-**4.4.** The server MAY retain and index a cleartext lookup prefix consisting of the first 12 characters of `<secret>`.
+**4.4.** Le serveur PEUT conserver en clair et indexer un préfixe de recherche correspondant aux 12 premiers caractères de `<secret>`.
 
-**4.5.** Comparison between the presented key’s digest and the stored digest MUST use constant time.
+**4.5.** La comparaison entre le condensé de la clé présentée et le condensé conservé DOIT s’effectuer en temps constant.
 
-**4.6.** Processing an unknown key and a revoked key SHOULD take indistinguishable time. If the prefix matches no record, the server MUST nevertheless compute a digest and compare it with a dummy value in constant time. The two paths MUST NOT differ through a conditional operation specific to one case, such as case-specific logging.
+**4.6.** Le traitement d’une clé inconnue et celui d’une clé révoquée DEVRAIENT avoir des durées indiscernables. Si le préfixe ne correspond à aucun enregistrement, le serveur DOIT néanmoins calculer un condensé et le comparer en temps constant à une valeur factice. Les deux traitements NE DOIVENT PAS différer par une opération conditionnelle propre à un seul cas, par exemple une journalisation spécifique.
 
-**4.7.** Absent, malformed, unknown, revoked, expired and wrong-environment keys MUST all produce `unauthenticated` with the same `title` and no `detail` that distinguishes the cause.
+**4.7.** Les clés absentes, mal formées, inconnues, révoquées, expirées ou issues d’un autre environnement DOIVENT toutes produire `unauthenticated`, avec le même `title` et sans `detail` permettant de distinguer la cause.
 
-**4.8.** At every logging level, the server MUST NOT record a presented key beyond its lookup prefix. Failures are recorded with that prefix and `request_id`. The `Authorization` header and fields containing API keys MUST be redacted before the log line is constructed.
+**4.8.** À tous les niveaux de journalisation, le serveur NE DOIT PAS conserver une clé présentée au-delà de son préfixe de recherche. Les échecs sont consignés avec ce préfixe et `request_id`. L’en-tête `Authorization` et les champs contenant une clé d’API DOIVENT être masqués avant la construction de la ligne de journal.
 
 ## 5. Principal
 
-**5.1.** The principal is the identity established by successful authentication, denoted _P_ in [idempotency 2.3](/docs/spec/idempotency#2.3).
+**5.1.** Le principal correspond à l’identité établie par une authentification réussie, désignée par _P_ dans l’[idempotence 2.3](/docs/spec/idempotency#2.3).
 
-**5.2.** Each key belongs to exactly one principal. A principal MAY hold multiple keys.
+**5.2.** Chaque clé est rattachée à un seul principal. Un principal PEUT posséder plusieurs clés.
 
-**5.3.** A principal’s keys share its resources and idempotency records. The server MUST NOT isolate by key where the specification defines isolation by principal.
+**5.3.** Les clés d’un principal partagent ses ressources et ses enregistrements d’idempotence. Le serveur NE DOIT PAS appliquer un cloisonnement par clé lorsque la spécification définit un cloisonnement par principal.
 
-**5.4.** The principal has an opaque, stable identifier ([data model 6.1](/docs/spec/data-model#6.1)). This identifier appears in logs and audit records but is never exposed through the API.
+**5.4.** Le principal possède un identifiant opaque et stable ([modèle de données 6.1](/docs/spec/data-model#6.1)). Cet identifiant figure dans les journaux et l’audit, mais n’est jamais exposé par l’API.
 
-**5.5.** Each principal belongs to a merchant account. Principals in that account access the same resources. Scopes restrict permitted operations and do not partition resources between principals.
+**5.5.** Chaque principal est rattaché à un compte marchand. Les principaux de ce compte accèdent aux mêmes ressources. Les portées limitent les opérations autorisées et ne répartissent pas les ressources entre principaux.
 
-**5.6.** A principal MUST NOT read or act on a resource belonging to another merchant account. The server returns `not-found` as though the resource did not exist.
+**5.6.** Un principal NE DOIT PAS consulter ni effectuer d’opération sur une ressource d’un autre compte marchand. Le serveur retourne `not-found`, comme si la ressource n’existait pas.
 
-## 6. Scopes
+## 6. Portées
 
-**6.1.** Each key is associated with a set of scopes.
+**6.1.** Chaque clé est associée à un ensemble de portées.
 
-**6.2.** Available scopes are defined by the following registry:
+**6.2.** Les portées disponibles sont définies par le registre suivant :
 
-| Scope               | Permits                                                                                                           |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `capabilities:read` | Capability discovery ([capabilities 3.2](/docs/spec/capabilities#3.2)).                                           |
-| `payments:read`     | Read a payment, look up by reference ([API 5.2](/docs/spec/payments-api#5.2)).                                    |
-| `payments:write`    | Create and synchronise a payment ([API 5.1, 5.3](/docs/spec/payments-api#5.3)).                                   |
-| `statements:read`   | Read statements and their entries ([lifecycle 10.5](/docs/spec/lifecycle#10.5)).                                  |
+| Portée              | Permet                                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `capabilities:read` | Découverte de capacités ([capacités 3.2](/docs/spec/capabilities#3.2)).                                                 |
+| `payments:read`     | Lire un paiement, rechercher par référence ([API 5.2](/docs/spec/payments-api#5.2)).                                    |
+| `payments:write`    | Créer et synchroniser un paiement ([API 5.1, 5.3](/docs/spec/payments-api#5.3)).                                        |
+| `statements:read`   | Lire les relevés et leurs lignes ([cycle de vie 10.5](/docs/spec/lifecycle#10.5)).                                      |
 
-**6.3.** Granting a scope does not imply granting any other scope.
+**6.3.** L’attribution d’une portée n’implique l’attribution d’aucune autre portée.
 
-**6.4.** If the required scope is absent, the server MUST return `forbidden`, not `unauthenticated` or `not-found`.
+**6.4.** Si la portée requise est absente, le serveur DOIT retourner `forbidden`, à l’exclusion de `unauthenticated` et `not-found`.
 
-**6.5.** Every key includes `capabilities:read`. The server adds this scope at issuance and MUST NOT allow its removal. The client can therefore discover available operations before calling them.
+**6.5.** Toute clé inclut `capabilities:read`. Le serveur ajoute cette portée à l’émission et NE DOIT PAS autoriser son retrait. Le client peut ainsi découvrir les opérations disponibles avant de les appeler.
 
-**6.6.** Adding a scope requires a decision record alongside the corresponding operation.
+**6.6.** L’ajout d’une portée nécessite une décision écrite prise avec celle de l’opération correspondante.
 
-**6.7.** A key limited to `capabilities:read` authorises discovery only. The server MUST NOT treat it as unrestricted.
+**6.7.** Une clé limitée à `capabilities:read` autorise uniquement la découverte. Le serveur NE DOIT PAS la considérer comme dépourvue de restriction.
 
-**6.8.** Issuance tools SHOULD default to scopes following the principle of least privilege.
+**6.8.** Les outils d’émission DEVRAIENT proposer par défaut des portées respectant le principe du moindre privilège.
 
-## 7. Rotation, revocation, expiry
+## 7. Rotation, révocation, expiration
 
-**7.1.** The server MUST allow multiple keys of the same principal to be valid simultaneously.
+**7.1.** Le serveur DOIT permettre la validité simultanée de plusieurs clés d’un même principal.
 
-**7.2.** Rotation consists of issuing a new key, deploying it, verifying its use and then revoking the previous key. Issuance MUST NOT invalidate the principal’s other keys.
+**7.2.** La rotation consiste à émettre une nouvelle clé, la déployer, vérifier son utilisation, puis révoquer l’ancienne. L’émission NE DOIT PAS invalider les autres clés du principal.
 
-**7.3.** The server MUST NOT accept a revoked key or retain a cached authentication decision for more than 60 seconds after revocation. The cache MUST be invalidated on revocation.
+**7.3.** Le serveur NE DOIT PAS accepter une clé révoquée ni conserver une décision d’authentification en cache plus de 60 secondes après la révocation. Le cache DOIT être invalidé lors de la révocation.
 
-**7.4.** A revoked key MUST NOT be reactivated and its secret cannot be reissued.
+**7.4.** Une clé révoquée NE DOIT PAS être réactivée et son secret ne peut être réémis.
 
-**7.5.** A revoked key’s record MUST be retained for audit without the secret.
+**7.5.** L’enregistrement d’une clé révoquée DOIT être conservé pour l’audit, sans le secret.
 
-**7.6.** A key MAY have an expiry time. After expiry, it MUST be rejected with `unauthenticated`. The operator SHOULD be informed before that time.
+**7.6.** Une clé PEUT posséder une échéance. Après expiration, elle DOIT être rejetée avec `unauthenticated`. L’exploitant DEVRAIT être informé avant cette échéance.
 
-**7.7.** The secret MUST be displayed exactly once, at issuance, with no possibility of later display.
+**7.7.** Le secret DOIT être affiché une seule fois, lors de son émission, sans possibilité d’affichage ultérieur.
 
-**7.8.** The server SHOULD retain and display each key’s last-use date.
+**7.8.** Le serveur DEVRAIT conserver et afficher la date de dernière utilisation de chaque clé.
 
-## 8. Interplay
+## 8. Articulation
 
-**8.1.** Idempotency records remain valid after API key rotation (5.3). They never become accessible to another principal ([idempotency 2.3](/docs/spec/idempotency#2.3)).
+**8.1.** Les enregistrements d’idempotence restent valides après rotation d’une clé d’API (5.3). Ils ne deviennent jamais accessibles à un autre principal ([idempotence 2.3](/docs/spec/idempotency#2.3)).
 
-**8.2.** Rate limiting is defined per principal rather than per key.
+**8.2.** La limitation de débit est définie par principal et non par clé.
 
-**8.3.** The errors `unauthenticated` and `forbidden` are defined in [API 10.8.2](/docs/spec/payments-api#10.8.2).
+**8.3.** Les erreurs `unauthenticated` et `forbidden` sont définies dans l’[API 10.8.2](/docs/spec/payments-api#10.8.2).
 
-**8.4.** The server MUST NOT send an API key to a webhook endpoint. The subscriber MUST NOT authenticate delivery through any mechanism other than its signature ([webhooks 5](/docs/spec/webhooks#5)).
+**8.4.** Le serveur NE DOIT PAS transmettre de clé d’API à un point d’accès de webhook. L’abonné NE DOIT PAS authentifier une livraison au moyen d’un mécanisme autre que sa signature ([webhooks 5](/docs/spec/webhooks#5)).
 
 ## 9. Audit
 
-**9.1.** For every authenticated request, the server MUST record the principal, lookup prefix, operation, `request_id` and result.
+**9.1.** Pour chaque requête authentifiée, le serveur DOIT consigner le principal, le préfixe de recherche, l’opération, `request_id` et le résultat.
 
-**9.2.** Authentication failures MUST be recorded with the same fields except the principal.
+**9.2.** Les échecs d’authentification DOIVENT être consignés avec les mêmes champs, à l’exception du principal.
 
-**9.3.** Every key issuance or revocation MUST be recorded with its time and scopes.
+**9.3.** Chaque émission ou révocation de clé DOIT être consignée avec son horodatage et ses portées.
 
-**9.4.** These records MUST NOT include any key secret.
+**9.4.** Ces enregistrements NE DOIVENT inclure aucun secret de clé.
 
-## 10. Conformance
+## 10. Conformité
 
-**10.1.** A conforming server applies the requirements for presentation in section 3, storage and comparison in section 4, principals in section 5, scopes in section 6, and rotation and revocation in section 7.
+**10.1.** Le serveur conforme applique les exigences de présentation du 3, de stockage et de comparaison du 4, de principal du 5, de portées du 6, ainsi que de rotation et de révocation du 7.
 
-**10.2.** The suite verifies 4.7 with an unknown key, a revoked key and a wrong-environment key. The three responses are indistinguishable.
+**10.2.** La suite vérifie le 4.7 avec une clé inconnue, une clé révoquée et une clé d’un autre environnement. Les trois réponses sont indiscernables.
 
-**10.3.** Authentication is a general specification requirement and is not declared as a capability.
+**10.3.** L’authentification est une exigence générale de la spécification et ne fait pas l’objet d’une déclaration de capacité.
 
-## 11. Security
+## 11. Sécurité
 
-**11.1.** The server SHOULD rate-limit failed authentication attempts per source.
+**11.1.** Le serveur DEVRAIT appliquer une limitation de débit par source aux tentatives d’authentification échouées.

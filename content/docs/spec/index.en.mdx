@@ -1,0 +1,48 @@
+---
+title: Conventions
+description: Requirement scope, normative conventions, terminology and specification structure.
+---
+
+This section defines the conventions for reading OpenFSP’s normative requirements. The [design decisions](/en/docs/decisions) document their rationale.
+
+## Scope of terms
+
+Requirements apply to the server exposing the API and the client using it, according to the subject of each rule. They specify expected interface behaviour; the server’s internal architecture and underlying systems remain implementation choices.
+
+## Keywords
+
+The keywords MUST, MUST NOT, SHOULD, SHOULD NOT, MAY, REQUIRED, RECOMMENDED and OPTIONAL have the meanings defined in RFC 2119 and RFC 8174 when written in capitals.
+
+Each rule has a numeric identifier within its document. Cross-references use its anchor, for example [`/en/docs/spec/idempotency#3.2`](/en/docs/spec/idempotency#3.2).
+
+## Implementation path
+
+The [implementation guide](/en/docs/native-operator) links chapters to development tasks and test scenarios. The [project status](/en/docs/status) describes component availability. These documents are informative; numbered requirements form the normative reference.
+
+## Vocabulary
+
+| Term | Definition |
+| --- | --- |
+| payment service provider | Organisation providing one or more payment services. Distinct from the service identified by `provider` and from the technical operator of a server. |
+| provider / payment service | Service identified in the [registry](/en/docs/registry), such as MonCash or NatCash. In existing rules, “provider” denotes this service. |
+| server | Implementation exposing the OpenFSP API for one or more payment services. |
+| merchant account | Set of resources, principals and webhook endpoints belonging to a merchant on a server. A server may manage several merchant accounts. |
+| operator | Party responsible for deploying and administering a server. |
+| client | Application calling an OpenFSP API. This technical role is distinct from the payer. |
+| subscriber | Endpoint receiving OpenFSP events. |
+| verifier | Party verifying an event signature: subscriber, auditor or library. |
+| principal | Authenticated client identity associated with a merchant account. |
+
+## Documents
+
+| Document                                    | Status      |
+| ------------------------------------------- | ----------- |
+| [Data model](/en/docs/spec/data-model)         | Normative   |
+| [Payment lifecycle](/en/docs/spec/lifecycle)   | Normative   |
+| [Idempotency](/en/docs/spec/idempotency)       | Normative   |
+| [Payments API](/en/docs/spec/payments-api)     | Normative   |
+| [Capabilities](/en/docs/spec/capabilities)     | Normative   |
+| [Webhooks](/en/docs/spec/webhooks)             | Normative   |
+| [Authentication](/en/docs/spec/authentication) | Normative   |
+| [Conformance](/en/docs/spec/conformance)       | Normative   |
+| [Architecture](/en/docs/architecture)          | Informative |
