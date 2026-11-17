@@ -6,6 +6,11 @@ on:
       tag:
         required: true
         type: string
+    secrets:
+      COOLIFY_WEBHOOK:
+        required: true
+      COOLIFY_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       tag:
