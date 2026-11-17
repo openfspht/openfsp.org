@@ -5,9 +5,9 @@ import { pageHead } from "@/lib/seo";
 import { homeCopy } from "@/lib/home-copy";
 
 export const Route = createFileRoute("/{-$lang}/")({
-  head: ({ params }) => {
-    const locale = asLocale(params.lang);
-    return pageHead(locale, "/", `${homeCopy[locale].title} | OpenFSP`, homeCopy[locale].lead);
-  },
-  component: () => <Home locale={asLocale(Route.useParams().lang)} />,
+    head: ({ params }) => {
+        const locale = asLocale(params.lang);
+        return pageHead(locale, "/", `${homeCopy[locale].title} | OpenFSP`, homeCopy[locale].lead);
+    },
+    component: () => <Home locale={asLocale(Route.useParams().lang)} />,
 });
