@@ -78,10 +78,12 @@ stateDiagram-v2
 
 **5.3.** The server MUST NOT record `expired` unless at least one of the following conditions is satisfied:
 
-- **(a)** the server has established that the payment can no longer complete;
-- **(b)** `expires_at` has passed and the provider guarantees that a payment incomplete at `expires_at` can never complete. This is the sole exception to 3.2.
+- **(a)** the provider has reported that the payment expired or can no longer complete;
+- **(b)** the retained `expires_at` ([API 5.1.4](/en/docs/spec/payments-api#5.1.4)) has passed and the provider guarantees that a payment incomplete at `expires_at` can never complete. This is the sole exception to 3.2.
 
 **5.4.** If these conditions are not satisfied, the payment remains in `pending`.
+
+**5.5.** The server MUST NOT conclude expiry by itself, in particular from the `expires_at` requested at creation, from a lookup without a result or from the absence of the payment in a statement.
 
 ## 6. Recording a state
 

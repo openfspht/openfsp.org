@@ -78,10 +78,12 @@ stateDiagram-v2
 
 **5.3.** Le serveur NE DOIT PAS enregistrer `expired` sans qu’au moins une des conditions suivantes soit satisfaite :
 
-- **(a)** le serveur a établi que le paiement ne peut plus être achevé ;
-- **(b)** `expires_at` est dépassé et l’opérateur garantit qu’un paiement non achevé à `expires_at` ne pourra jamais l’être. Ce cas constitue l’unique exception au 3.2.
+- **(a)** l’opérateur a rapporté que le paiement a expiré ou ne peut plus être achevé ;
+- **(b)** l’`expires_at` retenu ([API 5.1.4](/docs/spec/payments-api#5.1.4)) est dépassé et l’opérateur garantit qu’un paiement non achevé à `expires_at` ne pourra jamais l’être. Ce cas constitue l’unique exception au 3.2.
 
 **5.4.** Lorsque ces conditions ne sont pas satisfaites, le paiement reste dans l’état `pending`.
+
+**5.5.** Le serveur NE DOIT PAS conclure de lui-même à l’expiration, notamment à partir de l’`expires_at` demandé à la création, d’une consultation sans résultat ou de l’absence du paiement dans un relevé.
 
 ## 6. Enregistrement d'un état
 

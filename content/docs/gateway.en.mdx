@@ -72,7 +72,7 @@ The gateway records a terminal state only from one of the following sources, lis
 - **Payment-specific URL.** For source (c), the URL path contains a payment-specific token with at least 128 random bits. Comparison is performed in constant time. The token is excluded from all logs, including reverse proxy access logs. A token matching no pending payment is rejected without effect. A URL shared by multiple payments does not satisfy this mechanism.
 - **Conflicts.** Information contradicting a terminal state or reporting a different amount does not modify the payment. The conflict is stored durably and reported to the operator for human resolution. A payment with a mismatched amount remains `pending`.
 - **Background reconciliation.** The gateway periodically queries pending payments without a prior client request.
-- **Expiry.** The `expired` state is recorded when the service confirms expiry, when lookup after `expires_at` establishes that the payment is incomplete, when the service guarantees expiry, when a statement covering a period after `expires_at` does not show the payment as complete, or on attestation.
+- **Expiry.** The `expired` state is recorded when the service reports expiry, when the service guarantees expiry and the retained `expires_at` has passed, or on attestation ([lifecycle 5](/en/docs/spec/lifecycle#5)).
 - **Operator attestation.** Source (d) uses the gateway’s administration API, separate from the OpenFSP API. It records the attester’s identity, time, state and evidence reference. A shared administration token may protect access; the attester’s identity is then supplied in the request. A second approval is recommended above a threshold defined by the deployment.
 
 ## Return relay [#return-relay]
