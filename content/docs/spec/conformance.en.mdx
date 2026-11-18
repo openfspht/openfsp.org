@@ -62,15 +62,15 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.4.** Only configuration is permitted: test credentials, a key with `statements:read` for 5.9 and inputs required by assisted tests under 4.7.
 
-**4.5.** The suite controls the control interface the implementation provides (4.9). Without one, tests requiring a selected outcome are assisted under 4.7.
+**4.5.** The suite obtains selected outcomes through the control interface of the implementation (4.9).
 
 **4.6.** The suite MUST be runnable offline and in continuous integration without an account.
 
-**4.7.** A test requiring operator intervention is marked as assisted, for example to revoke a key, declare limits or produce a selected outcome. The suite describes the action, the operator performs it through server administration or configuration, and the report records the assistance. This intervention is not a modification under 4.3.
+**4.7.** A test requiring operator intervention is marked as assisted, for example to revoke a key or declare limits. The suite describes the action, the operator performs it through server administration or configuration, and the report records the assistance. This intervention is not a modification under 4.3.
 
 ### 4.8. Preparation by the server
 
-**4.8.1.** A server MAY provide the items of 4.4 itself. It then announces the `conformance_endpoint` member in its configuration document ([capabilities 3.1.6](/en/docs/spec/capabilities#3.1.6)). The absence of this member does not affect conformance.
+**4.8.1.** A server MAY provide the items of 4.4 itself. It then announces the `conformance_endpoint` member in its configuration document ([capabilities 3.1.6](/en/docs/spec/capabilities#3.1.6)). In the test environment, 4.9.1 requires this member.
 
 **4.8.2.** The suite sends a `POST` request to that URL. The optional body is a JSON object whose `webhook_url` member identifies the suite’s webhook receiver.
 
@@ -81,7 +81,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | `api_key`    | string    | REQUIRED | Active test key holding every supported scope.                      |
 | `expires_at` | `Instant` | REQUIRED | Instant from which the provided items are no longer valid.          |
 | `inputs`     | object    | OPTIONAL | Suite inputs, each name of 4.8.4 being associated with a text value. |
-| `control_endpoint` | string | OPTIONAL | Control interface of the run (4.9).                               |
+| `control_endpoint` | string | REQUIRED | Control interface of the run (4.9).                               |
 
 **4.8.4.** The server provides the inputs it can produce among the following. The suite ignores any other name and treats a test whose input is missing as assisted under 4.7.
 
@@ -103,7 +103,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 ### 4.9. Choice of outcomes
 
-**4.9.1.** An implementation MAY let the suite choose the outcome of a payment. Its response of 4.8.3 then carries the `control_endpoint` member, a URL of the same origin as the issuer naming the control interface of the run.
+**4.9.1.** In the test environment, an implementation MUST let the suite choose the outcome of a payment. It announces `conformance_endpoint` (4.8.1), and its response of 4.8.3 carries the `control_endpoint` member, a URL of the same origin as the issuer naming the control interface of the run. Without this interface, the tests that choose an outcome fail.
 
 **4.9.2.** The control interface exposes the following operations, authenticated with `api_key`:
 
@@ -134,7 +134,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.9.5.** An additional scenario is introduced only when a specification defines behaviour that cannot otherwise be triggered.
 
-**4.9.6.** The implementation responds `422` to a scenario it cannot produce for the payment service concerned; the suite then treats the test as assisted under 4.7.
+**4.9.6.** The suite asks for a scenario only from a payment service that declares the capabilities the test exercises; otherwise the test is not applicable. The implementation MUST produce every scenario asked for this way. A refusal, signalled by `422`, fails the test.
 
 **4.9.7.** The implementation produces the requested outcome itself. The result MUST NOT depend on the behaviour of an external payment service.
 

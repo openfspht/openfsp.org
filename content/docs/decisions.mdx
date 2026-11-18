@@ -107,9 +107,9 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 ## 0011. Issues choisies par la suite
 
-**Choix.** Permettre à une implémentation, en environnement de test, de fournir une interface de contrôle par laquelle la suite fixe l’issue d’un paiement avant de le créer, résout un paiement en attente et déclenche un événement retenu. L’implémentation produit elle-même l’issue demandée. L’interface est annoncée dans la réponse de préparation, ne vaut que pour les clés de l’exécution et reste facultative.
+**Choix.** Exiger d’une implémentation, en environnement de test, une interface de contrôle par laquelle la suite fixe l’issue d’un paiement avant de le créer, résout un paiement en attente et déclenche un événement retenu. L’implémentation produit elle-même l’issue demandée. L’interface est annoncée dans la réponse de préparation et ne vaut que pour les clés de l’exécution. Sans elle, les tests qui choisissent une issue échouent.
 
-**Justification.** La conformité porte sur l’implémentation de la norme, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation, et les tests jusque-là assistés deviennent exécutables à partir de la seule adresse du serveur.
+**Justification.** La conformité porte sur l’implémentation de la norme, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation, et les tests jusque-là assistés deviennent exécutables à partir de la seule adresse du serveur. Facultative, l’interface aurait laissé une seconde façon d’exécuter la suite, par des tests assistés dont le résultat dépend de l’exploitant.
 
 **Alternatives examinées.** Interface de contrôle réservée au serveur simulé de référence ; issue désignée par une valeur réservée du montant ou du numéro du payeur ; en-tête de requête propre aux essais.
 

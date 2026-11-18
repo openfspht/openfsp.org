@@ -107,9 +107,9 @@ The following decisions document the choices adopted for the specification versi
 
 ## 0011. Outcomes chosen by the suite
 
-**Decision.** Let an implementation, in the test environment, provide a control interface through which the suite sets the outcome of a payment before creating it, resolves a pending payment and triggers a held event. The implementation produces the requested outcome itself. The interface is announced in the preparation response, holds only for the keys of the run and remains optional.
+**Decision.** Require an implementation, in the test environment, to provide a control interface through which the suite sets the outcome of a payment before creating it, resolves a pending payment and triggers a held event. The implementation produces the requested outcome itself. The interface is announced in the preparation response and holds only for the keys of the run. Without it, the tests that choose an outcome fail.
 
-**Rationale.** Conformance concerns the implementation of the specification, not the payment services it uses. A single way of running the suite then holds for every implementation, and the tests assisted until now become executable from the address of the server alone.
+**Rationale.** Conformance concerns the implementation of the specification, not the payment services it uses. A single way of running the suite then holds for every implementation, and the tests assisted until now become executable from the address of the server alone. An optional interface would have left a second way of running the suite, through assisted tests whose result depends on the operator.
 
 **Alternatives considered.** A control interface reserved for the reference mock server; an outcome designated by a reserved value of the amount or of the payer number; a request header specific to tests.
 

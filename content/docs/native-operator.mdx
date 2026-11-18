@@ -91,11 +91,11 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
 
 L’interface en ligne de commande ne définit aucun port de réception par défaut. Sans `--webhook-port`, aucun récepteur ne démarre et le scénario de livraison du `payment.succeeded` signé ne s’exécute pas. L’option `--webhook-url` fournit l’adresse HTTPS publique, redirigée vers ce port, que l’instance évaluée utilise pour les notifications. En son absence, l’adresse annoncée est `http://127.0.0.1:8098/webhooks`, accessible uniquement depuis une instance locale.
 
-Certains scénarios nécessitent de provoquer un refus, une expiration ou une transition d’état. Une implémentation qui fournit l’interface de contrôle ([conformité 4.9](/docs/spec/conformance#4.9.1)) laisse la suite choisir ces issues. À défaut, la suite marque le scénario comme assisté et décrit l’intervention requise.
+Certains scénarios nécessitent de provoquer un refus, une expiration ou une transition d’état. En environnement de test, l’implémentation fournit l’interface de contrôle ([conformité 4.9](/docs/spec/conformance#4.9.1)) par laquelle la suite choisit ces issues. Sans elle, ces scénarios échouent.
 
 ## Lire et publier le résultat
 
-`make validate` peut retourner le code de sortie 0 alors que le niveau Core reste incomplet du fait de scénarios assistés. L’évaluation doit donc s’appuyer sur le rapport et ses verdicts, définis en [conformité 6](/docs/spec/conformance#6), plutôt que sur le seul code de sortie.
+`make validate` peut retourner le code de sortie 0 alors que le niveau Core reste incomplet du fait de scénarios assistés, comme la révocation d’une clé sans entrée fournie. L’évaluation doit donc s’appuyer sur le rapport et ses verdicts, définis en [conformité 6](/docs/spec/conformance#6), plutôt que sur le seul code de sortie.
 
 Toute déclaration de conformité publiée doit préciser le périmètre évalué et être accompagnée du rapport, de la configuration expurgée des secrets et des versions utilisées. Une [attestation signée](/docs/verify) permet de vérifier l’origine et l’intégrité des résultats d’une exécution ; elle ne certifie pas le produit.
 

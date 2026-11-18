@@ -91,11 +91,11 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
 
 The command-line interface has no default receiver port. Without `--webhook-port`, no receiver starts and the signed `payment.succeeded` delivery scenario does not run. The `--webhook-url` option supplies the public HTTPS address, forwarded to that port, used by the assessed instance for notifications. Without it, the announced address is `http://127.0.0.1:8098/webhooks`, which is accessible only to a local instance.
 
-Some scenarios require a decline, an expiry or a state transition to be provoked. An implementation that provides the control interface ([conformance 4.9](/en/docs/spec/conformance#4.9.1)) lets the suite choose these outcomes. Otherwise the suite marks the scenario as assisted and describes the required intervention.
+Some scenarios require a decline, an expiry or a state transition to be provoked. In the test environment, the implementation provides the control interface ([conformance 4.9](/en/docs/spec/conformance#4.9.1)) through which the suite chooses these outcomes. Without it, these scenarios fail.
 
 ## Read and publish the result
 
-`make validate` can return exit code 0 while Core remains incomplete because of assisted scenarios. Assessment must therefore rely on the report and its verdicts, defined in [conformance 6](/en/docs/spec/conformance#6), rather than on the exit code alone.
+`make validate` can return exit code 0 while Core remains incomplete because of assisted scenarios, such as a key revocation without a provided input. Assessment must therefore rely on the report and its verdicts, defined in [conformance 6](/en/docs/spec/conformance#6), rather than on the exit code alone.
 
 A published conformance claim should identify the assessed scope and include the report, configuration with secrets removed and versions used. A [signed attestation](/en/docs/verify) allows the origin and integrity of one execution’s results to be verified; it does not certify the product.
 

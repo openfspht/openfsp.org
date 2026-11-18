@@ -62,15 +62,15 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 **4.4.** La configuration seule est admise : identifiants de test, clé disposant de `statements:read` pour le 5.9 et entrées nécessaires aux tests assistés du 4.7.
 
-**4.5.** La suite pilote l’interface de contrôle que l’implémentation fournit (4.9). À défaut, les tests nécessitant un résultat choisi sont assistés selon le 4.7.
+**4.5.** La suite obtient les résultats choisis par l’interface de contrôle de l’implémentation (4.9).
 
 **4.6.** La suite DOIT pouvoir s’exécuter hors ligne et en intégration continue, sans compte.
 
-**4.7.** Un test nécessitant une intervention de l’exploitant est marqué comme assisté, par exemple pour révoquer une clé, déclarer des bornes ou produire un résultat choisi. La suite décrit l’action, l’exploitant l’effectue via l’administration ou la configuration du serveur et le rapport mentionne cette assistance. Cette intervention ne constitue pas une modification au sens du 4.3.
+**4.7.** Un test nécessitant une intervention de l’exploitant est marqué comme assisté, par exemple pour révoquer une clé ou déclarer des bornes. La suite décrit l’action, l’exploitant l’effectue via l’administration ou la configuration du serveur et le rapport mentionne cette assistance. Cette intervention ne constitue pas une modification au sens du 4.3.
 
 ### 4.8. Préparation par le serveur
 
-**4.8.1.** Un serveur PEUT fournir lui-même les éléments du 4.4. Il annonce alors, dans son document de configuration ([capacités 3.1.6](/docs/spec/capabilities#3.1.6)), le membre `conformance_endpoint`. L’absence de ce membre n’affecte pas la conformité.
+**4.8.1.** Un serveur PEUT fournir lui-même les éléments du 4.4. Il annonce alors, dans son document de configuration ([capacités 3.1.6](/docs/spec/capabilities#3.1.6)), le membre `conformance_endpoint`. En environnement de test, ce membre est requis par le 4.9.1.
 
 **4.8.2.** La suite envoie une requête `POST` à cette URL. Le corps, facultatif, est un objet JSON dont le membre `webhook_url` désigne le récepteur de webhooks de la suite.
 
@@ -81,7 +81,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | `api_key`    | chaîne    | OBLIGATOIRE | Clé de test active disposant de toutes les portées prises en charge.       |
 | `expires_at` | `Instant` | OBLIGATOIRE | Instant à partir duquel les éléments fournis ne sont plus valides.         |
 | `inputs`     | objet     | FACULTATIF  | Entrées de la suite, chaque nom du 4.8.4 étant associé à une valeur texte. |
-| `control_endpoint` | chaîne | FACULTATIF | Interface de contrôle de l’exécution (4.9).                              |
+| `control_endpoint` | chaîne | OBLIGATOIRE | Interface de contrôle de l’exécution (4.9).                             |
 
 **4.8.4.** Le serveur fournit les entrées qu’il sait produire parmi les suivantes. La suite ignore tout autre nom et traite comme assisté, selon le 4.7, un test dont l’entrée manque.
 
@@ -103,7 +103,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 ### 4.9. Choix des issues
 
-**4.9.1.** Une implémentation PEUT laisser la suite choisir l’issue d’un paiement. Sa réponse du 4.8.3 comporte alors le membre `control_endpoint`, URL de même origine que l’émetteur désignant l’interface de contrôle de l’exécution.
+**4.9.1.** En environnement de test, une implémentation DOIT laisser la suite choisir l’issue d’un paiement. Elle annonce `conformance_endpoint` (4.8.1), et sa réponse du 4.8.3 comporte le membre `control_endpoint`, URL de même origine que l’émetteur désignant l’interface de contrôle de l’exécution. Sans cette interface, les tests qui choisissent une issue échouent.
 
 **4.9.2.** L’interface de contrôle expose les opérations suivantes, authentifiées par `api_key` :
 
@@ -134,7 +134,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 **4.9.5.** Un scénario supplémentaire est introduit uniquement lorsqu’une spécification définit un comportement impossible à provoquer autrement.
 
-**4.9.6.** L’implémentation répond `422` à un scénario qu’elle ne sait pas produire pour le service de paiement concerné ; la suite traite alors le test comme assisté selon le 4.7.
+**4.9.6.** La suite ne demande un scénario qu’à un service de paiement déclarant les capacités que le test exerce ; sinon, le test est non applicable. L’implémentation DOIT produire tout scénario ainsi demandé. Un refus, signalé par `422`, fait échouer le test.
 
 **4.9.7.** L’implémentation produit elle-même l’issue demandée. Le résultat NE DOIT PAS dépendre du comportement d’un service de paiement extérieur.
 
