@@ -1,24 +1,11 @@
 ---
 title: Implement OpenFSP
-description: Steps for implementing the OpenFSP API natively and assessing applicable conformance requirements.
+description: Points of attention for a native implementation of the OpenFSP API and running the conformance suite.
 ---
 
-A native implementation exposes the OpenFSP interface within the payment service provider’s system. Merchant applications can communicate directly with this interface over HTTP or through a client library. Each merchant retains its account, keys and agreement with the provider.
+A native implementation exposes the OpenFSP API within the payment service provider’s system. The requirements are those of the [specification](/en/docs/spec); this page lists the points of attention and how to run the suite.
 
-This guide organises implementation tasks and related checks. Applicable requirements are defined in the [specification](/en/docs/spec).
-
-## Read the contract in order
-
-| Step                      | Decision to make                                                                                          | Reference                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Identify the layer        | Distinguish merchant integration, API translation and inter-provider settlement.                          | [Standard architecture](/en/docs/architecture) and [decision 0001](/en/docs/decisions#0001) |
-| Represent a payment       | Integer amounts in gourde cents, opaque identifiers, merchant references, timestamps and terminal states. | [Data model](/en/docs/spec/data-model), [lifecycle](/en/docs/spec/lifecycle)                |
-| Expose exchanges          | Creation, retrieval, errors and recovery after connection loss.                                           | [Payments API](/en/docs/spec/payments-api), [idempotency](/en/docs/spec/idempotency)        |
-| Announce actual functions | Discovery, optional capabilities and limits, without emulating missing functions.                         | [Capabilities](/en/docs/spec/capabilities)                                               |
-| Authenticate and notify   | Keys, scopes, signing-key publication, event verification and delivery.                                   | [Authentication](/en/docs/spec/authentication), [webhooks](/en/docs/spec/webhooks)          |
-| Check applicable scope    | Target `server`, Core and profiles matching announced capabilities.                                       | [Conformance 3](/en/docs/spec/conformance#3)                                             |
-
-## Prepare the HTTP surface
+## HTTP surface
 
 | Surface                                                    | Role                                                                 | Native-target consideration                                                                                                      |
 | ---------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -28,75 +15,49 @@ This guide organises implementation tasks and related checks. Applicable require
 | `GET /v1/payments/{id}` and `GET /v1/payments?reference=…` | Retrieve a payment and recover after a lost response.                | The merchant knows its reference before the call; it must not need to reconstruct an opaque identifier.                          |
 | Statements and notifications                               | Functions conditional on corresponding capabilities.                 | A reserved or unsupported function must not be presented as available.                                                           |
 
-The URLs shown correspond to endpoints defined by the specification. Client applications should use the URLs published in the discovery document ([3.1.3](/en/docs/spec/capabilities#3.1.3)). The [`provider` identifier](/en/docs/registry) identifies the registered service and remains distinct from its displayed commercial name.
+Clients use the URLs published in the discovery document ([capabilities 3.1.3](/en/docs/spec/capabilities#3.1.3)). The [`provider` identifier](/en/docs/registry) identifies the registered service and remains distinct from its displayed commercial name.
 
-## Handle payment notifications
+## Notifications
 
-When payment creation uses `callback_url`, apply the conditions in [API 5.1.8](/en/docs/spec/payments-api#5.1.8). Native conformance scenarios check the delivery of a signed `payment.succeeded` event, the publication of Ed25519 keys and the rejection of HTTP notification URLs outside the loopback exceptions.
+When creation carries `callback_url`, apply [API 5.1.8](/en/docs/spec/payments-api#5.1.8). [Conformance 5.4](/en/docs/spec/conformance#5.4) and [conformance 5.10](/en/docs/spec/conformance#5.10) check delivery of a signed `payment.succeeded`, key publication and rejection of an `http` URL outside loopback.
 
-The [webhook specification](/en/docs/spec/webhooks) defines events, signatures, handling of out-of-order arrival and deduplication. Simulator behaviour introduces no implicit extension. Associated checks are described in [conformance 5.4](/en/docs/spec/conformance#5.4) and [5.10](/en/docs/spec/conformance#5.10).
+## Test environment
 
-## Observe a simulated native implementation
+In the test environment, the implementation provides preparation ([conformance 4.8](/en/docs/spec/conformance#4.8)), which issues the test key and the inputs of [4.8.4](/en/docs/spec/conformance#4.8.4), including `bounded-provider`, and the control interface ([conformance 4.9](/en/docs/spec/conformance#4.9)), through which the suite chooses the outcome of each payment. Without the control interface, the tests that choose an outcome fail.
 
-The reference repository includes `mock_openfsp`, a fictitious payment service that exposes the OpenFSP API directly.
+## Run the suite
 
-From the [openfsp](https://github.com/openfspht/openfsp) repository, after installing the [development prerequisites](/en/docs/quickstart#2), run the following commands in two separate terminals:
+Against the reference mock server `mock_openfsp`, from the [openfsp](https://github.com/openfspht/openfsp) repository and with the [development prerequisites](/en/docs/quickstart#2):
 
 ```bash title="Terminal 1: simulated provider"
 make simulator
 ```
 
-```bash title="Terminal 2: suite against the implementation"
+```bash title="Terminal 2: suite"
 make validate TARGET=http://127.0.0.1:8090/mock_openfsp
 ```
 
-The suite is given the address of the implementation only. It asks the implementation for its test keys and its control interface ([conformance 4.8 and 4.9](/en/docs/spec/conformance#4.8.1)), which lets it choose the outcome of each payment. The report is saved to `backend/validator/infrastructure/build/conformance-report.json`. The Makefile starts the suite’s webhook receiver on port 8099.
-
-The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
-
-## Test your implementation
-
-Prepare a dedicated test instance, the required keys and the capabilities to assess. Then build the command-line interface from the reference repository:
+Against your implementation, its address is enough: `make validate TARGET=https://operator.example`. The Makefile opens the suite’s webhook receiver on port 8099 and writes the report to `backend/validator/infrastructure/build/conformance-report.json`. Without the Makefile:
 
 ```bash
-cd backend
-./gradlew :validator:infrastructure:bootJar
-cd ..
-```
-
-If your implementation prepares its own runs ([conformance 4.8](/en/docs/spec/conformance#4.8.1)), its address is enough: `make validate TARGET=https://operator.example`. Otherwise, run the suite with your own keys. Replace `operator.example` and set the variables holding the keys of your test environment:
-
-```bash
+./backend/gradlew -p backend :validator:infrastructure:bootJar
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
-  --target server \
   --base-url https://operator.example \
-  --api-key "$OPENFSP_NATIVE_TEST_KEY" \
   --conformance conformance \
   --report conformance-report.json \
-  --input "statements-key=$OPENFSP_STATEMENTS_KEY" \
-  --input "restricted-key=$OPENFSP_SECOND_PRINCIPAL_KEY" \
-  --input "revoked-key=$OPENFSP_REVOKED_KEY" \
-  --input "expired-key=$OPENFSP_EXPIRED_KEY" \
   --webhook-port 8098 \
   --webhook-url https://receiver.example/webhooks
 ```
 
-| Input            | Key                                                                   |
-| ---------------- | --------------------------------------------------------------------- |
-| `statements-key` | A key with the `statements:read` scope.                               |
-| `restricted-key` | A key of another principal with `payments:read` and `payments:write`. |
-| `revoked-key`    | A key you have revoked.                                               |
-| `expired-key`    | A key past its expiry.                                                |
+Add `--access-code` when preparation requires the operator’s access code ([conformance 4.8.7](/en/docs/spec/conformance#4.8.7)). Without `--webhook-port`, no receiver starts and the delivery tests do not run. `--webhook-url` gives the public HTTPS address forwarded to that port; otherwise the suite announces `http://127.0.0.1:8098/webhooks`, reachable only from a local instance.
 
-The command-line interface has no default receiver port. Without `--webhook-port`, no receiver starts and the signed `payment.succeeded` delivery scenario does not run. The `--webhook-url` option supplies the public HTTPS address, forwarded to that port, used by the assessed instance for notifications. Without it, the announced address is `http://127.0.0.1:8098/webhooks`, which is accessible only to a local instance.
-
-Some scenarios require a decline, an expiry or a state transition to be provoked. In the test environment, the implementation provides the control interface ([conformance 4.9](/en/docs/spec/conformance#4.9.1)) through which the suite chooses these outcomes. Without it, these scenarios fail.
+The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
 
 ## Read and publish the result
 
-`make validate` can return exit code 0 while Core remains incomplete because of assisted scenarios, such as a key revocation without a provided input. Assessment must therefore rely on the report and its verdicts, defined in [conformance 6](/en/docs/spec/conformance#6), rather than on the exit code alone.
+The exit code is not enough: the assessment rests on the report’s verdicts ([conformance 7](/en/docs/spec/conformance#7)). A test whose input is missing is assisted ([conformance 4.7](/en/docs/spec/conformance#4.7)) and leaves Core incomplete.
 
-A published conformance claim should identify the assessed scope and include the report, configuration with secrets removed and versions used. A [signed attestation](/en/docs/verify) allows the origin and integrity of one execution’s results to be verified; it does not certify the product.
+A published conformance claim identifies the assessed scope and comes with the report, the configuration with secrets removed and the versions used. A [signed attestation](/en/docs/verify) allows its origin and integrity to be verified.
 
 ## Next
 
