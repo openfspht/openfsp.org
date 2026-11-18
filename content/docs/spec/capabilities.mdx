@@ -88,7 +88,7 @@ Ce point d’accès est public et non authentifié (RFC 8615). Sa structure suit
 
 **3.1.5.** Le champ `webhook_keys` contient les clés publiques de signature des webhooks ([webhooks 6.1](/docs/spec/webhooks#6.1)). Ce document constitue leur unique point de publication.
 
-**3.1.6.** Le membre facultatif `conformance_endpoint` contient l’URL absolue du point d’accès de préparation des essais de conformité ([conformité 4.8](/docs/spec/conformance#4.8.1)). Cette URL DOIT avoir la même origine que `issuer`.
+**3.1.6.** En environnement de test, le membre `conformance_endpoint` contient l’URL absolue du point d’accès de préparation des essais de conformité ([conformité 4.8.1](/docs/spec/conformance#4.8.1)). Cette URL DOIT avoir la même origine que `issuer`. Le membre est absent d’un déploiement qui accepte des clés de production ([conformité 4.8.6](/docs/spec/conformance#4.8.6)).
 
 ### 3.2. Capacités
 

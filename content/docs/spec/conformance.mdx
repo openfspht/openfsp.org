@@ -58,19 +58,19 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 **4.2.** Pour évaluer un serveur, la suite assure le rôle du client.
 
-**4.3.** La suite NE DOIT PAS imposer de modification, d’instrumentation ou de mode de test à l’implémentation évaluée.
+**4.3.** Hors de la préparation (4.8) et de l’interface de contrôle (4.9), exigées en environnement de test, la suite NE DOIT PAS imposer de modification ou d’instrumentation à l’implémentation évaluée.
 
-**4.4.** La configuration seule est admise : identifiants de test, clé disposant de `statements:read` pour le 5.9 et entrées nécessaires aux tests assistés du 4.7.
+**4.4.** Les éléments d’une exécution sont la clé de test, une clé disposant de `statements:read` pour le 5.9 et les entrées du 4.8.4. Le serveur les fournit par la préparation du 4.8.
 
 **4.5.** La suite obtient les résultats choisis par l’interface de contrôle de l’implémentation (4.9).
 
 **4.6.** La suite DOIT pouvoir s’exécuter hors ligne et en intégration continue, sans compte.
 
-**4.7.** Un test nécessitant une intervention de l’exploitant est marqué comme assisté, par exemple pour révoquer une clé ou déclarer des bornes. La suite décrit l’action, l’exploitant l’effectue via l’administration ou la configuration du serveur et le rapport mentionne cette assistance. Cette intervention ne constitue pas une modification au sens du 4.3.
+**4.7.** Un test dont une entrée du 4.8.4 manque est marqué comme assisté. La suite décrit l’entrée attendue, l’exploitant la fournit par l’administration ou la configuration du serveur et le rapport mentionne cette assistance. Cette intervention ne constitue pas une modification au sens du 4.3. Un test qui choisit une issue n’est jamais assisté (4.9.1).
 
 ### 4.8. Préparation par le serveur
 
-**4.8.1.** Un serveur PEUT fournir lui-même les éléments du 4.4. Il annonce alors, dans son document de configuration ([capacités 3.1.6](/docs/spec/capabilities#3.1.6)), le membre `conformance_endpoint`. En environnement de test, ce membre est requis par le 4.9.1.
+**4.8.1.** En environnement de test, le serveur DOIT fournir lui-même les éléments du 4.4. Il annonce, dans son document de configuration ([capacités 3.1.6](/docs/spec/capabilities#3.1.6)), le membre `conformance_endpoint`.
 
 **4.8.2.** La suite envoie une requête `POST` à cette URL. Le corps, facultatif, est un objet JSON dont le membre `webhook_url` désigne le récepteur de webhooks de la suite.
 
@@ -160,7 +160,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | `POST` sans `Idempotency-Key`                            | `idempotency-key-required`                                        | [idempotence 1.3](/docs/spec/idempotency#1.3)         | aucun                                                   |
 | `callback_url` en `http` hors bouclage                   | création rejetée                                                  | [API 5.1.8](/docs/spec/payments-api#5.1.8)            | `mock_openfsp`                                          |
 | Requête de l'API tentant de fixer l'état d'un paiement   | état inchangé                                                     | [cycle de vie 6.1](/docs/spec/lifecycle#6.1)          | `mock_openfsp`, `PENDING_FOREVER`                       |
-| Clé inconnue, révoquée, d'un autre environnement         | trois `unauthenticated` indiscernables                            | [authentification 4.7](/docs/spec/authentication#4.7) | aucun ; assisté (4.7)                                   |
+| Clé inconnue, révoquée, d'un autre environnement         | trois `unauthenticated` indiscernables                            | [authentification 4.7](/docs/spec/authentication#4.7) | `mock_openfsp` (9.3.7)                                  |
 
 **5.5.** Chaque test dépendant d’un résultat identifie le scénario du serveur simulé qui produit ce résultat (4.9.3).
 
@@ -193,15 +193,15 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | Test                                                                                                                | Attendu                                                               | Règle                                                  | Serveur simulé                                              |
 | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
 | Capacités annoncées pour chaque opérateur simulé                                                                    | aucun nom réservé ou retiré                                           | [capacités 2.2, 7.2](/docs/spec/capabilities#7.2)   | `mock_openfsp` et les opérateurs de test (9.3.5)            |
-| Montant égal à `min_amount`, puis à `max_amount`                                                                    | paiement créé (`201`)                                                 | [capacités 6.7, 7.3](/docs/spec/capabilities#7.3)   | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
-| Montant inférieur d'un centime à `min_amount`, supérieur d'un centime à `max_amount`, non multiple de `amount_step` | `amount-out-of-range` portant les bornes déclarées ; aucun paiement créé | [capacités 6.7, 7.3](/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS` ; bornes déclarées, assisté (4.7) |
+| Montant égal à `min_amount`, puis à `max_amount`                                                                    | paiement créé (`201`)                                                 | [capacités 6.7, 7.3](/docs/spec/capabilities#7.3)   | `mock_openfsp`, `SUCCESS` ; bornes déclarées (9.3.1)     |
+| Montant inférieur d'un centime à `min_amount`, supérieur d'un centime à `max_amount`, non multiple de `amount_step` | `amount-out-of-range` portant les bornes déclarées ; aucun paiement créé | [capacités 6.7, 7.3](/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS` ; bornes déclarées (9.3.1)     |
 | Événement livré à `callback_url`                                                                                    | `payment.succeeded` signé, vérifié avec `webhook_keys`                | [API 5.1.8](/docs/spec/payments-api#5.1.8)          | `mock_openfsp`, `SUCCESS`                                   |
 
 **5.11. Authentification.** Les cas d’échec d’authentification sont évalués selon le tableau suivant :
 
 | Test                                                                           | Attendu                                                                                                         | Règle                                                              | Serveur simulé        |
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------- |
-| Clé absente, mal formée, inconnue, révoquée, expirée, d'un autre environnement | six `unauthenticated` au même `title`, sans `detail` distinctif ; `WWW-Authenticate: Bearer` sur la clé absente | [authentification 3.3, 4.7, 7.6](/docs/spec/authentication#7.6) | aucun ; assisté (4.7) |
+| Clé absente, mal formée, inconnue, révoquée, expirée, d'un autre environnement | six `unauthenticated` au même `title`, sans `detail` distinctif ; `WWW-Authenticate: Bearer` sur la clé absente | [authentification 3.3, 4.7, 7.6](/docs/spec/authentication#7.6) | `mock_openfsp` (9.3.7) |
 
 **5.12.** Les tests du 5.9 appartiennent au profil `payments.statement`. Le test de livraison à `callback_url` du 5.10 appartient au profil `webhooks.per_payment_url`. Les tests d’un profil ne s’appliquent pas au serveur qui ne déclare pas la capacité correspondante.
 
@@ -257,9 +257,9 @@ Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 **9.3.1.** L’implémentation simulée de référence est décrite ci-dessous :
 
-| Opérateur      | Capacités                                                                       | Cas exercé                                                                  |
-| -------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `webhooks.per_payment_url` | Serveur de référence (9.3.2) : consultation, relevé, événements à `callback_url`. |
+| Opérateur      | Capacités                                                                                                          | Cas exercé                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `payments.fee`, `webhooks.emit`, `webhooks.per_payment_url` | Serveur de référence (9.3.2) : consultation, relevé, frais, événements signés, bornes `min_amount`, `max_amount` et `amount_step`. |
 
 **9.3.2.** Le service `mock_openfsp` expose directement l’API et signe ses livraisons selon les [webhooks](/docs/spec/webhooks), fondés sur la RFC 9421.
 
@@ -276,7 +276,7 @@ Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 **9.3.6.** Le service `mock_openfsp` livre à `callback_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)) uniquement les événements de transition terminale, sans livrer `payment.created`. La valeur de `sequence` augmente par paiement et inclut la création non livrée ; la transition porte donc `2` ([webhooks 8.1](/docs/spec/webhooks#8.1)).
 
-**9.3.7.** En complément de sa clé active, `mock_openfsp` publie une clé révoquée, une clé expirée et une clé d’un second principal. Ces clés permettent d’exécuter les tests du 5.3 et du 5.11 sans intervention de l’exploitant.
+**9.3.7.** En complément de sa clé active, `mock_openfsp` publie une clé révoquée, une clé expirée et une clé d’un second principal. Ces clés permettent d’exécuter les tests du 5.3, du 5.4 et du 5.11 sans intervention de l’exploitant.
 
 ### 9.4. Défaillances
 
@@ -286,7 +286,7 @@ Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 **9.4.3.** Les réponses du serveur simulé interviennent après un délai bref et fixe ; elles ne sont jamais instantanées.
 
-**9.4.4.** En mode automatique, l’interface de contrôle attribue à chaque nouveau paiement le scénario suivant dans une rotation des scénarios disponibles pour son opérateur.
+**9.4.4.** Le mode automatique s’active explicitement, opérateur par opérateur, par l’administration du serveur simulé ; cette activation vaut sélection explicite au sens du 4.9.4. Chaque nouveau paiement reçoit alors le scénario suivant d’une rotation des scénarios disponibles pour son opérateur. Une exécution de conformité ne l’active jamais.
 
 ### 9.5. Contrôle
 

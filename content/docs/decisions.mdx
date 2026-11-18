@@ -77,21 +77,21 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 ## 0008. Conformité
 
-**Choix.** Définir la conformité par une cible (`client` ou `server`), un niveau et une version du protocole. Le niveau Core est obligatoire ; un profil s’applique à chaque capacité annoncée. Aucun score ni classement ne remplace la satisfaction des exigences. La suite peut être exécutée localement, hors ligne et sans modification de l’implémentation. Le serveur de référence `mock_openfsp` reproduit les scénarios déclarés ; le rapport est lisible par machine et explicite les limites des vérifications.
+**Choix.** Définir la conformité par une cible (`client` ou `server`), un niveau et une version du protocole. Le niveau Core est obligatoire ; un profil s’applique à chaque capacité annoncée. Aucun score ni classement ne remplace la satisfaction des exigences. La suite peut être exécutée localement et hors ligne ; elle n’exige de l’implémentation que la préparation et l’interface de contrôle de l’environnement de test (0009, 0011). Le serveur de référence `mock_openfsp` reproduit les scénarios déclarés ; le rapport est lisible par machine et explicite les limites des vérifications.
 
 **Justification.** Les scénarios en boîte noire comparent les capacités déclarées aux comportements observables dans l’environnement évalué. Le rapport conserve la liste des obligations non vérifiées, afin de distinguer un résultat de test d’une affirmation générale sur l’implémentation.
 
-**Alternatives examinées.** Certification payante par le projet ; niveaux de classement bronze à or ; score en pourcentage ; dépendance aux bacs à sable des fournisseurs pour la suite de référence ; scénario sélectionné par le montant ; défaillances aléatoires ; instrumentation de l’implémentation.
+**Alternatives examinées.** Certification payante par le projet ; niveaux de classement bronze à or ; score en pourcentage ; dépendance aux bacs à sable des fournisseurs pour la suite de référence ; scénario sélectionné par le montant ; défaillances aléatoires.
 
 **Référence.** [Conformité](/docs/spec/conformance).
 
 ## 0009. Préparation des essais de conformité
 
-**Choix.** Permettre à un serveur d’annoncer, dans son document de configuration, un point d’accès `conformance_endpoint`. La suite y transmet l’adresse de son récepteur de webhooks et reçoit un jeu d’essai isolé et de courte durée : une clé de test complète, une clé sans `statements:read`, une clé révoquée, une clé expirée et les identifiants nécessaires aux tests qui exigent une configuration particulière. Le point d’accès n’existe qu’en environnement de test, ne délivre que des clés `ofsp_test_` et peut exiger un code d’accès remis par l’exploitant. Il reste facultatif : en son absence, les éléments sont saisis à la main.
+**Choix.** Exiger d’un serveur, en environnement de test, qu’il annonce dans son document de configuration un point d’accès `conformance_endpoint`. La suite y transmet l’adresse de son récepteur de webhooks et reçoit un jeu d’essai isolé et de courte durée : une clé de test complète, une clé sans `statements:read`, une clé révoquée, une clé expirée et les identifiants nécessaires aux tests qui exigent une configuration particulière. Le point d’accès n’existe qu’en environnement de test, ne délivre que des clés `ofsp_test_` et peut exiger un code d’accès remis par l’exploitant.
 
-**Justification.** Une validation lancée à partir de la seule adresse du serveur supprime les copies manuelles et rend exécutables les tests jusque-là assistés. Le caractère facultatif préserve la règle selon laquelle la suite s’exécute sans modification de l’implémentation.
+**Justification.** Une validation lancée à partir de la seule adresse du serveur supprime les copies manuelles et rend exécutables les tests jusque-là assistés. Obligatoire, la préparation donne à toute implémentation la même façon d’exécuter la suite, avec l’interface de contrôle de la décision 0011.
 
-**Alternatives examinées.** Clés de test fixes publiées dans la spécification ; saisie manuelle comme seul mode ; préparation par une interface propre à chaque serveur ; accès de la suite à l’administration du serveur.
+**Alternatives examinées.** Clés de test fixes publiées dans la spécification ; saisie manuelle comme seul mode ; préparation facultative, avec saisie manuelle en son absence ; préparation par une interface propre à chaque serveur ; accès de la suite à l’administration du serveur.
 
 **Référence.** [Conformité 4.8](/docs/spec/conformance#4.8.1).
 

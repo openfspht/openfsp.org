@@ -77,21 +77,21 @@ The following decisions document the choices adopted for the specification versi
 
 ## 0008. Conformance
 
-**Decision.** Define conformance by a target (`client` or `server`), a level and a protocol version. Core is mandatory; a profile applies to each announced capability. Scores and rankings do not replace satisfaction of the requirements. The suite can run locally, offline and without modifying the implementation. The `mock_openfsp` reference server reproduces declared scenarios; the report is machine-readable and explicitly states verification limits.
+**Decision.** Define conformance by a target (`client` or `server`), a level and a protocol version. Core is mandatory; a profile applies to each announced capability. Scores and rankings do not replace satisfaction of the requirements. The suite can run locally and offline; it requires of the implementation only the preparation and the control interface of the test environment (0009, 0011). The `mock_openfsp` reference server reproduces declared scenarios; the report is machine-readable and explicitly states verification limits.
 
 **Rationale.** Black-box scenarios compare declared capabilities with observable behaviour in the assessed environment. The report retains the list of unverified obligations, distinguishing test results from general claims about an implementation.
 
-**Alternatives considered.** Paid certification by the project; bronze-to-gold rankings; percentage scores; dependence on provider sandboxes for the reference suite; amount-selected scenarios; random failures; implementation instrumentation.
+**Alternatives considered.** Paid certification by the project; bronze-to-gold rankings; percentage scores; dependence on provider sandboxes for the reference suite; amount-selected scenarios; random failures.
 
 **Reference.** [Conformance](/en/docs/spec/conformance).
 
 ## 0009. Preparation of conformance runs
 
-**Decision.** Let a server announce a `conformance_endpoint` in its configuration document. The suite sends it the address of its webhook receiver and receives an isolated, short-lived set of test items: a full test key, a key without `statements:read`, a revoked key, an expired key and the identifiers needed by tests that require a particular configuration. The endpoint exists only in a test environment, issues only `ofsp_test_` keys and may require an access code issued by the operator. It remains optional: without it, the items are entered by hand.
+**Decision.** Require a server, in the test environment, to announce a `conformance_endpoint` in its configuration document. The suite sends it the address of its webhook receiver and receives an isolated, short-lived set of test items: a full test key, a key without `statements:read`, a revoked key, an expired key and the identifiers needed by tests that require a particular configuration. The endpoint exists only in a test environment, issues only `ofsp_test_` keys and may require an access code issued by the operator.
 
-**Rationale.** A validation started from the server address alone removes manual copies and makes the tests that were assisted until now runnable. Keeping it optional preserves the rule that the suite runs without modification of the implementation.
+**Rationale.** A validation started from the server address alone removes manual copies and makes the tests that were assisted until now runnable. Made mandatory, preparation gives every implementation the same way of running the suite, together with the control interface of decision 0011.
 
-**Alternatives considered.** Fixed test keys published in the specification; manual entry as the only mode; preparation through an interface specific to each server; access of the suite to the server administration.
+**Alternatives considered.** Fixed test keys published in the specification; manual entry as the only mode; optional preparation, with manual entry without it; preparation through an interface specific to each server; access of the suite to the server administration.
 
 **Reference.** [Conformance 4.8](/en/docs/spec/conformance#4.8.1).
 

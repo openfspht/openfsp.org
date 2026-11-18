@@ -58,19 +58,19 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.2.** When assessing a server, the suite acts as the client.
 
-**4.3.** The suite MUST NOT require modifications, instrumentation or a test mode in the assessed implementation.
+**4.3.** Beyond the preparation (4.8) and the control interface (4.9), required in the test environment, the suite MUST NOT require modifications or instrumentation of the assessed implementation.
 
-**4.4.** Only configuration is permitted: test credentials, a key with `statements:read` for 5.9 and inputs required by assisted tests under 4.7.
+**4.4.** The items of a run are the test key, a key with `statements:read` for 5.9 and the inputs of 4.8.4. The server provides them through the preparation of 4.8.
 
 **4.5.** The suite obtains selected outcomes through the control interface of the implementation (4.9).
 
 **4.6.** The suite MUST be runnable offline and in continuous integration without an account.
 
-**4.7.** A test requiring operator intervention is marked as assisted, for example to revoke a key or declare limits. The suite describes the action, the operator performs it through server administration or configuration, and the report records the assistance. This intervention is not a modification under 4.3.
+**4.7.** A test whose input of 4.8.4 is missing is marked as assisted. The suite describes the expected input, the operator provides it through server administration or configuration, and the report records the assistance. This intervention is not a modification under 4.3. A test that chooses an outcome is never assisted (4.9.1).
 
 ### 4.8. Preparation by the server
 
-**4.8.1.** A server MAY provide the items of 4.4 itself. It then announces the `conformance_endpoint` member in its configuration document ([capabilities 3.1.6](/en/docs/spec/capabilities#3.1.6)). In the test environment, 4.9.1 requires this member.
+**4.8.1.** In the test environment, the server MUST provide the items of 4.4 itself. It announces the `conformance_endpoint` member in its configuration document ([capabilities 3.1.6](/en/docs/spec/capabilities#3.1.6)).
 
 **4.8.2.** The suite sends a `POST` request to that URL. The optional body is a JSON object whose `webhook_url` member identifies the suite’s webhook receiver.
 
@@ -160,7 +160,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | `POST` without `Idempotency-Key`                         | `idempotency-key-required`                                       | [idempotency 1.3](/en/docs/spec/idempotency#1.3)       | none                                              |
 | `callback_url` over `http` outside loopback              | creation rejected                                                | [API 5.1.8](/en/docs/spec/payments-api#5.1.8)          | `mock_openfsp`                                    |
 | API request trying to set the state of a payment         | state unchanged                                                  | [lifecycle 6.1](/en/docs/spec/lifecycle#6.1)           | `mock_openfsp`, `PENDING_FOREVER`                 |
-| Unknown, revoked, other-environment key                  | three indistinguishable `unauthenticated`                        | [authentication 4.7](/en/docs/spec/authentication#4.7) | none; assisted (4.7)                              |
+| Unknown, revoked, other-environment key                  | three indistinguishable `unauthenticated`                        | [authentication 4.7](/en/docs/spec/authentication#4.7) | `mock_openfsp` (9.3.7)                            |
 
 **5.5.** Each outcome-dependent test identifies the mock-server scenario producing that outcome (4.9.3).
 
@@ -193,15 +193,15 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | Test                                                                                             | Expected                                                                     | Rule                                                 | Mock server                                                |
 | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
 | Capabilities advertised for each simulated provider                                              | no reserved or withdrawn name                                                | [capabilities 2.2, 7.2](/en/docs/spec/capabilities#7.2) | `mock_openfsp` and the test providers (9.3.5)              |
-| Amount equal to `min_amount`, then to `max_amount`                                               | payment created (`201`)                                                      | [capabilities 6.7, 7.3](/en/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS`; limits declared, assisted (4.7) |
-| Amount one cent below `min_amount`, one cent above `max_amount`, not a multiple of `amount_step` | `amount-out-of-range` carrying the declared limits; no payment created       | [capabilities 6.7, 7.3](/en/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS`; limits declared, assisted (4.7) |
+| Amount equal to `min_amount`, then to `max_amount`                                               | payment created (`201`)                                                      | [capabilities 6.7, 7.3](/en/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS`; limits declared (9.3.1)       |
+| Amount one cent below `min_amount`, one cent above `max_amount`, not a multiple of `amount_step` | `amount-out-of-range` carrying the declared limits; no payment created       | [capabilities 6.7, 7.3](/en/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS`; limits declared (9.3.1)       |
 | Event delivered to `callback_url`                                                                | `payment.succeeded` signed, verified with `webhook_keys`                     | [API 5.1.8](/en/docs/spec/payments-api#5.1.8)           | `mock_openfsp`, `SUCCESS`                                  |
 
 **5.11. Authentication.** Authentication failure cases are assessed according to the following table:
 
 | Test                                                                 | Expected                                                                                                               | Rule                                                          | Mock server          |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------- |
-| Missing, malformed, unknown, revoked, expired, other-environment key | six `unauthenticated` with the same `title`, no distinguishing `detail`; `WWW-Authenticate: Bearer` on the missing key | [authentication 3.3, 4.7, 7.6](/en/docs/spec/authentication#7.6) | none; assisted (4.7) |
+| Missing, malformed, unknown, revoked, expired, other-environment key | six `unauthenticated` with the same `title`, no distinguishing `detail`; `WWW-Authenticate: Bearer` on the missing key | [authentication 3.3, 4.7, 7.6](/en/docs/spec/authentication#7.6) | `mock_openfsp` (9.3.7) |
 
 **5.12.** Tests in 5.9 belong to the `payments.statement` profile. The `callback_url` delivery test in 5.10 belongs to `webhooks.per_payment_url`. A profile’s tests do not apply to a server that does not declare the corresponding capability.
 
@@ -257,9 +257,9 @@ The requirements of section 9 apply to the reference mock server.
 
 **9.3.1.** The reference simulated implementation is described below:
 
-| Provider       | Capabilities                                                                    | Case exercised                                                           |
-| -------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `webhooks.per_payment_url` | Reference server (9.3.2): lookup, statement, events to `callback_url`.   |
+| Provider       | Capabilities                                                                                                       | Case exercised                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `payments.fee`, `webhooks.emit`, `webhooks.per_payment_url` | Reference server (9.3.2): lookup, statement, fee, signed events, `min_amount`, `max_amount` and `amount_step` limits. |
 
 **9.3.2.** The `mock_openfsp` service exposes the API directly and signs deliveries under [webhooks](/en/docs/spec/webhooks), based on RFC 9421.
 
@@ -276,7 +276,7 @@ The requirements of section 9 apply to the reference mock server.
 
 **9.3.6.** The `mock_openfsp` service delivers only terminal-transition events to `callback_url` ([API 5.1.8](/en/docs/spec/payments-api#5.1.8)), without delivering `payment.created`. The per-payment `sequence` includes the undelivered creation, so the transition carries `2` ([webhooks 8.1](/en/docs/spec/webhooks#8.1)).
 
-**9.3.7.** In addition to its active key, `mock_openfsp` publishes a revoked key, an expired key and a second principal’s key. These keys allow tests in 5.3 and 5.11 to run without operator intervention.
+**9.3.7.** In addition to its active key, `mock_openfsp` publishes a revoked key, an expired key and a second principal’s key. These keys allow tests in 5.3, 5.4 and 5.11 to run without operator intervention.
 
 ### 9.4. Failures
 
@@ -286,7 +286,7 @@ The requirements of section 9 apply to the reference mock server.
 
 **9.4.3.** Mock-server responses occur after a brief, fixed delay and are never instantaneous.
 
-**9.4.4.** In automatic mode, the control interface assigns each new payment the next scenario in a rotation of those available for its provider.
+**9.4.4.** Automatic mode is enabled explicitly, provider by provider, through the administration of the mock server; enabling it is an explicit selection under 4.9.4. Each new payment then receives the next scenario in a rotation of those available for its provider. A conformance run never enables it.
 
 ### 9.5. Control
 

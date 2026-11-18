@@ -88,7 +88,7 @@ This endpoint is public and unauthenticated (RFC 8615). Its structure follows Op
 
 **3.1.5.** The `webhook_keys` field contains public webhook signing keys ([webhooks 6.1](/en/docs/spec/webhooks#6.1)). This document is their sole publication point.
 
-**3.1.6.** The optional `conformance_endpoint` member contains the absolute URL of the conformance preparation endpoint ([conformance 4.8](/en/docs/spec/conformance#4.8.1)). This URL MUST have the same origin as `issuer`.
+**3.1.6.** In the test environment, the `conformance_endpoint` member contains the absolute URL of the conformance preparation endpoint ([conformance 4.8.1](/en/docs/spec/conformance#4.8.1)). This URL MUST have the same origin as `issuer`. The member is absent from a deployment that accepts production keys ([conformance 4.8.6](/en/docs/spec/conformance#4.8.6)).
 
 ### 3.2. Capabilities
 
