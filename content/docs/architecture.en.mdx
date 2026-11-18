@@ -7,9 +7,7 @@ OpenFSP defines the interface between a merchant application server and a paymen
 
 ## The application-to-provider layer
 
-The problem addressed is the multiplication of service-specific integrations between applications and payment services. When each application integrates each service separately, the number of implemented interfaces is proportional to `providers × applications`. A shared contract allows this work to be organised around `providers + applications` implementations. This is a design model; actual benefits depend on adoption, supported capabilities and deployment constraints.
-
-The interoperability defined here concerns the merchant integration interface. Each merchant retains its account and agreement with each provider. Inter-provider funds transfers, clearing and settlement require separate mechanisms.
+The interoperability defined here concerns the merchant integration interface; [decision 0001](/en/docs/decisions#0001) gives the rationale. Each merchant retains its account and agreement with each provider.
 
 ## Native architecture
 
@@ -47,7 +45,7 @@ A common interface can be implemented by services offering different functions. 
 
 A conformance claim identifies a target, a level and a protocol version. The `client` and `server` targets, the Core level and capability profiles are defined in the [conformance specification](/en/docs/spec/conformance).
 
-An attestation records the results of a particular suite execution. Its signature allows its origin and integrity to be verified; it does not certify the implementation.
+An [attestation](/en/docs/verify) records the results of a particular suite execution.
 
 ## Versions
 
@@ -62,10 +60,6 @@ The specification draws on RFCs 2119 and 8174 for normative keywords, RFC 9457 f
 - Exchanges use TLS ([API 1.1](/en/docs/spec/payments-api#1.1), [webhooks 7.2](/en/docs/spec/webhooks#7.2)).
 - API keys are retained as digests and excluded from logs ([authentication 4](/en/docs/spec/authentication#4)).
 - Transitions are timestamped through `updated_at` and `completed_at`. The API does not allow the client to set payment state ([lifecycle 6.1](/en/docs/spec/lifecycle#6.1)).
-
-## Regulation
-
-Protocol conformance and regulatory compliance require separate assessments. Payment data and statements support reconciliation and audit; their presence does not establish that a deployment meets its operator’s applicable obligations.
 
 ## Out of scope
 

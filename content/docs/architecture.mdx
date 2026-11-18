@@ -7,9 +7,7 @@ OpenFSP définit l’interface entre le serveur d’une application marchande et
 
 ## Le segment application vers opérateur
 
-Le problème étudié est la multiplication des intégrations spécifiques entre applications et services de paiement. Dans le modèle où chaque application intègre chaque service séparément, le nombre d’interfaces développées est proportionnel à `opérateurs × applications`. Un contrat commun permet de mutualiser ce travail autour de `opérateurs + applications` implémentations. Il s’agit d’un modèle de conception, dont les bénéfices effectifs dépendent de l’adoption, des capacités prises en charge et des contraintes de déploiement.
-
-L’interopérabilité définie ici concerne l’interface d’intégration marchande. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur. Les transferts, la compensation et le règlement entre fournisseurs relèvent d’autres mécanismes.
+L’interopérabilité définie ici concerne l’interface d’intégration marchande ; la [décision 0001](/docs/decisions#0001) en donne la justification. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur.
 
 ## Architecture native
 
@@ -47,7 +45,7 @@ La [découverte des capacités](/docs/spec/capabilities) définit les points d�
 
 Une déclaration de conformité identifie une cible, un niveau et une version du protocole. Les cibles `client` et `server`, le niveau Core et les profils associés aux capacités sont définis dans la [spécification de conformité](/docs/spec/conformance).
 
-Une attestation consigne les résultats d’une exécution donnée de la suite. Sa signature permet d’en vérifier l’origine et l’intégrité ; elle ne constitue pas une certification de l’implémentation.
+Une [attestation](/docs/verify) consigne les résultats d’une exécution donnée de la suite.
 
 ## Versions
 
@@ -62,10 +60,6 @@ La spécification s’appuie notamment sur les RFC 2119 et 8174 pour les mots-cl
 - Les échanges utilisent TLS ([API 1.1](/docs/spec/payments-api#1.1), [webhooks 7.2](/docs/spec/webhooks#7.2)).
 - Les clés d’API sont conservées sous forme de condensés et exclues des journaux ([authentification 4](/docs/spec/authentication#4)).
 - Les transitions sont horodatées par `updated_at` et `completed_at`. L’API ne permet pas au client de fixer l’état du paiement ([cycle de vie 6.1](/docs/spec/lifecycle#6.1)).
-
-## Cadre réglementaire
-
-La conformité au protocole et le respect des obligations réglementaires constituent deux évaluations distinctes. Les données de paiement et les relevés contribuent au rapprochement et à l’audit ; leur présence ne démontre pas que le déploiement satisfait les obligations applicables à son exploitant.
 
 ## Hors périmètre
 

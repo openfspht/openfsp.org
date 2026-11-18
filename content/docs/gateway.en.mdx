@@ -38,7 +38,7 @@ The application explicitly selects the payment service. The gateway maintains pa
 
 ## Deployment and trust
 
-The operator, either the merchant or its representative, deploys the gateway and manages the secrets required by the payment service APIs. These secrets are not entrusted to the project. The merchant retains its contractual relationship and account with each accepted provider. This architecture transfers no value between services and introduces no clearing operation. Each deployment serves a single merchant account, limiting the scope of credentials and data exposed by gateway compromise to that account. Each version provides multi-platform container images with build provenance and a software bill of materials (SBOM).
+The operator, either the merchant or its representative, deploys the gateway and manages the secrets required by the payment service APIs. These secrets are not entrusted to the project. This architecture transfers no value between services and introduces no clearing operation. Each deployment serves a single merchant account, limiting the scope of credentials and data exposed by gateway compromise to that account. Each version provides multi-platform container images with build provenance and a software bill of materials (SBOM).
 
 ## Adapters [#adapters]
 

@@ -5,7 +5,7 @@ description: Objet, périmètre, publics et ressources de la spécification Open
 
 OpenFSP est une spécification ouverte d’interopérabilité entre les applications marchandes et les fournisseurs de services de paiement en Haïti. Elle définit une interface commune, les modèles de données échangés et les comportements attendus des implémentations. Son objectif est de permettre la réutilisation des intégrations auprès des services compatibles, dans les limites de leurs capacités déclarées.
 
-Le contrat d’interface repose sur HTTP et couvre la création et la lecture des paiements, la découverte des capacités et la réception d’événements signés. Chaque marchand conserve un compte, un contrat et des identifiants auprès de chaque fournisseur concerné.
+Le contrat d’interface repose sur HTTP et couvre la création et la lecture des paiements, la découverte des capacités et la réception d’événements signés.
 
 ```mermaid
 flowchart LR
@@ -14,9 +14,7 @@ flowchart LR
     S --> P2["Opérateur B"]
 ```
 
-Dans un modèle où chacune des `L` applications développe une interface propre à chacun des `O` services, le nombre d’intégrations spécifiques atteint `O × L`. Un contrat commun permet d’organiser le travail autour de `O + L` implémentations : une par service et une par application. Ce modèle suppose l’adoption du contrat et des capacités compatibles ; il ne mesure pas les coûts de configuration, de validation ou de maintenance de chaque déploiement.
-
-Le périmètre d’OpenFSP porte sur l’intégration applicative entre un logiciel marchand et un service de paiement. Les transferts, la compensation et le règlement entre fournisseurs se situent hors de ce périmètre.
+Le périmètre d’OpenFSP porte sur l’intégration applicative entre un logiciel marchand et un service de paiement ([architecture](/docs/architecture#hors-périmètre), [décision 0001](/docs/decisions#0001)).
 
 ## Par où commencer
 
@@ -27,12 +25,7 @@ Le périmètre d’OpenFSP porte sur l’intégration applicative entre un logic
 
 ## Ce qui existe
 
-- La spécification `0.1.0`, disponible en français et en anglais.
-- Des bibliothèques clientes accompagnées de modules de test.
-- Le serveur simulé de référence `mock_openfsp`, qui permet notamment de reproduire des défaillances.
-- Une suite de conformité, un validateur public et des attestations signées consignant les résultats d’exécution.
-
-Les documents et les outils du projet sont proposés sous licence Apache-2.0. [L’état du projet](/docs/status) précise la disponibilité des composants et les limites des vérifications réalisées.
+[L’état du projet](/docs/status) décrit les composants disponibles et les limites des vérifications réalisées. Les documents et les outils du projet sont proposés sous licence Apache-2.0.
 
 ## Phases
 

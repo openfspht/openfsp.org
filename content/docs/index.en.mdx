@@ -5,7 +5,7 @@ description: Purpose, scope, audiences and resources of the OpenFSP specificatio
 
 OpenFSP is an open specification for interoperability between merchant applications and payment service providers in Haiti. It defines a common interface, shared data models and expected implementation behaviour. Its objective is to enable integrations to be reused across compatible services within the limits of their declared capabilities.
 
-The interface contract uses HTTP and covers payment creation and retrieval, capability discovery and the receipt of signed events. Each merchant maintains an account, an agreement and credentials with each relevant provider.
+The interface contract uses HTTP and covers payment creation and retrieval, capability discovery and the receipt of signed events.
 
 ```mermaid
 flowchart LR
@@ -14,9 +14,7 @@ flowchart LR
     S --> P2["Provider B"]
 ```
 
-In a model where each of `L` applications implements a separate interface for each of `O` services, the number of service-specific integrations reaches `O × L`. A shared contract allows implementation work to be organised around `O + L` implementations: one per service and one per application. This model assumes adoption of the contract and compatible capabilities; it does not measure configuration, validation or maintenance costs for individual deployments.
-
-OpenFSP covers application integration between merchant software and a payment service. Inter-provider funds transfers, clearing and settlement are outside this scope.
+OpenFSP covers application integration between merchant software and a payment service ([architecture](/en/docs/architecture#out-of-scope), [decision 0001](/en/docs/decisions#0001)).
 
 ## Start here
 
@@ -27,12 +25,7 @@ OpenFSP covers application integration between merchant software and a payment s
 
 ## What exists
 
-- Specification version `0.1.0`, available in French and English.
-- Client libraries with testing modules.
-- The `mock_openfsp` reference mock server, including scenarios that reproduce failures.
-- A conformance suite, a public validator and signed attestations recording execution results.
-
-Project documents and tools are provided under the Apache-2.0 licence. The [project status](/en/docs/status) describes component availability and the limits of completed checks.
+The [project status](/en/docs/status) describes the available components and the limits of completed checks. Project documents and tools are provided under the Apache-2.0 licence.
 
 ## Phases
 

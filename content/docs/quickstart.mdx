@@ -72,11 +72,4 @@ make dev
 
 ## 3. Conformité d'une implémentation
 
-```bash
-make simulator         # terminal 1
-make validate TARGET=http://127.0.0.1:8090/mock_openfsp   # terminal 2
-```
-
-`make validate` évalue l’implémentation dont l’adresse est donnée par `TARGET`, ici le serveur simulé de référence `mock_openfsp`. La suite demande à l’implémentation ses clés de test et son interface de contrôle ([conformité 4.8](/docs/spec/conformance#4.8) et [4.9](/docs/spec/conformance#4.9)), puis enregistre le rapport dans `backend/validator/infrastructure/build/conformance-report.json`.
-
-Le [guide d’implémentation](/docs/native-operator) précise l’interprétation des verdicts et les limites du rapport.
+`make validate TARGET=<adresse>` évalue une implémentation à partir de sa seule adresse : la suite lui demande ses clés de test et son interface de contrôle ([conformité 4.8](/docs/spec/conformance#4.8) et [4.9](/docs/spec/conformance#4.9)). Le [guide d’implémentation](/docs/native-operator) décrit l’exécution contre le serveur simulé de référence et la lecture du rapport.
