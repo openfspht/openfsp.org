@@ -58,7 +58,7 @@ Discovery exposes supported operations and applicable account limits before paym
 GET /.well-known/openfsp-configuration
 ```
 
-This endpoint is public and unauthenticated (RFC 8615). Its structure follows OpenID Connect discovery conventions: absolute URLs with `_endpoint` or `_uri` suffixes, and lists with the `_supported` suffix.
+This endpoint follows RFC 8615; its access falls under [authentication 1.1](/en/docs/spec/authentication#1.1). Its structure follows OpenID Connect discovery conventions: absolute URLs with `_endpoint` or `_uri` suffixes, and lists with the `_supported` suffix.
 
 ```json
 {
@@ -139,7 +139,7 @@ This endpoint requires authentication.
 | `limits`              | object           | OPTIONAL. Amount limits (6.4).                                                       |
 | `locales`             | array of strings | `locale` values supported for the payer's page ([API 5.1.7](/en/docs/spec/payments-api#5.1.7)). |
 
-**3.2.3.** The value of `expiry_guaranteed` MUST be `false` unless the provider guarantees that a payment incomplete at `expires_at` can never complete.
+**3.2.3.** The value of `expiry_guaranteed` MUST be `false` unless the provider gives the guarantee of [lifecycle 5.3](/en/docs/spec/lifecycle#5.3) (b).
 
 **3.2.4.** The response SHOULD contain `Cache-Control` with a `max-age` value no greater than one hour.
 

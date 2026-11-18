@@ -92,7 +92,7 @@ Authorization: Bearer ofsp_live_7Kq2NfPzR4wYb9LdHt3XvA6mSjE0uCgBp8
 
 **6.3.** L’attribution d’une portée n’implique l’attribution d’aucune autre portée.
 
-**6.4.** Si la portée requise est absente, le serveur DOIT retourner `forbidden`, à l’exclusion de `unauthenticated` et `not-found`.
+**6.4.** Si la portée requise est absente, le serveur DOIT retourner `forbidden`, à l’exclusion de `unauthenticated` et `not-found`, que la ressource existe ou non, afin de ne pas révéler son existence.
 
 **6.5.** Toute clé inclut `capabilities:read`. Le serveur ajoute cette portée à l’émission et NE DOIT PAS autoriser son retrait. Le client peut ainsi découvrir les opérations disponibles avant de les appeler.
 

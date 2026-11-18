@@ -58,7 +58,7 @@ La découverte expose les opérations prises en charge et les limites applicable
 GET /.well-known/openfsp-configuration
 ```
 
-Ce point d’accès est public et non authentifié (RFC 8615). Sa structure suit les conventions de découverte OpenID Connect : URL absolues portant les suffixes `_endpoint` ou `_uri`, et listes portant le suffixe `_supported`.
+Ce point d’accès suit la RFC 8615 ; son accès relève de l’[authentification 1.1](/docs/spec/authentication#1.1). Sa structure suit les conventions de découverte OpenID Connect : URL absolues portant les suffixes `_endpoint` ou `_uri`, et listes portant le suffixe `_supported`.
 
 ```json
 {
@@ -139,7 +139,7 @@ Ce point d’accès nécessite une authentification.
 | `limits`              | objet              | FACULTATIF. Bornes de montant (6.4).                                                          |
 | `locales`             | tableau de chaînes | Valeurs de `locale` prises en charge pour la page du payeur ([API 5.1.7](/docs/spec/payments-api#5.1.7)). |
 
-**3.2.3.** La valeur de `expiry_guaranteed` DOIT être `false`, sauf si l’opérateur garantit qu’un paiement non achevé à `expires_at` ne pourra plus s’achever.
+**3.2.3.** La valeur de `expiry_guaranteed` DOIT être `false`, sauf si l’opérateur donne la garantie du [cycle de vie 5.3](/docs/spec/lifecycle#5.3) (b).
 
 **3.2.4.** La réponse DEVRAIT contenir `Cache-Control` avec une valeur `max-age` n’excédant pas une heure.
 

@@ -25,7 +25,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 **1.8.** Chaque réponse, de succès ou d’erreur, contient l’en-tête `Request-Id`, propre à la requête reçue. Sa valeur est égale au `request_id` du corps (10.1.6), sauf pour un rejeu ([idempotence 3.2](/docs/spec/idempotency#3.2)), dont le corps restitué conserve le `request_id` de la requête initiale.
 
-**1.9.** Les champs inconnus sont rejetés dans les requêtes et tolérés dans les réponses ([modèle de données 2.3](/docs/spec/data-model#2.3), [2.4](/docs/spec/data-model#2.4)).
+**1.9.** Le traitement des champs inconnus suit le [modèle de données 2.3](/docs/spec/data-model#2.3) et le [2.4](/docs/spec/data-model#2.4).
 
 **1.10.** Les chemins canoniques ne comportent pas de barre oblique finale. Le chemin `/v1/payments/` DOIT être traité comme `/v1/payments`.
 
@@ -428,7 +428,7 @@ Le catalogue est fermé. Son extension nécessite une décision écrite.
 | ----------- | ------ | ----------- | -------- | ---------------------- |
 | `not-found` | 404    | false       | `none`   | Ressource inexistante. |
 
-**10.8.3.1.** Le serveur DOIT contrôler la portée avant de vérifier l’existence de la ressource. Une clé sans la portée requise reçoit `forbidden`, que la ressource existe ou non ([authentification 6.4](/docs/spec/authentication#6.4)), afin de ne pas révéler son existence.
+**10.8.3.1.** Le contrôle de la portée précède celui de l’existence de la ressource ([authentification 6.4](/docs/spec/authentication#6.4)).
 
 #### 10.8.4. Conflits
 
@@ -475,4 +475,4 @@ Le catalogue est fermé. Son extension nécessite une décision écrite.
 
 **10.10.1.** Les champs `title`, `detail` et `errors[].detail` NE DOIVENT PAS inclure de numéro de téléphone, d’identifiant du payeur ou de montant.
 
-**10.10.2.** La réponse `unauthenticated` NE DOIT PAS différencier les causes d’échec définies en [authentification 4.7](/docs/spec/authentication#4.7).
+**10.10.2.** Le contenu de la réponse `unauthenticated` suit l’[authentification 4.7](/docs/spec/authentication#4.7).

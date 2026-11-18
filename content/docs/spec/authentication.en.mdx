@@ -92,7 +92,7 @@ Authorization: Bearer ofsp_live_7Kq2NfPzR4wYb9LdHt3XvA6mSjE0uCgBp8
 
 **6.3.** Granting a scope does not imply granting any other scope.
 
-**6.4.** If the required scope is absent, the server MUST return `forbidden`, not `unauthenticated` or `not-found`.
+**6.4.** If the required scope is absent, the server MUST return `forbidden`, not `unauthenticated` or `not-found`, whether or not the resource exists, so as not to disclose its existence.
 
 **6.5.** Every key includes `capabilities:read`. The server adds this scope at issuance and MUST NOT allow its removal. The client can therefore discover available operations before calling them.
 
