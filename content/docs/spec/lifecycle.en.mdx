@@ -150,6 +150,7 @@ stateDiagram-v2
   "business_date": "2026-09-28",
   "booked_at": "2026-09-28T14:33:02Z",
   "amount": { "amount": 125000, "currency": "HTG" },
+  "fee": { "amount": { "amount": 2500, "currency": "HTG" }, "bearer": "merchant" },
   "payment": "pay_01JAB7C2D9E4F6G8H1J3K5M7N9",
   "reference": "INV-184"
 }
@@ -163,14 +164,13 @@ stateDiagram-v2
 | `business_date` | `Date`       | REQUIRED | 10.1.                                                          |
 | `booked_at`     | `Timestamp`  | REQUIRED | Booking time at the provider.                                  |
 | `amount`        | `Money`      | REQUIRED | Gross amount received.                                         |
-| `fee_amount`    | `Money`      | OPTIONAL | As reported. Absent means unknown.                             |
-| `net_amount`    | `Money`      | OPTIONAL | As reported. Absent means unknown.                             |
+| `fee`           | `Fee`        | OPTIONAL | [Data model 8](/en/docs/spec/data-model#8).                    |
 | `payment`       | `ResourceId` | OPTIONAL | Payment that originated the transaction, when the server knows it. |
 | `reference`     | string       | OPTIONAL | Merchant reference of that payment.                            |
 
 **10.2.3.** A statement contains successful transactions only. A `pending`, `failed`, `expired` or `canceled` payment does not appear in it.
 
-**10.2.4.** The server MUST NOT compute `fee_amount` or `net_amount`, including by subtraction.
+**10.2.4.** The `fee` field follows [data model 8](/en/docs/spec/data-model#8): its absence means the fee is unknown, and the server MUST NOT compute it.
 
 ### 10.3. Endpoint
 

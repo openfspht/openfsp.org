@@ -150,6 +150,7 @@ stateDiagram-v2
   "business_date": "2026-09-28",
   "booked_at": "2026-09-28T14:33:02Z",
   "amount": { "amount": 125000, "currency": "HTG" },
+  "fee": { "amount": { "amount": 2500, "currency": "HTG" }, "bearer": "merchant" },
   "payment": "pay_01JAB7C2D9E4F6G8H1J3K5M7N9",
   "reference": "INV-184"
 }
@@ -163,14 +164,13 @@ stateDiagram-v2
 | `business_date` | `Date`       | OBLIGATOIRE | 10.1.                                                              |
 | `booked_at`     | `Timestamp`  | OBLIGATOIRE | Heure de comptabilisation chez l'opérateur.                        |
 | `amount`        | `Money`      | OBLIGATOIRE | Montant brut reçu.                                                 |
-| `fee_amount`    | `Money`      | FACULTATIF  | Tel que rapporté. Absent signifie inconnu.                         |
-| `net_amount`    | `Money`      | FACULTATIF  | Tel que rapporté. Absent signifie inconnu.                         |
+| `fee`           | `Fee`        | FACULTATIF  | [Modèle de données 8](/docs/spec/data-model#8).                    |
 | `payment`       | `ResourceId` | FACULTATIF  | Paiement à l’origine de la transaction, lorsque le serveur le connaît. |
 | `reference`     | chaîne       | FACULTATIF  | Référence marchande de ce paiement.                                |
 
 **10.2.3.** Le relevé ne contient que des transactions réussies. Un paiement `pending`, `failed`, `expired` ou `canceled` n’y figure pas.
 
-**10.2.4.** Le serveur NE DOIT PAS calculer `fee_amount` ou `net_amount`, y compris par soustraction.
+**10.2.4.** Le champ `fee` suit le [modèle de données 8](/docs/spec/data-model#8) : son absence signifie que les frais sont inconnus, et le serveur NE DOIT PAS les calculer.
 
 ### 10.3. Point d'accès
 
