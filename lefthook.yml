@@ -10,4 +10,6 @@ commit-msg:
   commands:
     conventional:
       run: >-
-        grep -Eq '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?!?: .+' {1}
+        test "$(sed '/^#/d;/^[[:space:]]*$/d' {1} | wc -l)" -eq 1 &&
+        sed '/^#/d;/^[[:space:]]*$/d' {1} |
+        grep -Eq '^(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([a-z0-9-]+\))?!?: .+$'
