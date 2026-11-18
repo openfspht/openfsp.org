@@ -5,7 +5,7 @@ description: Installation d’une bibliothèque cliente, exécution d’un paiem
 
 La commande `make demo` démarre un environnement permettant d’expérimenter un paiement OpenFSP sans compte marchand ni mouvement de fonds réels. Exécutez les commandes suivantes depuis la racine du dépôt [`openfsp`](https://github.com/openfspht/openfsp).
 
-Pour intégrer le serveur d’une application marchande, utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) ou le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`). Ces paquets sont prévus sur Maven Central et npm à partir de la version `0.1.0`, selon l’état de publication documenté. Renseignez `OPENFSP_BASE_URL` et `OPENFSP_API_KEY`, et conservez la clé exclusivement côté serveur.
+Pour intégrer le serveur d’une application marchande, utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) ou le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`). Ces paquets sont publiés sur Maven Central et npm. Renseignez `OPENFSP_BASE_URL` et `OPENFSP_API_KEY`, et conservez la clé exclusivement côté serveur.
 
 Pour exposer l’API côté fournisseur, suivez le [guide d’implémentation](/docs/native-operator). Le [validateur public](https://validator.openfsp.org) permet également d’évaluer les exigences prises en charge par la suite.
 
@@ -19,7 +19,7 @@ cd openfsp
 make demo
 ```
 
-Cette cible exécute `docker compose --profile demo up --build` et démarre les services suivants :
+Au premier lancement, cette cible crée le fichier `.env` qui contient la clé `OPENFSP_APP_KEY`, comme `make keys`. Elle exécute ensuite `docker compose --profile demo up --build`, qui exige ce fichier, et démarre les services suivants :
 
 | Service                     | Adresse                 |
 | --------------------------- | ----------------------- |
@@ -29,7 +29,7 @@ Cette cible exécute `docker compose --profile demo up --build` et démarre les 
 | Interface du validateur     | `http://localhost:5176` |
 | Boutique                    | `http://localhost:3000` |
 
-Le simulateur est également accessible sur `127.0.0.1:8090`. PostgreSQL et le service de validation utilisent des ports hôtes non fixes. Pour accéder à la console, utilisez le jeton d’administration `demo-admin-token`. La découverte des points d’accès est disponible à `/.well-known/openfsp-configuration`. Le serveur sur le port 8080 correspond à la [passerelle](/docs/gateway), connectée aux services de paiement du simulateur.
+Le simulateur est également accessible sur `127.0.0.1:8090`. PostgreSQL n’a pas de port hôte fixe, et le service de validation n’est joignable que par son interface. Pour accéder à la console, utilisez le jeton d’administration `demo-admin-token`. La découverte des points d’accès est disponible à `/.well-known/openfsp-configuration`. Le serveur sur le port 8080 correspond à la [passerelle](/docs/gateway), connectée aux services de paiement du simulateur.
 
 ### Premier paiement simulé
 
@@ -38,7 +38,7 @@ Le simulateur est également accessible sur `127.0.0.1:8090`. PostgreSQL et le s
 3. Suivez les étapes du parcours simulé, sans compte marchand ni fonds réels.
 4. Accédez à la [console locale](http://localhost:5173) avec `demo-admin-token`, puis consultez le paiement. Le scénario de réussite produit la transition de `pending` vers `succeeded`.
 
-L’environnement Docker et le mode développement décrit ci-dessous utilisent des ports distincts.
+L’environnement Docker et le mode développement décrit ci-dessous utilisent les mêmes ports : arrêtez l’un avant de démarrer l’autre.
 
 Pour arrêter la démonstration, appuyez sur Ctrl+C, puis exécutez :
 
@@ -46,11 +46,11 @@ Pour arrêter la démonstration, appuyez sur Ctrl+C, puis exécutez :
 docker compose --profile demo down
 ```
 
-Les volumes de données sont conservés. En cas d’échec au démarrage, consultez les journaux avec `docker compose --profile demo logs --tail=100`. Si un port requis est occupé, libérez-le avant de relancer `make demo`. Vérifiez également que Docker fonctionne et que les images sont accessibles.
+Les données PostgreSQL restent dans un volume nommé après `down` ; `docker compose --profile demo down -v` les supprime. En cas d’échec au démarrage, consultez les journaux avec `docker compose --profile demo logs --tail=100`. Si un port requis est occupé, libérez-le avant de relancer `make demo`. Vérifiez également que Docker fonctionne et que les images sont accessibles.
 
 ## 2. Développement
 
-L’environnement de développement nécessite le JDK 25, Bun et une instance PostgreSQL accessible sur `127.0.0.1:5432`. Par défaut, le rôle `openfsp` est propriétaire de la base `openfsp`. Les variables `DB_NAME`, `DB_USER` et `DB_PASSWORD` permettent d’adapter cette configuration.
+L’environnement de développement nécessite le JDK 25, Bun et une instance PostgreSQL accessible sur `127.0.0.1:5432`. Par défaut, le rôle `openfsp`, de mot de passe `openfsp`, est propriétaire de la base `openfsp`. Les variables `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` et `SPRING_DATASOURCE_PASSWORD` permettent d’adapter cette configuration.
 
 ```bash
 make install
