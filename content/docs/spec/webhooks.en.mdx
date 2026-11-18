@@ -17,8 +17,6 @@ Payment events are signed. Event processing accounts for duplicate delivery and 
 
 ## 2. `event` object
 
-Each delivery body contains one JSON object, without an array or event batch.
-
 ```json
 {
   "id": "evt_01J9ZK4T2A0YHQ8F3W6N5R7B1C",
@@ -57,6 +55,8 @@ Each delivery body contains one JSON object, without an array or event batch.
 
 **2.6.** The subscriber MUST NOT reject an event solely because `previous_status` differs from its recorded state; it SHOULD then retrieve the resource again.
 
+**2.7.** Each delivery body contains one JSON object, without an array or event batch.
+
 ## 3. Types
 
 **3.1.** The value of `type` follows `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`, combining `resource_type` with the event name.
@@ -92,7 +92,7 @@ Each delivery body contains one JSON object, without an array or event batch.
 | `OpenFSP-Event-Type`       | Event `type`. Covered by the signature.                   |
 | `OpenFSP-Delivery-Attempt` | Attempt number, starting at `1`. Not covered.             |
 
-The subscriber MUST NOT establish trust from a header not covered by the signature. Authoritative values are contained in the signed body.
+**4.2.1.** The subscriber MUST NOT establish trust from a header not covered by the signature. Authoritative values are contained in the signed body.
 
 **4.3.** Delivery succeeds when a `2xx` status is received within the time limit in 4.5. The server MUST NOT interpret the response body, act on its contents or log it in full.
 

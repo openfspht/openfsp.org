@@ -84,7 +84,7 @@ The following conventions apply to all OpenFSP endpoints.
 | `completed_at`       | `Timestamp`         | conditional | REQUIRED if terminal.                                                                     |
 | `failure_reason`     | string              | conditional | REQUIRED if `failed`.                                                                     |
 | `failure_detail`     | object              | OPTIONAL    | Raw provider error.                                                                       |
-| `fee`                | `Fee`               | OPTIONAL    | Absent means not known (3.5).                                                             |
+| `fee`                | `Fee`               | OPTIONAL    | Absent means not known (3.5.2).                                                           |
 | `metadata`           | `Metadata`          | OPTIONAL    |                                                                                           |
 
 **3.2.** The value of `provider` follows `^[a-z0-9_]{1,32}$` and MUST match an identifier in the [provider registry](/en/docs/registry) or a `mock_*` identifier of the [mock server](/en/docs/spec/conformance#9). This field is REQUIRED even when the server serves a single provider.
@@ -93,11 +93,11 @@ The following conventions apply to all OpenFSP endpoints.
 
 **3.4.** The value of `description` MAY be displayed to the payer. The client MUST NOT include personal data in it.
 
-**3.5.** The `fee` field follows these rules:
+**3.5.** Any creation request containing `fee` MUST be rejected.
 
-- any creation request containing `fee` MUST be rejected;
-- the `fee` field MAY appear only after a terminal transition. Its addition changes `updated_at` without changing `status`;
-- the client MUST NOT interpret absent fee data as a zero amount ([data model 8.2](/en/docs/spec/data-model#8.2)).
+**3.5.1.** The `fee` field MAY appear only after a terminal transition. Its addition changes `updated_at` without changing `status`.
+
+**3.5.2.** The absence of `fee` follows [data model 8.2](/en/docs/spec/data-model#8.2).
 
 ## 4. `next_action`
 
@@ -113,7 +113,7 @@ The following conventions apply to all OpenFSP endpoints.
 | `payer_approval` | The payer approves on their device (USSD, notification). | none                         |
 | `none`           | Nothing is required from the payer.                      | none                         |
 
-For a `redirect` action, `expires_at` is OPTIONAL when the provider declares `expiry_guaranteed` as `false` ([capabilities 3.2.2](/en/docs/spec/capabilities#3.2.2)).
+**4.2.1.** For a `redirect` action, `expires_at` is OPTIONAL when the provider declares `expiry_guaranteed` as `false` ([capabilities 3.2.2](/en/docs/spec/capabilities#3.2.2)).
 
 **4.3.** The server MUST report the type required by the provider. If that type cannot be established, creation returns an error. The value `none` MUST NOT be used as a default.
 
@@ -200,6 +200,10 @@ GET /v1/payments?reference={reference}
 **5.2.6.** The server MAY limit, per payment, the lookups a retrieval triggers at an external source. It then returns the last known state.
 
 **5.2.7.** If an external source is unreachable or does not respond in time, the server returns the last known state and the payment remains `pending`.
+
+### 5.3. Synchronising a payment
+
+Removed by [decision 0012](/en/docs/decisions#0012). Numbers 5.3.1 to 5.3.7 and 5.3.3.1 are not reassigned.
 
 ## 6. Tracking changes
 

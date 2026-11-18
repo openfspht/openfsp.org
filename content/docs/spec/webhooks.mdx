@@ -17,8 +17,6 @@ Les événements de paiement sont signés. Leur traitement tient compte des livr
 
 ## 2. Objet `event`
 
-Le corps de chaque livraison contient un objet JSON unique, sans tableau ni regroupement d’événements.
-
 ```json
 {
   "id": "evt_01J9ZK4T2A0YHQ8F3W6N5R7B1C",
@@ -57,6 +55,8 @@ Le corps de chaque livraison contient un objet JSON unique, sans tableau ni regr
 
 **2.6.** L’abonné NE DOIT PAS rejeter un événement uniquement parce que `previous_status` diffère de son état enregistré ; il DEVRAIT alors consulter de nouveau la ressource.
 
+**2.7.** Le corps de chaque livraison contient un objet JSON unique, sans tableau ni regroupement d’événements.
+
 ## 3. Types
 
 **3.1.** La valeur de `type` respecte `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$` : elle associe `resource_type` au nom de l’événement.
@@ -92,7 +92,7 @@ Le corps de chaque livraison contient un objet JSON unique, sans tableau ni regr
 | `OpenFSP-Event-Type`       | `type` de l'événement. Couvert par la signature.       |
 | `OpenFSP-Delivery-Attempt` | Rang de la tentative, à partir de `1`. Non couvert.    |
 
-L’abonné NE DOIT PAS accorder sa confiance à partir d’un en-tête non couvert par la signature. Les valeurs de référence figurent dans le corps signé.
+**4.2.1.** L’abonné NE DOIT PAS accorder sa confiance à partir d’un en-tête non couvert par la signature. Les valeurs de référence figurent dans le corps signé.
 
 **4.3.** La livraison réussit si un statut `2xx` est reçu dans le délai du 4.5. Le serveur NE DOIT PAS interpréter le corps de la réponse, agir sur son contenu ou le journaliser intégralement.
 

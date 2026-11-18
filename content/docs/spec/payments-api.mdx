@@ -84,7 +84,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 | `completed_at`       | `Timestamp`         | conditionnel | OBLIGATOIRE si terminal.                                                                                  |
 | `failure_reason`     | chaîne              | conditionnel | OBLIGATOIRE si `failed`.                                                                                  |
 | `failure_detail`     | objet               | FACULTATIF   | Erreur brute de l'opérateur.                                                                              |
-| `fee`                | `Fee`               | FACULTATIF   | Absent signifie non connu (3.5).                                                                          |
+| `fee`                | `Fee`               | FACULTATIF   | Absent signifie non connu (3.5.2).                                                                        |
 | `metadata`           | `Metadata`          | FACULTATIF   |                                                                                                           |
 
 **3.2.** La valeur de `provider` respecte `^[a-z0-9_]{1,32}$` et DOIT correspondre à un identifiant du [registre des opérateurs](/docs/registry) ou à un identifiant `mock_*` du [serveur simulé](/docs/spec/conformance#9). Ce champ est OBLIGATOIRE même si le serveur ne sert qu’un opérateur.
@@ -93,11 +93,11 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 **3.4.** La valeur de `description` PEUT être présentée au payeur. Le client NE DOIT PAS y inclure de données personnelles.
 
-**3.5.** Le champ `fee` suit les règles suivantes :
+**3.5.** Toute requête de création contenant `fee` DOIT être rejetée.
 
-- toute requête de création contenant `fee` DOIT être rejetée ;
-- le champ `fee` PEUT apparaître uniquement après une transition terminale. Son ajout modifie `updated_at` sans modifier `status` ;
-- le client NE DOIT PAS interpréter l’absence de frais comme un montant nul ([modèle de données 8.2](/docs/spec/data-model#8.2)).
+**3.5.1.** Le champ `fee` PEUT apparaître uniquement après une transition terminale. Son ajout modifie `updated_at` sans modifier `status`.
+
+**3.5.2.** L’absence de `fee` suit le [modèle de données 8.2](/docs/spec/data-model#8.2).
 
 ## 4. `next_action`
 
@@ -113,7 +113,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 | `payer_approval` | Le payeur approuve sur son appareil (USSD, notification). | aucun                        |
 | `none`           | Rien n'est requis du payeur.                              | aucun                        |
 
-Pour une action `redirect`, le champ `expires_at` est FACULTATIF lorsque l’opérateur déclare `expiry_guaranteed` à `false` ([capacités 3.2.2](/docs/spec/capabilities#3.2.2)).
+**4.2.1.** Pour une action `redirect`, le champ `expires_at` est FACULTATIF lorsque l’opérateur déclare `expiry_guaranteed` à `false` ([capacités 3.2.2](/docs/spec/capabilities#3.2.2)).
 
 **4.3.** Le serveur DOIT indiquer le type requis par l’opérateur. Si ce type ne peut pas être établi, la création retourne une erreur. La valeur `none` NE DOIT PAS être utilisée par défaut.
 
@@ -200,6 +200,10 @@ GET /v1/payments?reference={reference}
 **5.2.6.** Le serveur PEUT limiter, par paiement, les consultations qu’une lecture provoque auprès d’une source extérieure. Il retourne alors le dernier état connu.
 
 **5.2.7.** Si une source extérieure est injoignable ou ne répond pas dans le délai imparti, le serveur retourne le dernier état connu et le paiement reste `pending`.
+
+### 5.3. Synchroniser un paiement
+
+Retiré par la [décision 0012](/docs/decisions#0012). Les numéros 5.3.1 à 5.3.7 et 5.3.3.1 ne sont pas réattribués.
 
 ## 6. Suivi des changements
 
