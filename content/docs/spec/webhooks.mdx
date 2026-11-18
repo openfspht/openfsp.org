@@ -122,7 +122,7 @@ L’abonné NE DOIT PAS accorder sa confiance à partir d’un en-tête non couv
 ```
 Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
   "openfsp-event-id" "openfsp-event-type");created=1786977371;expires=1786977671;\
-  keyid="whk_06GWCT5DMSTMH111XG1Q28R4MW";nonce="Zk9tQ1p2WXhLbFEyNw";alg="ed25519";tag="openfsp-webhook"
+  keyid="whk_06GWCT5DMSTMH111XG1Q28R4MW";nonce="Zk9tQ1p2WXhLbFEyNzRtUA";alg="ed25519";tag="openfsp-webhook"
 Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 ```
 
@@ -164,7 +164,7 @@ Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 }
 ```
 
-**6.2.** La valeur de `kid` DOIT être égale au `keyid` du 5.3. Le vérificateur DOIT accepter la correspondance entre le nom JOSE `EdDSA` et le nom RFC 9421 `ed25519`.
+**6.2.** La valeur de `kid` DOIT être égale au `keyid` du 5.3. Le vérificateur DOIT accepter les correspondances suivantes entre JWK et noms RFC 9421 : `EdDSA` avec `kty` `OKP` et `crv` `Ed25519` pour `ed25519` ; `ES256` avec `kty` `EC` et `crv` `P-256` pour `ecdsa-p256-sha256`. Pour ce dernier, la signature est la concaténation de `r` et `s`, chacun sur 32 octets, octet de poids fort en tête (RFC 9421, section 3.3.4).
 
 **6.3.** Le champ `openfsp_status` vaut `active` pour une clé de signature ou `retired` pour une clé réservée à la vérification. Une clé qui n’est ni `active` ni `retired` NE DOIT PAS être publiée.
 

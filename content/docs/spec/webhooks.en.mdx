@@ -122,7 +122,7 @@ The subscriber MUST NOT establish trust from a header not covered by the signatu
 ```
 Signature-Input: sig1=("@method" "@target-uri" "content-type" "content-digest" \
   "openfsp-event-id" "openfsp-event-type");created=1786977371;expires=1786977671;\
-  keyid="whk_06GWCT5DMSTMH111XG1Q28R4MW";nonce="Zk9tQ1p2WXhLbFEyNw";alg="ed25519";tag="openfsp-webhook"
+  keyid="whk_06GWCT5DMSTMH111XG1Q28R4MW";nonce="Zk9tQ1p2WXhLbFEyNzRtUA";alg="ed25519";tag="openfsp-webhook"
 Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 ```
 
@@ -164,7 +164,7 @@ Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 }
 ```
 
-**6.2.** The value of `kid` MUST equal the `keyid` in 5.3. The verifier MUST accept the mapping between the JOSE name `EdDSA` and the RFC 9421 name `ed25519`.
+**6.2.** The value of `kid` MUST equal the `keyid` in 5.3. The verifier MUST accept the following mappings between JWK and RFC 9421 names: `EdDSA` with `kty` `OKP` and `crv` `Ed25519` for `ed25519`; `ES256` with `kty` `EC` and `crv` `P-256` for `ecdsa-p256-sha256`. For the latter, the signature is the concatenation of `r` and `s`, each on 32 bytes, most significant byte first (RFC 9421, section 3.3.4).
 
 **6.3.** The `openfsp_status` field is `active` for a signing key or `retired` for a verification-only key. A key that is neither `active` nor `retired` MUST NOT be published.
 
