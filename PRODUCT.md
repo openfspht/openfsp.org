@@ -8,7 +8,7 @@ web
 
 ## Stack
 
-Fumadocs on TanStack Start (React, Tailwind 4, MDX), prerendered to static files and served by nginx in a Docker image deployed on the author's infrastructure (Coolify). Separate repository `openfspht/openfsp.org`. English at `/`, French at `/fr`.
+Fumadocs on TanStack Start (React, Tailwind 4, MDX), prerendered to static files and served by nginx in a Docker image deployed on the author's infrastructure (Coolify). Separate repository `openfspht/openfsp.org`. French at `/`, English at `/en`.
 
 ## Users
 
@@ -17,7 +17,7 @@ Fumadocs on TanStack Start (React, Tailwind 4, MDX), prerendered to static files
 
 ## Product Purpose
 
-openfsp.org is the public home of OpenFSP, a proposed open standard for integrating digital payments in Haiti: one contract between merchant applications and payment operators, intended for native implementation by each operator, so a merchant writes one integration for all of them. No client SDK is published; the home must not claim one. A merchant-hosted gateway temporarily translates this contract into existing provider APIs until native adoption makes it unnecessary. The site publishes the specification, the problem type catalogue that `type` URIs point to (`https://openfsp.org/problems/<code>`, required by API 10.3.3), the provider registry, and the conformance entry points. Success: an engineer finds a rule or a problem type in one step, and a decision maker understands the O + L idea and the governance in one page.
+openfsp.org is the public home of OpenFSP, a proposed open standard for integrating digital payments in Haiti: one contract between merchant applications and payment operators, intended for native implementation by each operator, so a merchant writes one integration for all of them. Client SDKs are published: `org.openfsp:openfsp-sdk` on Maven Central and `@openfsp/sdk` on npm. A merchant-hosted gateway temporarily translates this contract into existing provider APIs until native adoption makes it unnecessary. The site publishes the specification, the problem type catalogue that `type` URIs point to (`https://openfsp.org/problems/<code>`, required by API 10.3.3), the provider registry, and the conformance entry points. Success: an engineer finds a rule or a problem type in one step, and a decision maker understands the O + L idea and the governance in one page.
 
 ## Positioning
 
@@ -27,18 +27,17 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 
 ## Operating Context
 
-- Spec source: this repository, `content/docs/` (English `page.mdx`, French `page.fr.mdx`). Numbered rules with MUST / MUST NOT / SHOULD / MAY (DOIT / NE DOIT PAS / DEVRAIT / PEUT in French), each number an anchor (`/docs/spec/payments-api#5.1.8`), never the section sign.
+- Spec source: this repository, `content/docs/` (French `page.mdx`, English `page.en.mdx`). Numbered rules with MUST / MUST NOT / SHOULD / MAY (DOIT / NE DOIT PAS / DEVRAIT / PEUT in French), each number an anchor (`/docs/spec/payments-api#5.1.8`), never the section sign.
 - Provider registry: `content/docs/registry.mdx`.
-- Code: `openfspht/openfsp` (gateway, simulator, validator, console, demo shop). Public validator planned at `validator.openfsp.org`, issuing signed attestations (JWS EdDSA, keys at `/.well-known/openfsp-validator`); until it is deployed, `make validate` runs locally.
+- Code: `openfspht/openfsp` (gateway, simulator, validator, console, demo shop). Public validator at `validator.openfsp.org`, issuing signed attestations (JWS EdDSA, keys at `/.well-known/openfsp-validator`); `make validate` runs the same suite locally.
 - Assets: `cdn.openfsp.org` (logo, favicon).
 
 ## Capabilities and Constraints
 
 - The spec is the MDX pages themselves: one source, deep links to each rule. `/problems/<code>` redirects to the catalogue row in the payments API page.
-- English is primary; every page has a French version. Rule numbers never change between languages.
+- French is canonical; every page has an English version. Rule numbers never change between languages.
 - Status: protocol version 0.1.0, opened to contribution later. Public pages, meta and the Open Graph image never frame the project as a draft, a research project or academic work.
 - HTG only.
-- Undecided: the public validator's deployment date.
 
 ## Brand Commitments
 
@@ -51,9 +50,9 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 
 ## Evidence on Hand
 
-- Spec: 564 numbered rules, 581 obligations; conformance matrix with 145 tested obligations.
-- Conformance suite: 95 requirements, 102 scenarios; the reference gateway and the native operator `mock_openfsp` both reach Core PASS.
-- Organisation README (`openfsp/README.md`): the O x L versus O + L argument and the component table.
+- Spec: 488 numbered rules.
+- Conformance suite: 71 requirements in `conformance/requirements.yaml` of `openfspht/openfsp`, run against the reference gateway and the native operator `mock_openfsp`.
+- Governance README (`openfspht/governance`, `README.md`): the idea and the component table; the O x L versus O + L argument is decision 0001.
 - No adopters, operators, testimonials or endorsements exist: none may be implied.
 
 ## Product Principles

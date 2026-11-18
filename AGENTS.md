@@ -8,13 +8,13 @@ TanStack Start, React 19, Fumadocs, MDX and Tailwind 4 on Vite+ (`vp`), with Bun
 
 ## Positioning
 
-- OpenFSP is a standard. The gateway is one implementation that makes it usable today with MonCash and NatCash. SDKs are the next step: Kotlin for the JVM, then TypeScript.
+- OpenFSP is a standard. The gateway is one implementation that makes it usable today with MonCash and NatCash. The client SDKs are published: `org.openfsp:openfsp-sdk` on Maven Central (Kotlin and Java) and `@openfsp/sdk` on npm (TypeScript).
 - Never describe the project as a draft or a research project. Never name the commercial product built on OpenFSP. The code repository is `openfspht/openfsp`, the governance repository `openfspht/governance`.
 - The home page persuades in plain words. Technical detail belongs in the docs.
 
 ## Content
 
-- Edit English (`x.mdx`) and French (`x.fr.mdx`) pages together. French is written natively, not translated word for word.
+- French is canonical: `x.mdx` is French, served at `/`; `x.en.mdx` is English, served at `/en`. Edit both together, with the same rule numbers and line structure. French is written natively, not translated word for word.
 - The docs speak in the author's first person, to payment engineers: no pedagogy, no filler. Decisions are the author's proposals, numbered in sequence, with no accepted or rejected status.
 - Rule bodies in `content/docs/spec` (from the first `## 1.` heading) change only on purpose. Keep rule and decision identifiers stable.
 - Distinguish simulated, sandbox and production evidence. Do not imply provider or regulator endorsement.

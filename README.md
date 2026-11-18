@@ -16,7 +16,7 @@
 
 ## Develop
 
-Bun 1.4 and Node 22.18 or later.
+Bun 1.4 and Node 24.
 
 ```sh
 bun install
