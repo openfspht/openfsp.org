@@ -51,7 +51,7 @@ make simulator
 make validate-native
 ```
 
-By default, the suite targets `http://127.0.0.1:8090/mock_openfsp` and uses the simulator’s published test keys. The report is saved to `backend/validator/infrastructure/build/conformance-report-native.json`. The Makefile starts the suite’s webhook receiver on port 8098, configurable through `VALIDATE_NATIVE_WEBHOOK_PORT`.
+By default, the suite targets `http://127.0.0.1:8090/mock_openfsp` and asks the simulator for its test keys ([conformance 4.8](/en/docs/spec/conformance#4.8.1)). The report is saved to `backend/validator/infrastructure/build/conformance-report-native.json`. The Makefile starts the suite’s webhook receiver on port 8098.
 
 The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
 
