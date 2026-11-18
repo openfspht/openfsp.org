@@ -86,7 +86,7 @@ export const homeCopy = {
                 },
                 {
                     title: "Bibliothèques clientes",
-                    body: "Les bibliothèques et leurs outils de test accompagnent la version 0.1.0. Leurs modalités d’installation sont décrites dans la documentation technique.",
+                    body: "Les bibliothèques Kotlin, Java et TypeScript et leurs outils de test sont publiés sur Maven Central et npm. Leur installation est décrite dans le démarrage rapide.",
                 },
                 {
                     title: "Phase 2 : extension envisagée",
@@ -190,7 +190,7 @@ export const homeCopy = {
                 },
                 {
                     title: "Client libraries",
-                    body: "Client libraries and testing tools accompany version 0.1.0. Installation instructions are provided in the technical documentation.",
+                    body: "The Kotlin, Java and TypeScript libraries and their testing tools are published on Maven Central and npm. Their installation is described in the quickstart.",
                 },
                 {
                     title: "Phase 2: proposed extension",
