@@ -189,7 +189,7 @@ GET /v1/statements?provider=natcash&from=2026-09-01&to=2026-09-30
 
 **10.3.5.** The endpoint requires the `statements:read` scope ([authentication 6](/en/docs/spec/authentication#6)).
 
-**10.3.6.** The endpoint is exposed for every provider. When `payments.statement` is not declared for the provider, the returned collection is empty.
+**10.3.6.** The endpoint is exposed for every provider. When `payments.statement` is not declared for the provider, the server responds with `capability-not-supported` ([capabilities 4.4](/en/docs/spec/capabilities#4.4)).
 
 ### 10.4. Conformance
 

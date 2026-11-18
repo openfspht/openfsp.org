@@ -189,7 +189,7 @@ GET /v1/statements?provider=natcash&from=2026-09-01&to=2026-09-30
 
 **10.3.5.** Le point d’accès nécessite la portée `statements:read` ([authentification 6](/docs/spec/authentication#6)).
 
-**10.3.6.** Le point d’accès est exposé pour chaque opérateur. Lorsque `payments.statement` n’est pas déclaré pour l’opérateur, la collection retournée est vide.
+**10.3.6.** Le point d’accès est exposé pour chaque opérateur. Lorsque `payments.statement` n’est pas déclaré pour l’opérateur, le serveur répond `capability-not-supported` ([capacités 4.4](/docs/spec/capabilities#4.4)).
 
 ### 10.4. Conformité
 

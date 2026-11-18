@@ -32,7 +32,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 ## 3. Niveaux
 
-**3.1.** Le niveau **Core** couvre la capacité de base ([API 2](/docs/spec/payments-api#2)) et les exigences générales : modèle de données, cycle de vie, idempotence, erreurs, authentification, découverte des capacités, limites déclarées et tests de refus du 5.4.
+**3.1.** Le niveau **Core** couvre la capacité de base ([API 2](/docs/spec/payments-api#2)) et les exigences générales : modèle de données, cycle de vie, idempotence, erreurs, authentification, découverte des capacités, limites déclarées et tests de refus du 5.4 qui ne relèvent d’aucun profil (5.12).
 
 **3.2.** Une implémentation est conforme uniquement si elle satisfait au niveau Core.
 
@@ -156,7 +156,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 | Test                                                     | Attendu                                                           | Règle                                                    | Serveur simulé                                          |
 | -------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
-| Relevés d'un opérateur sans `payments.statement`         | une collection vide                                               | [cycle de vie 10.3.6](/docs/spec/lifecycle#10.3.6)    | opérateur de test de base (9.3.5)                       |
+| Relevés d'un opérateur sans `payments.statement`         | `capability-not-supported`                                        | [cycle de vie 10.3.6](/docs/spec/lifecycle#10.3.6)    | opérateur de test de base (9.3.5)                       |
 | `POST` sans `Idempotency-Key`                            | `idempotency-key-required`                                        | [idempotence 1.3](/docs/spec/idempotency#1.3)         | aucun                                                   |
 | `callback_url` en `http` hors bouclage                   | création rejetée                                                  | [API 5.1.8](/docs/spec/payments-api#5.1.8)            | `mock_openfsp`                                          |
 | Requête de l'API tentant de fixer l'état d'un paiement   | état inchangé                                                     | [cycle de vie 6.1](/docs/spec/lifecycle#6.1)          | `mock_openfsp`, `PENDING_FOREVER`                       |
@@ -203,7 +203,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | --------------------- |
 | Clé absente, mal formée, inconnue, révoquée, expirée, d'un autre environnement | six `unauthenticated` au même `title`, sans `detail` distinctif ; `WWW-Authenticate: Bearer` sur la clé absente | [authentification 3.3, 4.7, 7.6](/docs/spec/authentication#7.6) | `mock_openfsp` (9.3.7) |
 
-**5.12.** Les tests du 5.9 appartiennent au profil `payments.statement`. Le test de livraison à `callback_url` du 5.10 appartient au profil `webhooks.per_payment_url`. Les tests d’un profil ne s’appliquent pas au serveur qui ne déclare pas la capacité correspondante.
+**5.12.** Les tests du 5.9 appartiennent au profil `payments.statement`. Le test du 5.4 sur `callback_url` en `http` et le test de livraison à `callback_url` du 5.10 appartiennent au profil `webhooks.per_payment_url`. Les tests d’un profil ne s’appliquent pas au serveur qui ne déclare pas la capacité correspondante.
 
 ## 6. Versions
 

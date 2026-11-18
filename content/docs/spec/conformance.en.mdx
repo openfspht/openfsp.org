@@ -32,7 +32,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 ## 3. Levels
 
-**3.1.** The **Core** level covers the base capability ([API 2](/en/docs/spec/payments-api#2)) and general requirements: data model, lifecycle, idempotency, errors, authentication, capability discovery, declared limits and rejection tests in 5.4.
+**3.1.** The **Core** level covers the base capability ([API 2](/en/docs/spec/payments-api#2)) and general requirements: data model, lifecycle, idempotency, errors, authentication, capability discovery, declared limits and the rejection tests in 5.4 that belong to no profile (5.12).
 
 **3.2.** An implementation is conforming only if it satisfies Core.
 
@@ -156,7 +156,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 | Test                                                     | Expected                                                         | Rule                                                | Mock server                                       |
 | -------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------- |
-| Statements of a provider without `payments.statement`    | an empty collection                                              | [lifecycle 10.3.6](/en/docs/spec/lifecycle#10.3.6)     | base test provider (9.3.5)                        |
+| Statements of a provider without `payments.statement`    | `capability-not-supported`                                       | [lifecycle 10.3.6](/en/docs/spec/lifecycle#10.3.6)     | base test provider (9.3.5)                        |
 | `POST` without `Idempotency-Key`                         | `idempotency-key-required`                                       | [idempotency 1.3](/en/docs/spec/idempotency#1.3)       | none                                              |
 | `callback_url` over `http` outside loopback              | creation rejected                                                | [API 5.1.8](/en/docs/spec/payments-api#5.1.8)          | `mock_openfsp`                                    |
 | API request trying to set the state of a payment         | state unchanged                                                  | [lifecycle 6.1](/en/docs/spec/lifecycle#6.1)           | `mock_openfsp`, `PENDING_FOREVER`                 |
@@ -203,7 +203,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | -------------------- |
 | Missing, malformed, unknown, revoked, expired, other-environment key | six `unauthenticated` with the same `title`, no distinguishing `detail`; `WWW-Authenticate: Bearer` on the missing key | [authentication 3.3, 4.7, 7.6](/en/docs/spec/authentication#7.6) | `mock_openfsp` (9.3.7) |
 
-**5.12.** Tests in 5.9 belong to the `payments.statement` profile. The `callback_url` delivery test in 5.10 belongs to `webhooks.per_payment_url`. A profile’s tests do not apply to a server that does not declare the corresponding capability.
+**5.12.** Tests in 5.9 belong to the `payments.statement` profile. The 5.4 test on `callback_url` over `http` and the `callback_url` delivery test in 5.10 belong to `webhooks.per_payment_url`. A profile’s tests do not apply to a server that does not declare the corresponding capability.
 
 ## 6. Versions
 

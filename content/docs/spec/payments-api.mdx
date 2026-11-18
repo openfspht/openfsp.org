@@ -178,7 +178,7 @@ POST /v1/payments
 
 **5.1.7.** Le serveur applique `locale` à la page du payeur si cette valeur figure parmi les `locales` déclarées ([capacités 3.2.2](/docs/spec/capabilities#3.2.2)) ; sinon, il l’ignore. Toute valeur autre que `fr`, `ht` ou `en` DOIT être rejetée avec `invalid-field`.
 
-**5.1.8.** Le serveur livre les événements du paiement à `callback_url` avec les signatures définies dans les [webhooks 5](/docs/spec/webhooks#5). Cette valeur est une URL `https` absolue. En mode développement (1.1), `http://localhost` et `http://127.0.0.1` sont également acceptées selon le 5.1.3. Toute création contenant `callback_url` pour un opérateur ne déclarant pas `webhooks.per_payment_url` DOIT être rejetée avec `unknown-field`.
+**5.1.8.** Le serveur livre les événements du paiement à `callback_url` avec les signatures définies dans les [webhooks 5](/docs/spec/webhooks#5). Cette valeur est une URL `https` absolue. En mode développement (1.1), `http://localhost` et `http://127.0.0.1` sont également acceptées selon le 5.1.3. Toute création contenant `callback_url` pour un opérateur ne déclarant pas `webhooks.per_payment_url` DOIT être rejetée avec `capability-not-supported` ([capacités 4.4](/docs/spec/capabilities#4.4)).
 
 ### 5.2. Lire un paiement
 
