@@ -5,7 +5,7 @@ description: Local verification of an attestation signature and, optionally, the
 
 After an execution, the validator can produce a signed attestation in compact JWS format (EdDSA). Its payload contains the target, suite version and verdicts. Verification takes place in the browser using the key published by the validator at `/.well-known/openfsp-validator`. If the report is supplied, its SHA-256 digest, computed from its RFC 8785 canonical JSON representation, is compared with the digest recorded in the attestation.
 
-The form uses the public validator [validate.openfsp.org](https://validate.openfsp.org) by default. To verify an attestation issued by another validator, enter that validator’s HTTPS address.
+The form uses the public validator [validator.openfsp.org](https://validator.openfsp.org) by default. To verify an attestation issued by another validator, enter that validator’s HTTPS address.
 
 <AttestationVerifier locale="en" />
 

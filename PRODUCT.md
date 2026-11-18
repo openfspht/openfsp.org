@@ -29,7 +29,7 @@ Not a payment service. OpenFSP never holds funds or credentials: the gateway is 
 
 - Spec source: this repository, `content/docs/` (English `page.mdx`, French `page.fr.mdx`). Numbered rules with MUST / MUST NOT / SHOULD / MAY (DOIT / NE DOIT PAS / DEVRAIT / PEUT in French), each number an anchor (`/docs/spec/payments-api#5.1.8`), never the section sign.
 - Provider registry: `content/docs/registry.mdx`.
-- Code: `openfspht/openfsp` (gateway, simulator, validator, console, demo shop). Public validator planned at `validate.openfsp.org`, issuing signed attestations (JWS EdDSA, keys at `/.well-known/openfsp-validator`); until it is deployed, `make validate` runs locally.
+- Code: `openfspht/openfsp` (gateway, simulator, validator, console, demo shop). Public validator planned at `validator.openfsp.org`, issuing signed attestations (JWS EdDSA, keys at `/.well-known/openfsp-validator`); until it is deployed, `make validate` runs locally.
 - Assets: `cdn.openfsp.org` (logo, favicon).
 
 ## Capabilities and Constraints

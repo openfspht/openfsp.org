@@ -5,7 +5,7 @@ description: Vérification locale de la signature d’une attestation et, facult
 
 À l’issue d’une exécution, le validateur peut produire une attestation signée au format JWS compact (EdDSA). Sa charge utile contient la cible, la version de la suite et les verdicts. La vérification s’effectue dans le navigateur avec la clé publiée par le validateur à `/.well-known/openfsp-validator`. Si le rapport est fourni, son empreinte SHA-256, calculée sur sa représentation JSON canonique selon la RFC 8785, est comparée à celle inscrite dans l’attestation.
 
-Le formulaire utilise par défaut le validateur public [validate.openfsp.org](https://validate.openfsp.org). Pour vérifier une attestation émise par un autre validateur, renseignez son adresse HTTPS.
+Le formulaire utilise par défaut le validateur public [validator.openfsp.org](https://validator.openfsp.org). Pour vérifier une attestation émise par un autre validateur, renseignez son adresse HTTPS.
 
 <AttestationVerifier locale="fr" />
 

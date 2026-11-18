@@ -78,7 +78,7 @@ export const homeCopy = {
         },
         status: {
             title: "État de développement et périmètre de validation",
-            body: "La version 0.1.0 comprend la spécification, les bibliothèques clientes et la suite de conformité. Un validateur est accessible sur validate.openfsp.org. L’environnement de démonstration s’exécute localement avec des services simulés.",
+            body: "La version 0.1.0 comprend la spécification, les bibliothèques clientes et la suite de conformité. Un validateur est accessible sur validator.openfsp.org. L’environnement de démonstration s’exécute localement avec des services simulés.",
             phases: [
                 {
                     title: "Phase 1 : développement en cours",
@@ -182,7 +182,7 @@ export const homeCopy = {
         },
         status: {
             title: "Development status and validation scope",
-            body: "Version 0.1.0 includes the specification, client libraries and conformance suite. A validator is available at validate.openfsp.org. The demonstration environment runs locally with simulated services.",
+            body: "Version 0.1.0 includes the specification, client libraries and conformance suite. A validator is available at validator.openfsp.org. The demonstration environment runs locally with simulated services.",
             phases: [
                 {
                     title: "Phase 1: development in progress",
