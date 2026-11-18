@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/openfspht/openfsp.org/compare/v0.3.0...v0.4.0) (2026-11-18)
+
+
+### Features
+
+* specify the preparation of conformance runs by the server ([54c9446](https://github.com/openfspht/openfsp.org/commit/54c9446981400e29a6ccbfe69beeb66517c507f8))
+
 ## [0.3.0](https://github.com/openfspht/openfsp.org/compare/v0.2.0...v0.3.0) (2026-11-17)
 
 
