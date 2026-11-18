@@ -76,12 +76,12 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 **4.8.3.** Le serveur répond `201 Created` avec un objet JSON comportant les membres suivants :
 
-| Membre       | Type      | Présence    | Contenu                                                                    |
-| ------------ | --------- | ----------- | -------------------------------------------------------------------------- |
-| `api_key`    | chaîne    | OBLIGATOIRE | Clé de test active disposant de toutes les portées prises en charge.       |
-| `expires_at` | `Instant` | OBLIGATOIRE | Instant à partir duquel les éléments fournis ne sont plus valides.         |
-| `inputs`     | objet     | FACULTATIF  | Entrées de la suite, chaque nom du 4.8.4 étant associé à une valeur texte. |
-| `control_endpoint` | chaîne | OBLIGATOIRE | Interface de contrôle de l’exécution (4.9).                             |
+| Membre             | Type        | Présence    | Contenu                                                                    |
+| ------------------ | ----------- | ----------- | -------------------------------------------------------------------------- |
+| `api_key`          | chaîne      | OBLIGATOIRE | Clé de test active disposant de toutes les portées prises en charge.       |
+| `expires_at`       | `Timestamp` | OBLIGATOIRE | Instant à partir duquel les éléments fournis ne sont plus valides.         |
+| `inputs`           | objet       | FACULTATIF  | Entrées de la suite, chaque nom du 4.8.4 étant associé à une valeur texte. |
+| `control_endpoint` | chaîne      | OBLIGATOIRE | Interface de contrôle de l’exécution (4.9).                                |
 
 **4.8.4.** Le serveur fournit les entrées qu’il sait produire parmi les suivantes. La suite ignore tout autre nom et traite comme assisté, selon le 4.7, un test dont l’entrée manque.
 
@@ -111,7 +111,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `PUT {control_endpoint}/references/{reference}/scenario` | Fixe le scénario du prochain paiement créé avec cette référence. Corps : `{"scenario": "DECLINE"}`. |
 | `GET {control_endpoint}/references/{reference}`          | Retourne l’état du paiement de cette référence : `payment`, `settled` et `callbacks_sent`. |
-| `POST {control_endpoint}/payments/{id}/resolve`          | Donne son issue à un paiement en attente. Corps : `{"outcome": "succeeded"}`, avec `reason` en cas d’échec. |
+| `POST {control_endpoint}/payments/{id}/resolve`          | Donne son issue à un paiement en attente. Corps : `{"outcome": "succeeded"}` ; pour `failed`, `reason` porte une valeur de `failure_reason` ([cycle de vie 7.2](/docs/spec/lifecycle#7.2)). |
 | `POST {control_endpoint}/payments/{id}/callback`         | Déclenche l’événement retenu de ce paiement.                                            |
 
 **4.9.3.** Les scénarios disponibles sont définis dans le tableau suivant :

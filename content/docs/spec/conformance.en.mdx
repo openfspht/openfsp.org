@@ -76,12 +76,12 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.8.3.** The server responds `201 Created` with a JSON object carrying the following members:
 
-| Member       | Type      | Presence | Content                                                             |
-| ------------ | --------- | -------- | ------------------------------------------------------------------- |
-| `api_key`    | string    | REQUIRED | Active test key holding every supported scope.                      |
-| `expires_at` | `Instant` | REQUIRED | Instant from which the provided items are no longer valid.          |
-| `inputs`     | object    | OPTIONAL | Suite inputs, each name of 4.8.4 being associated with a text value. |
-| `control_endpoint` | string | REQUIRED | Control interface of the run (4.9).                               |
+| Member             | Type        | Presence | Content                                                              |
+| ------------------ | ----------- | -------- | -------------------------------------------------------------------- |
+| `api_key`          | string      | REQUIRED | Active test key holding every supported scope.                       |
+| `expires_at`       | `Timestamp` | REQUIRED | Instant from which the provided items are no longer valid.           |
+| `inputs`           | object      | OPTIONAL | Suite inputs, each name of 4.8.4 being associated with a text value. |
+| `control_endpoint` | string      | REQUIRED | Control interface of the run (4.9).                                  |
 
 **4.8.4.** The server provides the inputs it can produce among the following. The suite ignores any other name and treats a test whose input is missing as assisted under 4.7.
 
@@ -111,7 +111,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `PUT {control_endpoint}/references/{reference}/scenario` | Sets the scenario of the next payment created with this reference. Body: `{"scenario": "DECLINE"}`. |
 | `GET {control_endpoint}/references/{reference}`          | Returns the state of the payment of this reference: `payment`, `settled` and `callbacks_sent`. |
-| `POST {control_endpoint}/payments/{id}/resolve`          | Gives its outcome to a pending payment. Body: `{"outcome": "succeeded"}`, with `reason` on failure. |
+| `POST {control_endpoint}/payments/{id}/resolve`          | Gives its outcome to a pending payment. Body: `{"outcome": "succeeded"}`; for `failed`, `reason` carries a `failure_reason` value ([lifecycle 7.2](/en/docs/spec/lifecycle#7.2)). |
 | `POST {control_endpoint}/payments/{id}/callback`         | Triggers the held event of this payment.                                                |
 
 **4.9.3.** Available scenarios are defined in the following table:

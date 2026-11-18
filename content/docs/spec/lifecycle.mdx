@@ -170,7 +170,7 @@ stateDiagram-v2
 | `amount`        | `Money`      | OBLIGATOIRE | Montant brut reçu.                                                 |
 | `fee`           | `Fee`        | FACULTATIF  | [Modèle de données 8](/docs/spec/data-model#8).                    |
 | `payment`       | `ResourceId` | FACULTATIF  | Paiement à l’origine de la transaction, lorsque le serveur le connaît. |
-| `reference`     | chaîne       | FACULTATIF  | Référence marchande de ce paiement.                                |
+| `reference`     | `Reference`  | FACULTATIF  | Référence marchande de ce paiement.                                |
 
 **10.2.3.** Le relevé ne contient que des transactions réussies. Un paiement `pending`, `failed`, `expired` ou `canceled` n’y figure pas.
 
@@ -189,7 +189,7 @@ GET /v1/statements?provider=natcash&from=2026-09-01&to=2026-09-30
 
 **10.3.3.** Un intervalle couvre au plus 31 journées comptables. Au-delà, le serveur répond `invalid-field`.
 
-**10.3.4.** La réponse est une collection ([API 1.12](/docs/spec/payments-api#1.12)) triée par `booked_at` croissant et limitée à `limit` éléments : de 1 à 100, avec 50 par défaut. Si des éléments supplémentaires existent, `next_cursor` contient une chaîne opaque à transmettre dans le paramètre `cursor` pour poursuivre la consultation. Une période sans transaction donne une collection vide.
+**10.3.4.** La réponse est une collection ([API 1.12](/docs/spec/payments-api#1.12)) triée par `booked_at` croissant, puis, à égalité, dans un ordre stable propre au serveur et identique d’une page à l’autre, et limitée à `limit` éléments : de 1 à 100, avec 50 par défaut. Si des éléments supplémentaires existent, `next_cursor` contient une chaîne opaque à transmettre dans le paramètre `cursor` pour poursuivre la consultation. Une période sans transaction donne une collection vide.
 
 **10.3.5.** Le point d’accès nécessite la portée `statements:read` ([authentification 6](/docs/spec/authentication#6)).
 

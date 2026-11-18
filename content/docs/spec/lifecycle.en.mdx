@@ -170,7 +170,7 @@ stateDiagram-v2
 | `amount`        | `Money`      | REQUIRED | Gross amount received.                                         |
 | `fee`           | `Fee`        | OPTIONAL | [Data model 8](/en/docs/spec/data-model#8).                    |
 | `payment`       | `ResourceId` | OPTIONAL | Payment that originated the transaction, when the server knows it. |
-| `reference`     | string       | OPTIONAL | Merchant reference of that payment.                            |
+| `reference`     | `Reference`  | OPTIONAL | Merchant reference of that payment.                            |
 
 **10.2.3.** A statement contains successful transactions only. A `pending`, `failed`, `expired` or `canceled` payment does not appear in it.
 
@@ -189,7 +189,7 @@ GET /v1/statements?provider=natcash&from=2026-09-01&to=2026-09-30
 
 **10.3.3.** A range covers at most 31 business days. Beyond that, the server responds `invalid-field`.
 
-**10.3.4.** The response is a collection ([API 1.12](/en/docs/spec/payments-api#1.12)) sorted by ascending `booked_at` and limited to `limit` items: from 1 to 100, 50 by default. When more items exist, `next_cursor` carries an opaque string to pass in the `cursor` parameter to continue. A period without transactions yields an empty collection.
+**10.3.4.** The response is a collection ([API 1.12](/en/docs/spec/payments-api#1.12)) sorted by ascending `booked_at`, then, on ties, in a stable server-defined order that stays the same from one page to the next, and limited to `limit` items: from 1 to 100, 50 by default. When more items exist, `next_cursor` carries an opaque string to pass in the `cursor` parameter to continue. A period without transactions yields an empty collection.
 
 **10.3.5.** The endpoint requires the `statements:read` scope ([authentication 6](/en/docs/spec/authentication#6)).
 
