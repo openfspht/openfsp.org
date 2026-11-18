@@ -130,7 +130,7 @@ stateDiagram-v2
 
 **9.3.** La documentation destinée aux clients DEVRAIT recommander de ne pas présenter directement la valeur brute de `failure_reason` au payeur.
 
-## 10. Relevés et rapprochement
+## 10. Relevés
 
 ### 10.1. Journée comptable
 
@@ -140,108 +140,61 @@ stateDiagram-v2
 
 **10.1.3.** Haïti appliquant l’heure d’été, le serveur NE DOIT PAS déterminer la journée comptable à partir d’un décalage horaire fixe.
 
-### 10.2. Relevé
+### 10.2. Ligne
 
-**10.2.1.** Un relevé rassemble les mouvements d’un compte marchand auprès d’un opérateur pour une journée comptable donnée.
+**10.2.1.** Un relevé est la liste des transactions réussies portées au compte du marchand chez un opérateur. Chaque transaction constitue une ligne :
 
 ```json
 {
-  "id": "stm_01J9ZQ0R8V2K4M6N8P0Q2R4S6T",
   "provider": "natcash",
   "business_date": "2026-09-28",
-  "complete": true,
-  "entries": [
-    {
-      "type": "payment",
-      "amount": { "amount": 125000, "currency": "HTG" },
-      "booked_at": "2026-09-28T14:33:02Z",
-      "payment": "pay_01JAB7C2D9E4F6G8H1J3K5M7N9",
-      "match": "matched"
-    }
-  ],
-  "missing_payments": []
+  "booked_at": "2026-09-28T14:33:02Z",
+  "amount": { "amount": 125000, "currency": "HTG" },
+  "payment": "pay_01JAB7C2D9E4F6G8H1J3K5M7N9",
+  "reference": "INV-184"
 }
 ```
 
-**10.2.2.** La structure du relevé est définie par les champs suivants :
+**10.2.2.** Une ligne possède les champs suivants :
 
-| Champ              | Type                    | Présence    | Notes                                          |
-| ------------------ | ----------------------- | ----------- | ---------------------------------------------- |
-| `id`               | `ResourceId`            | OBLIGATOIRE |                                                |
-| `provider`         | chaîne                  | OBLIGATOIRE | Identifiant enregistré.                        |
-| `business_date`    | `Date`                  | OBLIGATOIRE | 10.1.                                          |
-| `complete`         | booléen                 | OBLIGATOIRE | 10.2.4.                                        |
-| `entries`          | tableau                 | OBLIGATOIRE | 10.3.                                          |
-| `missing_payments` | tableau de `ResourceId` | OBLIGATOIRE | 10.4.4. Vide tant que `complete` vaut `false`. |
+| Champ           | Type         | Présence    | Notes                                                              |
+| --------------- | ------------ | ----------- | ------------------------------------------------------------------ |
+| `provider`      | chaîne       | OBLIGATOIRE | Identifiant enregistré.                                            |
+| `business_date` | `Date`       | OBLIGATOIRE | 10.1.                                                              |
+| `booked_at`     | `Timestamp`  | OBLIGATOIRE | Heure de comptabilisation chez l'opérateur.                        |
+| `amount`        | `Money`      | OBLIGATOIRE | Montant brut reçu.                                                 |
+| `fee_amount`    | `Money`      | FACULTATIF  | Tel que rapporté. Absent signifie inconnu.                         |
+| `net_amount`    | `Money`      | FACULTATIF  | Tel que rapporté. Absent signifie inconnu.                         |
+| `payment`       | `ResourceId` | FACULTATIF  | Paiement à l’origine de la transaction, lorsque le serveur le connaît. |
+| `reference`     | chaîne       | FACULTATIF  | Référence marchande de ce paiement.                                |
 
-**10.2.3.** Pour chaque couple (opérateur, journée comptable), un compte marchand possède au plus un relevé.
+**10.2.3.** Le relevé ne contient que des transactions réussies. Un paiement `pending`, `failed`, `expired` ou `canceled` n’y figure pas.
 
-**10.2.4.** La valeur de `complete` est `true` lorsque l’opérateur a clôturé la journée. Un relevé non clôturé PEUT recevoir de nouvelles lignes ; un relevé clôturé NE DOIT PLUS en recevoir.
+**10.2.4.** Le serveur NE DOIT PAS calculer `fee_amount` ou `net_amount`, y compris par soustraction.
 
-### 10.3. Ligne
+### 10.3. Point d'accès
 
-**10.3.1.** Une ligne possède les champs suivants :
-
-| Champ                | Type                | Présence     | Notes                                                         |
-| -------------------- | ------------------- | ------------ | ------------------------------------------------------------- |
-| `type`               | chaîne              | OBLIGATOIRE  | 10.3.2.                                                       |
-| `amount`             | `Money`             | OBLIGATOIRE  | Brut, signé : positif au crédit du marchand.                  |
-| `fee_amount`         | `Money`             | FACULTATIF   | Tel que rapporté. Absent signifie inconnu.                    |
-| `net_amount`         | `Money`             | FACULTATIF   | Tel que rapporté. Absent signifie inconnu.                    |
-| `booked_at`          | `Timestamp`         | OBLIGATOIRE  | Heure de comptabilisation chez l'opérateur.                   |
-| `payment`            | `ResourceId`        | conditionnel | Présent si `match` vaut `matched` ou `conflict`.              |
-| `match`              | chaîne              | OBLIGATOIRE  | 10.4.                                                         |
-
-**10.3.2.** Le champ `type` prend l’une des valeurs `payment`, `reversal`, `fee` ou `adjustment`. L’énumération est fermée et son extension nécessite une décision écrite. Le client DOIT interpréter une valeur inconnue comme `adjustment`.
-
-**10.3.3.** Par exception au [modèle de données 3.6](/docs/spec/data-model#3.6), les champs `amount`, `fee_amount` et `net_amount` d’une ligne PEUVENT être négatifs ou nuls.
-
-**10.3.4.** Le serveur NE DOIT PAS calculer `fee_amount` ou `net_amount`, y compris par soustraction.
-
-### 10.4. Rapprochement
-
-**10.4.1.** Une ligne associée à un paiement le référence dans `payment` au moyen de son `id`. Le serveur NE DOIT PAS établir cette correspondance à partir du montant ou de l’heure.
-
-**10.4.2.** Le champ `match` accepte les valeurs suivantes :
-
-| Valeur      | Sens                                                                     |
-| ----------- | ------------------------------------------------------------------------ |
-| `matched`   | Un paiement correspond ; montant et état concordent.                     |
-| `unmatched` | Aucun paiement ne correspond.                                            |
-| `conflict`  | Un paiement correspond, mais son montant ou son état contredit la ligne. |
-
-**10.4.3.** Une ligne `unmatched` NE DOIT PAS entraîner la création d’un paiement. Le serveur DOIT signaler cette ligne à l’exploitant.
-
-**10.4.4.** Un relevé clôturé DOIT inclure dans `missing_payments` les paiements `succeeded` de l’opérateur dont `completed_at` appartient à la journée comptable et auxquels aucune ligne ne correspond.
-
-**10.4.5.** Une ligne `conflict` NE DOIT PAS provoquer de modification du paiement.
-
-### 10.5. Points d'accès
-
-**10.5.1.** La consultation d’un relevé utilise le point d’accès suivant :
+**10.3.1.** La consultation d’un relevé utilise le point d’accès suivant, pour une journée comptable ou pour un intervalle :
 
 ```
 GET /v1/statements?provider=natcash&business_date=2026-09-28
+GET /v1/statements?provider=natcash&from=2026-09-01&to=2026-09-30
 ```
 
-Les paramètres `provider` et `business_date` sont OBLIGATOIRES. La réponse contient une collection d’au plus un relevé. Si aucun relevé n’existe encore, le serveur retourne `200` avec `data` vide ([API 5.2.2](/docs/spec/payments-api#5.2.2)).
+**10.3.2.** Le paramètre `provider` est OBLIGATOIRE. Le client fournit soit `business_date`, soit `from` et `to`, de type `Date` ; les bornes de l’intervalle sont incluses. En l’absence de période, le serveur répond `missing-field`. Toute autre combinaison, une date invalide ou un intervalle dont `to` précède `from` entraîne `invalid-field`.
 
-**10.5.2.** La consultation des lignes non rapprochées utilise le point d’accès suivant :
+**10.3.3.** Un intervalle couvre au plus 31 journées comptables. Au-delà, le serveur répond `invalid-field`.
 
-```
-GET /v1/statement_entries?match=unmatched&provider=natcash
-```
+**10.3.4.** La réponse est une collection ([API 1.12](/docs/spec/payments-api#1.12)) triée par `booked_at` croissant et limitée à `limit` éléments : de 1 à 100, avec 50 par défaut. Si des éléments supplémentaires existent, `next_cursor` contient une chaîne opaque à transmettre dans le paramètre `cursor` pour poursuivre la consultation. Une période sans transaction donne une collection vide.
 
-Le paramètre `match` accepte `unmatched` et `conflict`. La réponse est une collection ([API 1.12](/docs/spec/payments-api#1.12)) triée par `booked_at` croissant et limitée à `limit` éléments : de 1 à 100, avec 50 par défaut. Si des éléments supplémentaires existent, `next_cursor` contient une chaîne opaque à transmettre dans le paramètre `cursor` pour poursuivre la consultation.
+**10.3.5.** Le point d’accès nécessite la portée `statements:read` ([authentification 6](/docs/spec/authentication#6)).
 
-**10.5.3.** Les deux points d’accès nécessitent la portée `statements:read` ([authentification 6](/docs/spec/authentication#6)).
+**10.3.6.** Le point d’accès est exposé pour chaque opérateur. Lorsque `payments.statement` n’est pas déclaré pour l’opérateur, la collection retournée est vide.
 
-**10.5.4.** Les deux points d’accès sont exposés pour chaque opérateur. Lorsque `payments.statement` n’est pas déclaré pour l’opérateur, la collection retournée est vide.
+### 10.4. Conformité
 
-### 10.6. Conformité
+**10.4.1.** Sur un serveur déclarant `payments.statement`, la suite vérifie qu’un paiement réussi figure au relevé de sa journée comptable, qu’un paiement non réussi n’y figure pas, qu’un intervalle ne retourne que les lignes de ses journées et qu’une requête sans période est refusée.
 
-**10.6.1.** Sur un serveur publiant un relevé, la suite vérifie une ligne rapprochée, une ligne `unmatched` sans création de paiement, un paiement `succeeded` absent d’un relevé clôturé et une journée comptable comprenant un changement d’heure.
+### 10.5. Sécurité
 
-### 10.7. Sécurité
-
-**10.7.1.** Les relevés révèlent le chiffre d’affaires du marchand. La portée `statements:read` NE DEVRAIT PAS être accordée à une clé utilisée uniquement pour l’encaissement.
+**10.5.1.** Les relevés révèlent le chiffre d’affaires du marchand. La portée `statements:read` NE DEVRAIT PAS être accordée à une clé utilisée uniquement pour l’encaissement.

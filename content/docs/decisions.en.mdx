@@ -95,6 +95,16 @@ The following decisions document the choices adopted for the specification versi
 
 **Reference.** [Conformance 4.8](/en/docs/spec/conformance#4.8.1).
 
+## 0010. Statement reduced to a list of transactions
+
+**Decision.** Define a statement as the list of the successful transactions of a provider for a business day or a range, read from a single endpoint. Reconciliation with payments, its verdicts, day closure, the list of missing payments and the reading of unreconciled entries leave the specification.
+
+**Rationale.** The specification defines an interface between a client and a server. What the client does with the list, including reconciling it with its own records, belongs to its architecture. The removed obligations concerned an internal behaviour of the server, which no suite can observe.
+
+**Alternatives considered.** Standardised reconciliation with a verdict per entry; day closure declared by the server; a second endpoint reserved for unreconciled entries.
+
+**Reference.** [Lifecycle 10](/en/docs/spec/lifecycle#10).
+
 ## References
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

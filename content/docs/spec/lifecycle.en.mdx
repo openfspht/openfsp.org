@@ -130,7 +130,7 @@ stateDiagram-v2
 
 **9.3.** Client documentation SHOULD recommend against displaying the raw `failure_reason` value directly to the payer.
 
-## 10. Statements and reconciliation
+## 10. Statements
 
 ### 10.1. Business day
 
@@ -140,108 +140,61 @@ stateDiagram-v2
 
 **10.1.3.** Because Haiti observes daylight saving time, the server MUST NOT determine the business day from a fixed time offset.
 
-### 10.2. Statement
+### 10.2. Entry
 
-**10.2.1.** A statement groups movements in a merchant account at a provider for a given business day.
+**10.2.1.** A statement is the list of successful transactions credited to the merchant account at a provider. Each transaction is an entry:
 
 ```json
 {
-  "id": "stm_01J9ZQ0R8V2K4M6N8P0Q2R4S6T",
   "provider": "natcash",
   "business_date": "2026-09-28",
-  "complete": true,
-  "entries": [
-    {
-      "type": "payment",
-      "amount": { "amount": 125000, "currency": "HTG" },
-      "booked_at": "2026-09-28T14:33:02Z",
-      "payment": "pay_01JAB7C2D9E4F6G8H1J3K5M7N9",
-      "match": "matched"
-    }
-  ],
-  "missing_payments": []
+  "booked_at": "2026-09-28T14:33:02Z",
+  "amount": { "amount": 125000, "currency": "HTG" },
+  "payment": "pay_01JAB7C2D9E4F6G8H1J3K5M7N9",
+  "reference": "INV-184"
 }
 ```
 
-**10.2.2.** The statement structure is defined by the following fields:
+**10.2.2.** An entry has the following fields:
 
-| Field              | Type                  | Presence | Notes                                      |
-| ------------------ | --------------------- | -------- | ------------------------------------------ |
-| `id`               | `ResourceId`          | REQUIRED |                                            |
-| `provider`         | string                | REQUIRED | Registered identifier.                     |
-| `business_date`    | `Date`                | REQUIRED | 10.1.                                      |
-| `complete`         | boolean               | REQUIRED | 10.2.4.                                    |
-| `entries`          | array                 | REQUIRED | 10.3.                                      |
-| `missing_payments` | array of `ResourceId` | REQUIRED | 10.4.4. Empty while `complete` is `false`. |
+| Field           | Type         | Presence | Notes                                                          |
+| --------------- | ------------ | -------- | -------------------------------------------------------------- |
+| `provider`      | string       | REQUIRED | Registered identifier.                                         |
+| `business_date` | `Date`       | REQUIRED | 10.1.                                                          |
+| `booked_at`     | `Timestamp`  | REQUIRED | Booking time at the provider.                                  |
+| `amount`        | `Money`      | REQUIRED | Gross amount received.                                         |
+| `fee_amount`    | `Money`      | OPTIONAL | As reported. Absent means unknown.                             |
+| `net_amount`    | `Money`      | OPTIONAL | As reported. Absent means unknown.                             |
+| `payment`       | `ResourceId` | OPTIONAL | Payment that originated the transaction, when the server knows it. |
+| `reference`     | string       | OPTIONAL | Merchant reference of that payment.                            |
 
-**10.2.3.** A merchant account has at most one statement for each (provider, business day) pair.
+**10.2.3.** A statement contains successful transactions only. A `pending`, `failed`, `expired` or `canceled` payment does not appear in it.
 
-**10.2.4.** The value of `complete` is `true` when the provider has closed the day. An open statement MAY receive additional entries; a closed statement MUST NOT receive additional entries.
+**10.2.4.** The server MUST NOT compute `fee_amount` or `net_amount`, including by subtraction.
 
-### 10.3. Entry
+### 10.3. Endpoint
 
-**10.3.1.** An entry has the following fields:
-
-| Field                | Type                | Presence    | Notes                                                  |
-| -------------------- | ------------------- | ----------- | ------------------------------------------------------ |
-| `type`               | string              | REQUIRED    | 10.3.2.                                                |
-| `amount`             | `Money`             | REQUIRED    | Gross, signed: positive when credited to the merchant. |
-| `fee_amount`         | `Money`             | OPTIONAL    | As reported. Absent means unknown.                     |
-| `net_amount`         | `Money`             | OPTIONAL    | As reported. Absent means unknown.                     |
-| `booked_at`          | `Timestamp`         | REQUIRED    | Booking time at the provider.                          |
-| `payment`            | `ResourceId`        | conditional | Present if `match` is `matched` or `conflict`.         |
-| `match`              | string              | REQUIRED    | 10.4.                                                  |
-
-**10.3.2.** The `type` field takes one of `payment`, `reversal`, `fee` or `adjustment`. The enumeration is closed and extensions require a decision record. The client MUST interpret an unknown value as `adjustment`.
-
-**10.3.3.** As an exception to [data model 3.6](/en/docs/spec/data-model#3.6), an entry’s `amount`, `fee_amount` and `net_amount` MAY be negative or zero.
-
-**10.3.4.** The server MUST NOT calculate `fee_amount` or `net_amount`, including by subtraction.
-
-### 10.4. Reconciliation
-
-**10.4.1.** An entry associated with a payment references its `id` in `payment`. The server MUST NOT establish this association from the amount or time.
-
-**10.4.2.** The `match` field accepts the following values:
-
-| Value       | Meaning                                                           |
-| ----------- | ----------------------------------------------------------------- |
-| `matched`   | A payment matches; amount and state agree.                        |
-| `unmatched` | No payment matches.                                               |
-| `conflict`  | A payment matches, but its amount or state contradicts the entry. |
-
-**10.4.3.** An `unmatched` entry MUST NOT cause a payment to be created. The server MUST report the entry to the operator.
-
-**10.4.4.** A closed statement MUST include in `missing_payments` the provider’s `succeeded` payments whose `completed_at` falls within the business day and which have no matching entry.
-
-**10.4.5.** A `conflict` entry MUST NOT cause the payment to be modified.
-
-### 10.5. Endpoints
-
-**10.5.1.** Statement retrieval uses the following endpoint:
+**10.3.1.** A statement is read from the following endpoint, for one business day or for a range:
 
 ```
 GET /v1/statements?provider=natcash&business_date=2026-09-28
+GET /v1/statements?provider=natcash&from=2026-09-01&to=2026-09-30
 ```
 
-The parameters `provider` and `business_date` are REQUIRED. The response contains a collection of at most one statement. If no statement exists yet, the server returns `200` with empty `data` ([API 5.2.2](/en/docs/spec/payments-api#5.2.2)).
+**10.3.2.** The `provider` parameter is REQUIRED. The client supplies either `business_date`, or `from` and `to`, of type `Date`; both ends of the range are included. Without a period, the server responds `missing-field`. Any other combination, an invalid date or a range whose `to` precedes `from` results in `invalid-field`.
 
-**10.5.2.** Retrieval of unmatched entries uses the following endpoint:
+**10.3.3.** A range covers at most 31 business days. Beyond that, the server responds `invalid-field`.
 
-```
-GET /v1/statement_entries?match=unmatched&provider=natcash
-```
+**10.3.4.** The response is a collection ([API 1.12](/en/docs/spec/payments-api#1.12)) sorted by ascending `booked_at` and limited to `limit` items: from 1 to 100, 50 by default. When more items exist, `next_cursor` carries an opaque string to pass in the `cursor` parameter to continue. A period without transactions yields an empty collection.
 
-The `match` parameter accepts `unmatched` and `conflict`. The response is a collection ([API 1.12](/en/docs/spec/payments-api#1.12)) sorted by ascending `booked_at` and limited to `limit` items: 1 to 100, with 50 as the default. If additional items exist, `next_cursor` contains an opaque string to send in the `cursor` parameter to continue retrieval.
+**10.3.5.** The endpoint requires the `statements:read` scope ([authentication 6](/en/docs/spec/authentication#6)).
 
-**10.5.3.** Both endpoints require the `statements:read` scope ([authentication 6](/en/docs/spec/authentication#6)).
+**10.3.6.** The endpoint is exposed for every provider. When `payments.statement` is not declared for the provider, the returned collection is empty.
 
-**10.5.4.** Both endpoints are exposed for every provider. If `payments.statement` is not declared for the provider, the returned collection is empty.
+### 10.4. Conformance
 
-### 10.6. Conformance
+**10.4.1.** On a server declaring `payments.statement`, the suite checks that a successful payment appears in the statement of its business day, that an unsuccessful payment does not, that a range returns only the entries of its days and that a request without a period is refused.
 
-**10.6.1.** On a server publishing statements, the suite checks a matched entry, an `unmatched` entry without payment creation, a `succeeded` payment missing from a closed statement and a business day spanning a daylight saving transition.
+### 10.5. Security
 
-### 10.7. Security
-
-**10.7.1.** Statements disclose merchant turnover. The `statements:read` scope SHOULD NOT be granted to a key used only for accepting payments.
+**10.5.1.** Statements reveal the merchant’s revenue. The `statements:read` scope SHOULD NOT be granted to a key used only for collection.

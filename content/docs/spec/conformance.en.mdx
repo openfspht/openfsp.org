@@ -115,7 +115,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | Synchronise without `payments.lookup`                    | `capability-not-supported`, no stored state presented as re-read | [capabilities 5.3](/en/docs/spec/capabilities#5.3)     | statement-only test provider (9.3.5), `PENDING_FOREVER` |
 | Synchronise a terminal payment without `payments.lookup` | payment unchanged, `200`                                         | [capabilities 5.3.1](/en/docs/spec/capabilities#5.3.1) | statement-only test provider (9.3.5), `SUCCESS`   |
 | Operation of a capability not advertised                 | `capability-not-supported`                                       | [capabilities 4.4](/en/docs/spec/capabilities#4.4)     | base test provider (9.3.5), `SUCCESS`             |
-| Statements of a provider without `payments.statement`    | an empty collection                                              | [lifecycle 10.5.4](/en/docs/spec/lifecycle#10.5.4)     | base test provider (9.3.5)                        |
+| Statements of a provider without `payments.statement`    | an empty collection                                              | [lifecycle 10.3.6](/en/docs/spec/lifecycle#10.3.6)     | base test provider (9.3.5)                        |
 | `POST` without `Idempotency-Key`                         | `idempotency-key-required`                                       | [idempotency 1.3](/en/docs/spec/idempotency#1.3)       | none                                              |
 | `callback_url` over `http` outside loopback              | creation rejected                                                | [API 5.1.8](/en/docs/spec/payments-api#5.1.8)          | `mock_openfsp`                                    |
 | API request trying to set the state of a payment         | state unchanged                                                  | [lifecycle 6.1](/en/docs/spec/lifecycle#6.1)           | `mock_openfsp`, `PENDING_FOREVER`                 |
@@ -137,14 +137,15 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | Outcome without event, provider with lookup | state reported by the lookup, after synchronisation                                                                           | [capabilities 5.2](/en/docs/spec/capabilities#5.2)                                              | `mock_openfsp`, `NO_CALLBACK`                                         |
 | Provider error at creation              | `502 provider-error`, `retryable` `true`, `effect` `unknown`; resend with same key without `Idempotent-Replay`                    | [API 10.6.5, 10.8.6](/en/docs/spec/payments-api#10.8.6)                                         | `mock_openfsp`, `PROVIDER_ERROR`                                      |
 
-**5.9. Statements.** The following tests correspond to [lifecycle 10.6.1](/en/docs/spec/lifecycle#10.6.1):
+**5.9. Statements.** The following tests correspond to [lifecycle 10.4.1](/en/docs/spec/lifecycle#10.4.1):
 
-| Test                                                                  | Expected                                                                                                                                                                             | Rule                                                    | Mock server                                                             |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Entry for a payment                                                   | `match` `matched`, `payment` equal to the payment `id`                                                                                                                               | [lifecycle 10.4.1, 10.4.2](/en/docs/spec/lifecycle#10.4.2) | `mock_openfsp`, `SUCCESS`                                               |
-| Entry with no matching payment                                        | `match` `unmatched`, entry listed by `GET /v1/statement_entries?match=unmatched`; the absence of a created payment and the report to the operator are not observable through the API | [lifecycle 10.4.3, 10.5.2](/en/docs/spec/lifecycle#10.5.2) | `mock_openfsp`                                                          |
-| `succeeded` payment missing from a closed statement                   | payment listed in `missing_payments`                                                                                                                                                 | [lifecycle 10.4.4](/en/docs/spec/lifecycle#10.4.4)         | `mock_openfsp`, `PENDING_FOREVER`, then `succeeded`; assisted (4.7)    |
-| Entry booked after midnight UTC and before midnight in Port-au-Prince | `business_date` equal to the date of `booked_at` in the time zone of the business day                                                                                                | [lifecycle 10.1.2, 10.1.3](/en/docs/spec/lifecycle#10.1.3) | `mock_openfsp`, `SUCCESS`                                               |
+| Test | Expected | Rule | Mock server |
+| --- | --- | --- | --- |
+| Successful payment | an entry whose `payment` equals the payment `id`, in the statement of its business day | [lifecycle 10.2.1](/en/docs/spec/lifecycle#10.2.1) | `mock_openfsp`, `SUCCESS` |
+| Unsuccessful payment | no entry for that payment | [lifecycle 10.2.3](/en/docs/spec/lifecycle#10.2.3) | `mock_openfsp`, `DECLINE` |
+| Range | only the entries of the days of the range, both ends included | [lifecycle 10.3.2](/en/docs/spec/lifecycle#10.3.2) | `mock_openfsp`, `SUCCESS` |
+| Request without a period | `400 missing-field` | [lifecycle 10.3.2](/en/docs/spec/lifecycle#10.3.2) | `mock_openfsp` |
+| Range of more than 31 days | `422 invalid-field` | [lifecycle 10.3.3](/en/docs/spec/lifecycle#10.3.3) | `mock_openfsp` |
 
 **5.10. Capabilities.** Capability declaration, limit and delivery tests are defined below:
 

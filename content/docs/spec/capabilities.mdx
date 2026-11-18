@@ -25,7 +25,7 @@ La découverte expose les opérations prises en charge et les limites applicable
 | ------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `payments`                     | spécifié, obligatoire | Créer, lire, synchroniser un paiement ([API](/docs/spec/payments-api)).                                                 |
 | `payments.lookup`              | spécifié              | Consultation faisant foi de l'état chez l'opérateur (5).                                                                   |
-| `payments.statement`           | spécifié              | Relevé quotidien du compte marchand chez l'opérateur, lisible par le client ([cycle de vie 10](/docs/spec/lifecycle#10)). |
+| `payments.statement`           | spécifié              | Liste des transactions réussies du compte marchand chez l'opérateur, lisible par le client ([cycle de vie 10](/docs/spec/lifecycle#10)). |
 | `payments.fee`                 | spécifié              | L'opérateur communique les frais ([modèle de données 8](/docs/spec/data-model#8)).                                      |
 | `payments.refund`              | réservé               | Remboursement d'un paiement capturé.                                                                                       |
 | `payments.capture`             | réservé               | Autorisation et capture séparées.                                                                                          |
@@ -68,7 +68,6 @@ Ce point d’accès est public et non authentifié (RFC 8615). Sa structure suit
   "payments_endpoint": "https://api.example/v1/payments",
   "capabilities_endpoint": "https://api.example/v1/capabilities",
   "statements_endpoint": "https://api.example/v1/statements",
-  "statement_entries_endpoint": "https://api.example/v1/statement_entries",
   "webhook_keys": [
     { "kid": "whk_06GWCT5DMSTMH111XG1Q28R4MW", "kty": "OKP", "crv": "Ed25519", "alg": "EdDSA", "use": "sig", "x": "…", "openfsp_status": "active" }
   ],

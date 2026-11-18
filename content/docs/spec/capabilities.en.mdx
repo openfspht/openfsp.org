@@ -25,7 +25,7 @@ Discovery exposes supported operations and applicable account limits before paym
 | ------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `payments`                     | specified, required | Create, read, sync a payment ([API](/en/docs/spec/payments-api)).                                                           |
 | `payments.lookup`              | specified           | Authoritative lookup of the state at the provider (5).                                                                   |
-| `payments.statement`           | specified           | Daily statement of the merchant account at the provider, readable by the client ([lifecycle 10](/en/docs/spec/lifecycle#10)). |
+| `payments.statement`           | specified           | List of the successful transactions of the merchant account at the provider, readable by the client ([lifecycle 10](/en/docs/spec/lifecycle#10)). |
 | `payments.fee`                 | specified           | The provider reports fees ([data model 8](/en/docs/spec/data-model#8)).                                                     |
 | `payments.refund`              | reserved            | Refund of a captured payment.                                                                                            |
 | `payments.capture`             | reserved            | Separate authorisation and capture.                                                                                      |
@@ -68,7 +68,6 @@ This endpoint is public and unauthenticated (RFC 8615). Its structure follows Op
   "payments_endpoint": "https://api.example/v1/payments",
   "capabilities_endpoint": "https://api.example/v1/capabilities",
   "statements_endpoint": "https://api.example/v1/statements",
-  "statement_entries_endpoint": "https://api.example/v1/statement_entries",
   "webhook_keys": [
     { "kid": "whk_06GWCT5DMSTMH111XG1Q28R4MW", "kty": "OKP", "crv": "Ed25519", "alg": "EdDSA", "use": "sig", "x": "…", "openfsp_status": "active" }
   ],

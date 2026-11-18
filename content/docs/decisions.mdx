@@ -95,6 +95,16 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 **Référence.** [Conformité 4.8](/docs/spec/conformance#4.8.1).
 
+## 0010. Relevé réduit à une liste de transactions
+
+**Choix.** Définir le relevé comme la liste des transactions réussies d’un opérateur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la norme.
+
+**Justification.** La norme définit une interface entre un client et un serveur. Ce que le client fait de la liste, dont le rapprochement avec ses propres enregistrements, relève de son architecture. Les obligations retirées portaient sur un comportement interne du serveur, qu’aucune suite ne peut observer.
+
+**Alternatives examinées.** Rapprochement normalisé avec verdict par ligne ; clôture de journée déclarée par le serveur ; second point d’accès réservé aux lignes non rapprochées.
+
+**Référence.** [Cycle de vie 10](/docs/spec/lifecycle#10).
+
 ## Références
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

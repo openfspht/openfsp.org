@@ -44,7 +44,7 @@ The operator, either the merchant or its representative, deploys the gateway and
 
 An adapter translates an OpenFSP operation into the relevant service API and converts the response. Payment persistence, idempotency, state transitions and audit remain the gateway’s responsibility. The adapter is the only application component that holds the service secret.
 
-- **Operations.** Creation is mandatory. Lookup, notification reception and statement retrieval are exposed only when supported by the service. An unavailable operation is neither implemented nor declared ([capabilities 1.3](/en/docs/spec/capabilities#1.3)).
+- **Operations.** Creation is mandatory. Lookup and notification reception are exposed only when supported by the service. An unavailable operation is neither implemented nor declared ([capabilities 1.3](/en/docs/spec/capabilities#1.3)).
 - **Declaration.** The adapter describes supported capabilities and the payment profile: `next_action` types, whether `payer` and `return_url` are required, and expiry guarantees. The gateway removes suspended capabilities ([capabilities 4.5](/en/docs/spec/capabilities#4.5)). Amount limits come from its per-service configuration.
 - **States.** State mapping proceeds from the service to OpenFSP. An unknown or ambiguous state establishes no transition: the payment remains `pending`. An unestablished failure reason is represented by `unspecified` ([lifecycle 7.3](/en/docs/spec/lifecycle#7.3)).
 - **Data.** Decimal amounts are parsed from their textual representation without conversion to fractional floating-point values. An amount that cannot be represented exactly in cents makes the response unusable (`provider-error`). Phone numbers are converted to E.164 according to the service’s documented format, or omitted. A timestamp without an offset uses the business-day time zone, `America/Port-au-Prince` by default; an ambiguous local time resolves to the later instant. A relative duration is measured from receipt. The service code and message are retained in `failure_detail` after secrets are redacted. An external timestamp never replaces `completed_at`.
@@ -66,15 +66,14 @@ The gateway records a terminal state only from one of the following sources, lis
 | **(a)** callback whose provider signature is verified      | signed callbacks             |
 | **(b)** state lookup at the provider                       | `payments.lookup`            |
 | **(c)** callback received on a payment-specific URL        | per-payment callback URL     |
-| **(d)** provider statement over an authenticated channel   | `payments.statement`         |
-| **(e)** operator attestation                               | always available             |
+| **(d)** operator attestation                               | always available             |
 
 - **Service notifications.** A notification qualifies as source (a) only if its signature covers at least the payment identifier and outcome. Otherwise, it triggers consultation of another source and its contents are not used to establish the state. Replay cannot change a terminal state. NatCash signatures contain neither a timestamp nor a nonce.
 - **Payment-specific URL.** For source (c), the URL path contains a payment-specific token with at least 128 random bits. Comparison is performed in constant time. The token is excluded from all logs, including reverse proxy access logs. A token matching no pending payment is rejected without effect. A URL shared by multiple payments does not satisfy this mechanism.
 - **Conflicts.** Information contradicting a terminal state or reporting a different amount does not modify the payment. The conflict is stored durably and reported to the operator for human resolution. A payment with a mismatched amount remains `pending`.
 - **Background reconciliation.** The gateway periodically queries pending payments without a prior client request.
 - **Expiry.** The `expired` state is recorded when the service confirms expiry, when lookup after `expires_at` establishes that the payment is incomplete, when the service guarantees expiry, when a statement covering a period after `expires_at` does not show the payment as complete, or on attestation.
-- **Operator attestation.** Source (e) uses the gateway’s administration API, separate from the OpenFSP API. It records the attester’s identity, time, state and evidence reference. A shared administration token may protect access; the attester’s identity is then supplied in the request. A second approval is recommended above a threshold defined by the deployment.
+- **Operator attestation.** Source (d) uses the gateway’s administration API, separate from the OpenFSP API. It records the attester’s identity, time, state and evidence reference. A shared administration token may protect access; the attester’s identity is then supplied in the request. A second approval is recommended above a threshold defined by the deployment.
 
 ## Return relay [#return-relay]
 
@@ -84,7 +83,7 @@ MonCash provides no per-payment return URL. The gateway therefore exposes one re
 
 - **Service metadata.** The gateway adds its own `metadata` keys to each payment under [data model 9](/en/docs/spec/data-model#9): `gateway.order_id` for the order identifier sent to the service, and `gateway.provider_reference` for the transaction identifier once known. These keys do not count towards client limits and never replace a client-supplied key.
 - **Service errors.** The external code and message are placed in the RFC 9457 error object’s `detail`; they are not used to derive `type`, `retryable` or `effect`. For a service exposing OpenFSP, the code is the last segment of its `type` and the message is its `detail`, or its `title` if unavailable. Secrets and tokens are redacted. Clients should avoid decisions based on `detail` and escape this content when displaying it.
-- **Gateway statement.** The `GET /gateway/statements?provider=…&business_date=…` endpoint is outside `/v1`, absent from the configuration document and protected by the `statements:read` scope. The console retrieves the same statement through the administration API. For each service and business day, it is built from internal records using the date of `completed_at`. It contains `payments`, sorted by `completed_at`, `totals` per terminal state and `final` after the day ends. It supports merchant accounting and does not justify state transitions. Only a service statement can reveal operations not observed by the gateway.
+- **Statement.** The `GET /v1/statements` endpoint is served from the successful payments the gateway recorded, by the date of `completed_at`, for every configured service. The gateway therefore declares `payments.statement` for all its services. It reports neither `fee_amount` nor `net_amount`. The console shows the same list and exports it as CSV for one day or a range of at most 31 days.
 - **Health check.** The `/actuator/health` endpoint is unauthenticated and outside `/v1`.
 
 Payment-specific notification URLs and signed callbacks apply only to exchanges between the gateway and external services. The gateway does not deliver events to the client’s `callback_url`. It therefore declares neither `webhooks.per_payment_url` nor the withdrawn `webhooks.verify` capability.
@@ -114,7 +113,7 @@ These profiles draw on the service documentation (MonCash REST API and NatCash M
 | ------------------------ | ----------------------------------------- | ----------------------------- |
 | `payments`               | yes                                       | yes                           |
 | `payments.lookup`        | yes                                       | yes                           |
-| `payments.statement`     | no: [gateway statement](#extensions) only | no: gateway statement only    |
+| `payments.statement`     | yes: built by the gateway | yes: built by the gateway |
 | `payments.fee`           | no                                        | no                            |
 | Signed callbacks         | no                                        | yes, source (a)               |
 | Per-payment callback URL | no                                        | yes, source (c)               |
