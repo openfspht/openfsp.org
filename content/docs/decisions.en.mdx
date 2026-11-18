@@ -105,6 +105,16 @@ The following decisions document the choices adopted for the specification versi
 
 **Reference.** [Lifecycle 10](/en/docs/spec/lifecycle#10).
 
+## 0011. Outcomes chosen by the suite
+
+**Decision.** Let an implementation, in the test environment, provide a control interface through which the suite sets the outcome of a payment before creating it, resolves a pending payment and triggers a held event. The implementation produces the requested outcome itself. The interface is announced in the preparation response, holds only for the keys of the run and remains optional.
+
+**Rationale.** Conformance concerns the implementation of the specification, not the payment services it uses. A single way of running the suite then holds for every implementation, and the tests assisted until now become executable from the address of the server alone.
+
+**Alternatives considered.** A control interface reserved for the reference mock server; an outcome designated by a reserved value of the amount or of the payer number; a request header specific to tests.
+
+**Reference.** [Conformance 4.9](/en/docs/spec/conformance#4.9.1).
+
 ## References
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

@@ -62,7 +62,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 **4.4.** La configuration seule est admise : identifiants de test, clé disposant de `statements:read` pour le 5.9 et entrées nécessaires aux tests assistés du 4.7.
 
-**4.5.** La suite pilote l’interface de contrôle du serveur simulé (9.5). Pour tout autre serveur, les tests nécessitant un résultat choisi sont assistés selon le 4.7.
+**4.5.** La suite pilote l’interface de contrôle que l’implémentation fournit (4.9). À défaut, les tests nécessitant un résultat choisi sont assistés selon le 4.7.
 
 **4.6.** La suite DOIT pouvoir s’exécuter hors ligne et en intégration continue, sans compte.
 
@@ -81,6 +81,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | `api_key`    | chaîne    | OBLIGATOIRE | Clé de test active disposant de toutes les portées prises en charge.       |
 | `expires_at` | `Instant` | OBLIGATOIRE | Instant à partir duquel les éléments fournis ne sont plus valides.         |
 | `inputs`     | objet     | FACULTATIF  | Entrées de la suite, chaque nom du 4.8.4 étant associé à une valeur texte. |
+| `control_endpoint` | chaîne | FACULTATIF | Interface de contrôle de l’exécution (4.9).                              |
 
 **4.8.4.** Le serveur fournit les entrées qu’il sait produire parmi les suivantes. La suite ignore tout autre nom et traite comme assisté, selon le 4.7, un test dont l’entrée manque.
 
@@ -99,6 +100,49 @@ La conformité est définie selon la cible, la version du protocole et les capac
 **4.8.7.** Le serveur PEUT exiger un code d’accès remis par son exploitant, transmis dans `Authorization: Bearer`. En l’absence d’un code valide, il répond `401` avec le problème `unauthenticated`. Le serveur DEVRAIT limiter le nombre de préparations simultanées et répondre `429` au-delà.
 
 **4.8.8.** Le rapport indique que les éléments ont été fournis par le serveur. Un test exécuté avec une entrée ainsi fournie n’est pas assisté au sens du 4.7, et le recours à ce point d’accès ne constitue pas une modification au sens du 4.3.
+
+### 4.9. Choix des issues
+
+**4.9.1.** Une implémentation PEUT laisser la suite choisir l’issue d’un paiement. Sa réponse du 4.8.3 comporte alors le membre `control_endpoint`, URL de même origine que l’émetteur désignant l’interface de contrôle de l’exécution.
+
+**4.9.2.** L’interface de contrôle expose les opérations suivantes, authentifiées par `api_key` :
+
+| Opération                                               | Effet                                                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `PUT {control_endpoint}/references/{reference}/scenario` | Fixe le scénario du prochain paiement créé avec cette référence. Corps : `{"scenario": "DECLINE"}`. |
+| `GET {control_endpoint}/references/{reference}`          | Retourne l’état du paiement de cette référence : `payment`, `settled` et `callbacks_sent`. |
+| `POST {control_endpoint}/payments/{id}/resolve`          | Donne son issue à un paiement en attente. Corps : `{"outcome": "succeeded"}`, avec `reason` en cas d’échec. |
+| `POST {control_endpoint}/payments/{id}/callback`         | Déclenche l’événement retenu de ce paiement.                                            |
+
+**4.9.3.** Les scénarios disponibles sont définis dans le tableau suivant :
+
+| Scénario             | Comportement                                                          | Règle exercée                                   |
+| -------------------- | --------------------------------------------------------------------- | ----------------------------------------------- |
+| `SUCCESS`            | Succès sans délai ajouté.               | Chemin nominal.                                 |
+| `DECLINE`            | Échec, refusé.                                                        | [Cycle de vie 7.2](/docs/spec/lifecycle#7.2) |
+| `INSUFFICIENT`       | Échec, fonds insuffisants.                                            | [Cycle de vie 7.2](/docs/spec/lifecycle#7.2) |
+| `TIMEOUT`            | Requête acceptée, pas de réponse à temps : `504 provider-timeout`.    | [API 5.1.6](/docs/spec/payments-api#5.1.6)   |
+| `PENDING_FOREVER`    | Reste en attente jusqu'à instruction (4.9.2).                           | [Cycle de vie 1.1](/docs/spec/lifecycle#1.1) |
+| `EXPIRE`             | Expire à l'échéance, fixée à une minute après la création.            | [Cycle de vie 5](/docs/spec/lifecycle#5)     |
+| `NO_CALLBACK`        | Dénouement atteint, aucun événement livré à `callback_url`.           | [Webhooks 10.2](/docs/spec/webhooks#10.2)    |
+| `LATE_CALLBACK`      | Événement livré très tard à `callback_url`.                           | [Webhooks 8.3](/docs/spec/webhooks#8.3)      |
+| `DUPLICATE_CALLBACK` | Même événement livré plusieurs fois à `callback_url`.                 | [Webhooks 8.4](/docs/spec/webhooks#8.4)      |
+| `UNKNOWN_STATUS`     | Valeur de `status` jamais vue.                                        | [Cycle de vie 1.2](/docs/spec/lifecycle#1.2) |
+| `PROVIDER_ERROR`     | Erreur côté opérateur.                                                | [API 10.8.6](/docs/spec/payments-api#10.8.6) |
+
+**4.9.4.** Le choix du scénario est déterministe lors de la création du paiement. Aucun scénario ne survient sans sélection explicite.
+
+**4.9.5.** Un scénario supplémentaire est introduit uniquement lorsqu’une spécification définit un comportement impossible à provoquer autrement.
+
+**4.9.6.** L’implémentation répond `422` à un scénario qu’elle ne sait pas produire pour le service de paiement concerné ; la suite traite alors le test comme assisté selon le 4.7.
+
+**4.9.7.** L’implémentation produit elle-même l’issue demandée. Le résultat NE DOIT PAS dépendre du comportement d’un service de paiement extérieur.
+
+**4.9.8.** Un paiement dont la référence n’a pas reçu de scénario se comporte comme en dehors d’une exécution de conformité.
+
+**4.9.9.** L’interface n’existe qu’en environnement de test. Elle NE DOIT agir que sur les paiements créés avec les clés de l’appel du 4.8.2 et cesse de répondre à `expires_at`.
+
+**4.9.10.** Le rapport indique que les issues ont été choisies par la suite. Un test exécuté ainsi n’est pas assisté au sens du 4.7, et le recours à cette interface ne constitue pas une modification au sens du 4.3.
 
 ## 5. Contenu
 
@@ -121,13 +165,13 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | Requête de l'API tentant de fixer l'état d'un paiement   | état inchangé                                                     | [cycle de vie 6.1](/docs/spec/lifecycle#6.1)          | `mock_openfsp`, `PENDING_FOREVER`                       |
 | Clé inconnue, révoquée, d'un autre environnement         | trois `unauthenticated` indiscernables                            | [authentification 4.7](/docs/spec/authentication#4.7) | aucun ; assisté (4.7)                                   |
 
-**5.5.** Chaque test dépendant d’un résultat identifie le scénario du serveur simulé qui produit ce résultat (9.4.3).
+**5.5.** Chaque test dépendant d’un résultat identifie le scénario du serveur simulé qui produit ce résultat (4.9.3).
 
 **5.6.** Les tests client couvrent la réutilisation de la clé ([idempotence 7.1](/docs/spec/idempotency#7.1)), l’absence de nouvelle tentative après un `4xx` non rejouable ([idempotence 7.2](/docs/spec/idempotency#7.2)), la récupération par référence ([API 5.2.3](/docs/spec/payments-api#5.2.3)), l’absence de valeur probante de l’URL de retour ([API 7.3](/docs/spec/payments-api#7.3)), la tolérance aux membres inconnus et le maintien durable en `pending`. Pour les abonnés, ils couvrent la vérification avant action ([webhooks 5.9](/docs/spec/webhooks#5.9)) et le maintien de la consultation lorsque tous les événements sont retenus ([webhooks 10.2](/docs/spec/webhooks#10.2)).
 
 **5.7.** La suite DOIT associer au moins un test à chaque exigence observable. Le rapport DOIT expliciter la correspondance entre tests et exigences.
 
-**5.8. Issues de paiement.** Chaque test utilise un scénario défini au 9.4.3 :
+**5.8. Issues de paiement.** Chaque test utilise un scénario défini au 4.9.3 :
 
 | Test                                              | Attendu                                                                                                                               | Règle                                                                                                 | Serveur simulé                                                          |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
@@ -239,39 +283,17 @@ Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 ### 9.4. Défaillances
 
-**9.4.1.** Le choix du scénario est déterministe lors de la création du paiement. Aucun scénario ne survient sans sélection explicite.
+**9.4.1.** Le serveur simulé produit tous les scénarios du 4.9.3.
 
-**9.4.2.** Avant la création, la suite associe le scénario à la référence du paiement au moyen de l’interface de contrôle (9.5).
+**9.4.2.** En dehors du mode automatique (9.4.4), un paiement sans scénario déclaré utilise `SUCCESS`.
 
-**9.4.3.** Les scénarios disponibles sont définis dans le tableau suivant :
+**9.4.3.** Les réponses du serveur simulé interviennent après un délai bref et fixe ; elles ne sont jamais instantanées.
 
-| Scénario             | Comportement                                                          | Règle exercée                                   |
-| -------------------- | --------------------------------------------------------------------- | ----------------------------------------------- |
-| `SUCCESS`            | Succès sans délai ajouté ; scénario par défaut (9.4.5).               | Chemin nominal.                                 |
-| `DECLINE`            | Échec, refusé.                                                        | [Cycle de vie 7.2](/docs/spec/lifecycle#7.2) |
-| `INSUFFICIENT`       | Échec, fonds insuffisants.                                            | [Cycle de vie 7.2](/docs/spec/lifecycle#7.2) |
-| `TIMEOUT`            | Requête acceptée, pas de réponse à temps : `504 provider-timeout`.    | [API 5.1.6](/docs/spec/payments-api#5.1.6)   |
-| `PENDING_FOREVER`    | Reste en attente jusqu'à instruction (9.5).                           | [Cycle de vie 1.1](/docs/spec/lifecycle#1.1) |
-| `EXPIRE`             | Expire à l'échéance, fixée à une minute après la création.            | [Cycle de vie 5](/docs/spec/lifecycle#5)     |
-| `NO_CALLBACK`        | Dénouement atteint, aucun événement livré à `callback_url`.           | [Webhooks 10.2](/docs/spec/webhooks#10.2)    |
-| `LATE_CALLBACK`      | Événement livré très tard à `callback_url`.                           | [Webhooks 8.3](/docs/spec/webhooks#8.3)      |
-| `DUPLICATE_CALLBACK` | Même événement livré plusieurs fois à `callback_url`.                 | [Webhooks 8.4](/docs/spec/webhooks#8.4)      |
-| `UNKNOWN_STATUS`     | Valeur de `status` jamais vue.                                        | [Cycle de vie 1.2](/docs/spec/lifecycle#1.2) |
-| `PROVIDER_ERROR`     | Erreur côté opérateur.                                                | [API 10.8.6](/docs/spec/payments-api#10.8.6) |
-
-**9.4.4.** Un scénario supplémentaire est introduit uniquement lorsqu’une spécification définit un comportement impossible à provoquer autrement.
-
-**9.4.5.** En dehors du mode automatique (9.4.8), un paiement sans scénario déclaré utilise `SUCCESS`.
-
-**9.4.6.** Les réponses du serveur simulé interviennent après un délai bref et fixe ; elles ne sont jamais instantanées.
-
-**9.4.7.** L’interface de contrôle retourne `422` si le scénario demandé n’est pas disponible pour l’opérateur sélectionné.
-
-**9.4.8.** En mode automatique, l’interface de contrôle attribue à chaque nouveau paiement le scénario suivant dans une rotation des scénarios disponibles pour son opérateur (9.4.7).
+**9.4.4.** En mode automatique, l’interface de contrôle attribue à chaque nouveau paiement le scénario suivant dans une rotation des scénarios disponibles pour son opérateur.
 
 ### 9.5. Contrôle
 
-**9.5.1.** Une interface de contrôle distincte de l’API permet de préparer le scénario d’un paiement, de résoudre un paiement en attente et de livrer un événement retenu. Elle ne permet pas de modifier l’horloge ; les expirations sont évaluées au moyen d’`EXPIRE` (9.4.3).
+**9.5.1.** Le serveur simulé fournit l’interface de contrôle du 4.9. Elle ne permet pas de modifier l’horloge ; les expirations sont évaluées au moyen d’`EXPIRE` (4.9.3).
 
 **9.5.2.** La suite de tests pilote cette interface. Le serveur évalué ne la pilote jamais.
 

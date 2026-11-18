@@ -47,11 +47,11 @@ From the [openfsp](https://github.com/openfspht/openfsp) repository, after insta
 make simulator
 ```
 
-```bash title="Terminal 2: suite against the native target"
-make validate-native
+```bash title="Terminal 2: suite against the implementation"
+make validate TARGET=http://127.0.0.1:8090/mock_openfsp
 ```
 
-By default, the suite targets `http://127.0.0.1:8090/mock_openfsp` and asks the simulator for its test keys ([conformance 4.8](/en/docs/spec/conformance#4.8.1)). The report is saved to `backend/validator/infrastructure/build/conformance-report-native.json`. The Makefile starts the suite’s webhook receiver on port 8098.
+The suite is given the address of the implementation only. It asks the implementation for its test keys and its control interface ([conformance 4.8 and 4.9](/en/docs/spec/conformance#4.8.1)), which lets it choose the outcome of each payment. The report is saved to `backend/validator/infrastructure/build/conformance-report.json`. The Makefile starts the suite’s webhook receiver on port 8099.
 
 The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
 
@@ -65,7 +65,7 @@ cd backend
 cd ..
 ```
 
-Run the suite against this instance using the following command. Replace `operator.example` and set the variables containing your test environment’s keys:
+If your implementation prepares its own runs ([conformance 4.8](/en/docs/spec/conformance#4.8.1)), its address is enough: `make validate TARGET=https://operator.example`. Otherwise, run the suite with your own keys. Replace `operator.example` and set the variables holding the keys of your test environment:
 
 ```bash
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
@@ -73,7 +73,7 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
   --base-url https://operator.example \
   --api-key "$OPENFSP_NATIVE_TEST_KEY" \
   --conformance conformance \
-  --report conformance-report-native.json \
+  --report conformance-report.json \
   --input "statements-key=$OPENFSP_STATEMENTS_KEY" \
   --input "restricted-key=$OPENFSP_SECOND_PRINCIPAL_KEY" \
   --input "revoked-key=$OPENFSP_REVOKED_KEY" \
@@ -91,13 +91,11 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
 
 The command-line interface has no default receiver port. Without `--webhook-port`, no receiver starts and the signed `payment.succeeded` delivery scenario does not run. The `--webhook-url` option supplies the public HTTPS address, forwarded to that port, used by the assessed instance for notifications. Without it, the announced address is `http://127.0.0.1:8098/webhooks`, which is accessible only to a local instance.
 
-The `make validate-native` target is configured for `mock_openfsp`. To assess a real service, use an explicit configuration appropriate to its test environment.
-
-Some scenarios require a rejection, an expiration or a state transition to be triggered. If the environment cannot automate that action, the suite marks the scenario as assisted and describes the required intervention ([suite configuration](/en/docs/spec/conformance#4)).
+Some scenarios require a decline, an expiry or a state transition to be provoked. An implementation that provides the control interface ([conformance 4.9](/en/docs/spec/conformance#4.9.1)) lets the suite choose these outcomes. Otherwise the suite marks the scenario as assisted and describes the required intervention.
 
 ## Read and publish the result
 
-`make validate-native` can return exit code 0 while Core remains incomplete because of assisted scenarios. Assessment must therefore rely on the report and its verdicts, defined in [conformance 6](/en/docs/spec/conformance#6), rather than on the exit code alone.
+`make validate` can return exit code 0 while Core remains incomplete because of assisted scenarios. Assessment must therefore rely on the report and its verdicts, defined in [conformance 6](/en/docs/spec/conformance#6), rather than on the exit code alone.
 
 A published conformance claim should identify the assessed scope and include the report, configuration with secrets removed and versions used. A [signed attestation](/en/docs/verify) allows the origin and integrity of one execution’s results to be verified; it does not certify the product.
 

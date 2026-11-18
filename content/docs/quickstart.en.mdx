@@ -74,9 +74,9 @@ make dev
 
 ```bash
 make simulator         # terminal 1
-make validate-native   # terminal 2
+make validate TARGET=http://127.0.0.1:8090/mock_openfsp   # terminal 2
 ```
 
-`make validate-native` assesses the `server` target against the `mock_openfsp` reference mock server at `http://127.0.0.1:8090/mock_openfsp`, as defined by `VALIDATE_NATIVE_BASE_URL`. The command uses the server’s published keys and saves the report to `backend/validator/infrastructure/build/conformance-report-native.json`.
+`make validate` assesses the implementation whose address is given by `TARGET`, here the `mock_openfsp` reference mock server. The suite asks the implementation for its test keys and its control interface ([conformance 4.8 and 4.9](/en/docs/spec/conformance#4.8.1)), then saves the report to `backend/validator/infrastructure/build/conformance-report.json`.
 
 The [implementation guide](/en/docs/native-operator) explains how to interpret verdicts and the report’s limitations.

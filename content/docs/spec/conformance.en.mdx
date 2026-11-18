@@ -62,7 +62,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.4.** Only configuration is permitted: test credentials, a key with `statements:read` for 5.9 and inputs required by assisted tests under 4.7.
 
-**4.5.** The suite controls the mock server’s control interface (9.5). For any other server, tests requiring a selected outcome are assisted under 4.7.
+**4.5.** The suite controls the control interface the implementation provides (4.9). Without one, tests requiring a selected outcome are assisted under 4.7.
 
 **4.6.** The suite MUST be runnable offline and in continuous integration without an account.
 
@@ -81,6 +81,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | `api_key`    | string    | REQUIRED | Active test key holding every supported scope.                      |
 | `expires_at` | `Instant` | REQUIRED | Instant from which the provided items are no longer valid.          |
 | `inputs`     | object    | OPTIONAL | Suite inputs, each name of 4.8.4 being associated with a text value. |
+| `control_endpoint` | string | OPTIONAL | Control interface of the run (4.9).                               |
 
 **4.8.4.** The server provides the inputs it can produce among the following. The suite ignores any other name and treats a test whose input is missing as assisted under 4.7.
 
@@ -99,6 +100,49 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 **4.8.7.** The server MAY require an access code issued by its operator, sent in `Authorization: Bearer`. Without a valid code, it responds `401` with the `unauthenticated` problem. The server SHOULD limit the number of simultaneous preparations and respond `429` beyond it.
 
 **4.8.8.** The report states that the items were provided by the server. A test run with an input provided this way is not assisted under 4.7, and the use of this endpoint is not a modification under 4.3.
+
+### 4.9. Choice of outcomes
+
+**4.9.1.** An implementation MAY let the suite choose the outcome of a payment. Its response of 4.8.3 then carries the `control_endpoint` member, a URL of the same origin as the issuer naming the control interface of the run.
+
+**4.9.2.** The control interface exposes the following operations, authenticated with `api_key`:
+
+| Operation                                                | Effect                                                                                  |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `PUT {control_endpoint}/references/{reference}/scenario` | Sets the scenario of the next payment created with this reference. Body: `{"scenario": "DECLINE"}`. |
+| `GET {control_endpoint}/references/{reference}`          | Returns the state of the payment of this reference: `payment`, `settled` and `callbacks_sent`. |
+| `POST {control_endpoint}/payments/{id}/resolve`          | Gives its outcome to a pending payment. Body: `{"outcome": "succeeded"}`, with `reason` on failure. |
+| `POST {control_endpoint}/payments/{id}/callback`         | Triggers the held event of this payment.                                                |
+
+**4.9.3.** Available scenarios are defined in the following table:
+
+| Scenario             | Behaviour                                                      | Rule exercised                               |
+| -------------------- | -------------------------------------------------------------- | -------------------------------------------- |
+| `SUCCESS`            | Success with no added delay.         | Nominal path.                                |
+| `DECLINE`            | Failure, declined.                                             | [Lifecycle 7.2](/en/docs/spec/lifecycle#7.2)    |
+| `INSUFFICIENT`       | Failure, insufficient funds.                                   | [Lifecycle 7.2](/en/docs/spec/lifecycle#7.2)    |
+| `TIMEOUT`            | Request accepted, no response in time: `504 provider-timeout`. | [API 5.1.6](/en/docs/spec/payments-api#5.1.6)   |
+| `PENDING_FOREVER`    | Stays pending until instructed (4.9.2).                          | [Lifecycle 1.1](/en/docs/spec/lifecycle#1.1)    |
+| `EXPIRE`             | Expires at the expiry time, set to one minute after creation.  | [Lifecycle 5](/en/docs/spec/lifecycle#5)        |
+| `NO_CALLBACK`        | Outcome reached, no event delivered to `callback_url`.         | [Webhooks 10.2](/en/docs/spec/webhooks#10.2)    |
+| `LATE_CALLBACK`      | Event delivered very late to `callback_url`.                   | [Webhooks 8.3](/en/docs/spec/webhooks#8.3)      |
+| `DUPLICATE_CALLBACK` | Same event delivered several times to `callback_url`.          | [Webhooks 8.4](/en/docs/spec/webhooks#8.4)      |
+| `UNKNOWN_STATUS`     | Never-seen `status` value.                                     | [Lifecycle 1.2](/en/docs/spec/lifecycle#1.2)    |
+| `PROVIDER_ERROR`     | Provider-side error.                                           | [API 10.8.6](/en/docs/spec/payments-api#10.8.6) |
+
+**4.9.4.** Scenario selection is deterministic at payment creation. No scenario occurs without explicit selection.
+
+**4.9.5.** An additional scenario is introduced only when a specification defines behaviour that cannot otherwise be triggered.
+
+**4.9.6.** The implementation responds `422` to a scenario it cannot produce for the payment service concerned; the suite then treats the test as assisted under 4.7.
+
+**4.9.7.** The implementation produces the requested outcome itself. The result MUST NOT depend on the behaviour of an external payment service.
+
+**4.9.8.** A payment whose reference received no scenario behaves as outside a conformance run.
+
+**4.9.9.** The interface exists only in the test environment. It MUST act only on the payments created with the keys of the call of 4.8.2 and stops answering at `expires_at`.
+
+**4.9.10.** The report states that the outcomes were chosen by the suite. A test run this way is not assisted under 4.7, and the use of this interface is not a modification under 4.3.
 
 ## 5. Content
 
@@ -121,13 +165,13 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | API request trying to set the state of a payment         | state unchanged                                                  | [lifecycle 6.1](/en/docs/spec/lifecycle#6.1)           | `mock_openfsp`, `PENDING_FOREVER`                 |
 | Unknown, revoked, other-environment key                  | three indistinguishable `unauthenticated`                        | [authentication 4.7](/en/docs/spec/authentication#4.7) | none; assisted (4.7)                              |
 
-**5.5.** Each outcome-dependent test identifies the mock-server scenario producing that outcome (9.4.3).
+**5.5.** Each outcome-dependent test identifies the mock-server scenario producing that outcome (4.9.3).
 
 **5.6.** Client tests cover key reuse ([idempotency 7.1](/en/docs/spec/idempotency#7.1)), no retry after a non-retryable `4xx` ([idempotency 7.2](/en/docs/spec/idempotency#7.2)), recovery by reference ([API 5.2.3](/en/docs/spec/payments-api#5.2.3)), the non-authoritative return URL ([API 7.3](/en/docs/spec/payments-api#7.3)), tolerance of unknown members and persistent `pending` state. Subscriber tests cover verification before action ([webhooks 5.9](/en/docs/spec/webhooks#5.9)) and functional polling when all events are withheld ([webhooks 10.2](/en/docs/spec/webhooks#10.2)).
 
 **5.7.** The suite MUST associate at least one test with each observable requirement. The report MUST state the mapping between tests and requirements.
 
-**5.8. Payment outcomes.** Each test uses a scenario defined in 9.4.3:
+**5.8. Payment outcomes.** Each test uses a scenario defined in 4.9.3:
 
 | Test                                    | Expected                                                                                                                          | Rule                                                                                         | Mock server                                                           |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
@@ -239,39 +283,17 @@ The requirements of section 9 apply to the reference mock server.
 
 ### 9.4. Failures
 
-**9.4.1.** Scenario selection is deterministic at payment creation. No scenario occurs without explicit selection.
+**9.4.1.** The mock server produces every scenario of 4.9.3.
 
-**9.4.2.** Before creation, the suite associates the scenario with the payment reference through the control interface (9.5).
+**9.4.2.** Outside automatic mode (9.4.4), a payment without a declared scenario uses `SUCCESS`.
 
-**9.4.3.** Available scenarios are defined in the following table:
+**9.4.3.** Mock-server responses occur after a brief, fixed delay and are never instantaneous.
 
-| Scenario             | Behaviour                                                      | Rule exercised                               |
-| -------------------- | -------------------------------------------------------------- | -------------------------------------------- |
-| `SUCCESS`            | Success with no added delay; default scenario (9.4.5).         | Nominal path.                                |
-| `DECLINE`            | Failure, declined.                                             | [Lifecycle 7.2](/en/docs/spec/lifecycle#7.2)    |
-| `INSUFFICIENT`       | Failure, insufficient funds.                                   | [Lifecycle 7.2](/en/docs/spec/lifecycle#7.2)    |
-| `TIMEOUT`            | Request accepted, no response in time: `504 provider-timeout`. | [API 5.1.6](/en/docs/spec/payments-api#5.1.6)   |
-| `PENDING_FOREVER`    | Stays pending until instructed (9.5).                          | [Lifecycle 1.1](/en/docs/spec/lifecycle#1.1)    |
-| `EXPIRE`             | Expires at the expiry time, set to one minute after creation.  | [Lifecycle 5](/en/docs/spec/lifecycle#5)        |
-| `NO_CALLBACK`        | Outcome reached, no event delivered to `callback_url`.         | [Webhooks 10.2](/en/docs/spec/webhooks#10.2)    |
-| `LATE_CALLBACK`      | Event delivered very late to `callback_url`.                   | [Webhooks 8.3](/en/docs/spec/webhooks#8.3)      |
-| `DUPLICATE_CALLBACK` | Same event delivered several times to `callback_url`.          | [Webhooks 8.4](/en/docs/spec/webhooks#8.4)      |
-| `UNKNOWN_STATUS`     | Never-seen `status` value.                                     | [Lifecycle 1.2](/en/docs/spec/lifecycle#1.2)    |
-| `PROVIDER_ERROR`     | Provider-side error.                                           | [API 10.8.6](/en/docs/spec/payments-api#10.8.6) |
-
-**9.4.4.** An additional scenario is introduced only when a specification defines behaviour that cannot otherwise be triggered.
-
-**9.4.5.** Outside automatic mode (9.4.8), a payment without a declared scenario uses `SUCCESS`.
-
-**9.4.6.** Mock-server responses occur after a brief, fixed delay and are never instantaneous.
-
-**9.4.7.** The control interface returns `422` if the requested scenario is unavailable for the selected provider.
-
-**9.4.8.** In automatic mode, the control interface assigns each new payment the next scenario in a rotation of those available for its provider (9.4.7).
+**9.4.4.** In automatic mode, the control interface assigns each new payment the next scenario in a rotation of those available for its provider.
 
 ### 9.5. Control
 
-**9.5.1.** A control interface separate from the API allows a payment scenario to be prepared, a pending payment to be resolved and a withheld event to be delivered. It provides no clock control; expiry is assessed using `EXPIRE` (9.4.3).
+**9.5.1.** The mock server provides the control interface of 4.9. It does not allow the clock to be changed; expirations are assessed with `EXPIRE` (4.9.3).
 
 **9.5.2.** The test suite controls this interface. The assessed server never controls it.
 

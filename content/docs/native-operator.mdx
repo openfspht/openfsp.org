@@ -47,11 +47,11 @@ Depuis le dépôt [openfsp](https://github.com/openfspht/openfsp), et après ins
 make simulator
 ```
 
-```bash title="Terminal 2 : suite contre la cible native"
-make validate-native
+```bash title="Terminal 2 : suite contre l’implémentation"
+make validate TARGET=http://127.0.0.1:8090/mock_openfsp
 ```
 
-Par défaut, la suite cible `http://127.0.0.1:8090/mock_openfsp` et demande ses clés de test au simulateur ([conformité 4.8](/docs/spec/conformance#4.8.1)). Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report-native.json`. Le Makefile démarre le récepteur de webhooks de la suite sur le port 8098.
+La suite ne reçoit que l’adresse de l’implémentation. Elle lui demande ses clés de test et son interface de contrôle ([conformité 4.8 et 4.9](/docs/spec/conformance#4.8.1)), ce qui lui permet de choisir l’issue de chaque paiement. Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report.json`. Le Makefile démarre le récepteur de webhooks de la suite sur le port 8099.
 
 Les [sources de l’implémentation native simulée](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) et le [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) documentent respectivement son comportement et les paramètres d’exécution.
 
@@ -65,7 +65,7 @@ cd backend
 cd ..
 ```
 
-Exécutez la suite contre cette instance avec la commande suivante. Remplacez `operator.example` et renseignez les variables contenant les clés de votre environnement de test :
+Si votre implémentation prépare elle-même ses exécutions ([conformité 4.8](/docs/spec/conformance#4.8.1)), son adresse suffit : `make validate TARGET=https://operator.example`. Sinon, exécutez la suite avec vos propres clés. Remplacez `operator.example` et renseignez les variables contenant les clés de votre environnement de test :
 
 ```bash
 java -jar backend/validator/infrastructure/build/libs/app.jar validate \
@@ -73,7 +73,7 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
   --base-url https://operator.example \
   --api-key "$OPENFSP_NATIVE_TEST_KEY" \
   --conformance conformance \
-  --report conformance-report-native.json \
+  --report conformance-report.json \
   --input "statements-key=$OPENFSP_STATEMENTS_KEY" \
   --input "restricted-key=$OPENFSP_SECOND_PRINCIPAL_KEY" \
   --input "revoked-key=$OPENFSP_REVOKED_KEY" \
@@ -91,13 +91,11 @@ java -jar backend/validator/infrastructure/build/libs/app.jar validate \
 
 L’interface en ligne de commande ne définit aucun port de réception par défaut. Sans `--webhook-port`, aucun récepteur ne démarre et le scénario de livraison du `payment.succeeded` signé ne s’exécute pas. L’option `--webhook-url` fournit l’adresse HTTPS publique, redirigée vers ce port, que l’instance évaluée utilise pour les notifications. En son absence, l’adresse annoncée est `http://127.0.0.1:8098/webhooks`, accessible uniquement depuis une instance locale.
 
-La cible `make validate-native` est configurée pour `mock_openfsp`. Pour évaluer un service réel, utilisez une configuration explicite adaptée à son environnement de test.
-
-Certains scénarios nécessitent de provoquer un refus, une expiration ou une transition d’état. Si l’environnement ne permet pas d’automatiser cette action, la suite marque le scénario comme assisté et décrit l’intervention requise ([configuration de la suite](/docs/spec/conformance#4)).
+Certains scénarios nécessitent de provoquer un refus, une expiration ou une transition d’état. Une implémentation qui fournit l’interface de contrôle ([conformité 4.9](/docs/spec/conformance#4.9.1)) laisse la suite choisir ces issues. À défaut, la suite marque le scénario comme assisté et décrit l’intervention requise.
 
 ## Lire et publier le résultat
 
-`make validate-native` peut retourner le code de sortie 0 alors que le niveau Core reste incomplet du fait de scénarios assistés. L’évaluation doit donc s’appuyer sur le rapport et ses verdicts, définis en [conformité 6](/docs/spec/conformance#6), plutôt que sur le seul code de sortie.
+`make validate` peut retourner le code de sortie 0 alors que le niveau Core reste incomplet du fait de scénarios assistés. L’évaluation doit donc s’appuyer sur le rapport et ses verdicts, définis en [conformité 6](/docs/spec/conformance#6), plutôt que sur le seul code de sortie.
 
 Toute déclaration de conformité publiée doit préciser le périmètre évalué et être accompagnée du rapport, de la configuration expurgée des secrets et des versions utilisées. Une [attestation signée](/docs/verify) permet de vérifier l’origine et l’intégrité des résultats d’une exécution ; elle ne certifie pas le produit.
 

@@ -105,6 +105,16 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 **Référence.** [Cycle de vie 10](/docs/spec/lifecycle#10).
 
+## 0011. Issues choisies par la suite
+
+**Choix.** Permettre à une implémentation, en environnement de test, de fournir une interface de contrôle par laquelle la suite fixe l’issue d’un paiement avant de le créer, résout un paiement en attente et déclenche un événement retenu. L’implémentation produit elle-même l’issue demandée. L’interface est annoncée dans la réponse de préparation, ne vaut que pour les clés de l’exécution et reste facultative.
+
+**Justification.** La conformité porte sur l’implémentation de la norme, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation, et les tests jusque-là assistés deviennent exécutables à partir de la seule adresse du serveur.
+
+**Alternatives examinées.** Interface de contrôle réservée au serveur simulé de référence ; issue désignée par une valeur réservée du montant ou du numéro du payeur ; en-tête de requête propre aux essais.
+
+**Référence.** [Conformité 4.9](/docs/spec/conformance#4.9.1).
+
 ## Références
 
 - RFC 3339, Date and Time on the Internet: Timestamps.
