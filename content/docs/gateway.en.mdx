@@ -83,7 +83,7 @@ MonCash provides no per-payment return URL. The gateway therefore exposes one re
 
 - **Service metadata.** The gateway adds its own `metadata` keys to each payment under [data model 9](/en/docs/spec/data-model#9): `gateway.order_id` for the order identifier sent to the service, and `gateway.provider_reference` for the transaction identifier once known. These keys do not count towards client limits and never replace a client-supplied key.
 - **Service errors.** The external code and message are placed in the RFC 9457 error object’s `detail`; they are not used to derive `type`, `retryable` or `effect`. For a service exposing OpenFSP, the code is the last segment of its `type` and the message is its `detail`, or its `title` if unavailable. Secrets and tokens are redacted. Clients should avoid decisions based on `detail` and escape this content when displaying it.
-- **Statement.** The `GET /v1/statements` endpoint is served from the successful payments the gateway recorded, by the date of `completed_at`, for every configured service. The gateway therefore declares `payments.statement` for all its services. Each entry carries `fee` when the service reported the fee of the payment. The console shows the same list and exports it as CSV for one day or a range of at most 31 days.
+- **Statement.** The gateway declares `payments.statement` only for a service that announces it itself; for the others, `GET /v1/statements` answers `capability-not-supported`. Entries are booked at the completion time the service reports. Each entry carries `fee` when the service reported the fee of the payment. The console shows the same list and exports it as CSV for one day or a range of at most 31 days.
 - **Health check.** The `/actuator/health` endpoint is unauthenticated and outside `/v1`.
 
 Payment-specific notification URLs and signed callbacks apply only to exchanges between the gateway and external services. The gateway does not deliver events to the client’s `callback_url`. It therefore declares neither `webhooks.per_payment_url` nor the withdrawn `webhooks.verify` capability.
@@ -113,7 +113,7 @@ These profiles draw on the service documentation (MonCash REST API and NatCash M
 | ------------------------ | ----------------------------------------- | ----------------------------- |
 | `payments`               | yes                                       | yes                           |
 | `payments.lookup`        | yes                                       | yes                           |
-| `payments.statement`     | yes: built by the gateway | yes: built by the gateway |
+| `payments.statement`     | no                                        | no                            |
 | `payments.fee`           | no                                        | no                            |
 | Signed callbacks         | no                                        | yes, source (a)               |
 | Per-payment callback URL | no                                        | yes, source (c)               |
