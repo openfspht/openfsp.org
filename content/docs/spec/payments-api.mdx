@@ -103,7 +103,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 **4.1.** Le champ est OBLIGATOIRE tant que le paiement reste `pending` et absent après une transition terminale, sauf dans le cas du 4.1.1.
 
-**4.1.1.** Une création dont `effect` vaut `unknown` (10.6) laisse le paiement `pending` sans `next_action`. Le serveur DOIT néanmoins le restituer en lecture (5.2), conformément à la démarche du client définie au 10.6.3, et l’annoncer une seule fois par `payment.created` ([webhooks 3](/docs/spec/webhooks#3)). Le champ `next_action` est renseigné si une nouvelle tentative de création avec la même clé aboutit. Tant que le résultat de la création reste indéterminé, le serveur PEUT différer l’exposition du paiement.
+**4.1.1.** Une création dont `effect` vaut `unknown` (10.6) laisse le paiement `pending` sans `next_action`. Tant que le résultat de la création reste indéterminé, le serveur PEUT différer l’exposition du paiement. Dès qu’il l’expose, et au plus tard lorsque ce résultat est établi, il DOIT le restituer en lecture (5.2), conformément à la démarche du client définie au 10.6.3, et l’annoncer une seule fois par `payment.created` ([webhooks 3](/docs/spec/webhooks#3)). La lecture et l’événement omettent alors `next_action`, qui est renseigné si une nouvelle tentative de création avec la même clé aboutit.
 
 **4.2.** Les types autorisés constituent l’énumération fermée suivante :
 
@@ -174,7 +174,7 @@ POST /v1/payments
 
 **5.1.5.** Après `reference-conflict`, le client DEVRAIT consulter le paiement existant selon le 5.2.
 
-**5.1.6.** Pour `504 provider-timeout` ou `500 internal-error`, la valeur de `effect` est `unknown` (10.6.3).
+**5.1.6.** Pour `504 provider-timeout`, la valeur de `effect` est `unknown` (10.6.3). Pour `500 internal-error`, elle suit le 10.8.6.2.
 
 **5.1.7.** Le serveur applique `locale` à la page du payeur si cette valeur figure parmi les `locales` déclarées ([capacités 3.2.2](/docs/spec/capabilities#3.2.2)) ; sinon, il l’ignore. Toute valeur autre que `fr`, `ht` ou `en` DOIT être rejetée avec `invalid-field`.
 

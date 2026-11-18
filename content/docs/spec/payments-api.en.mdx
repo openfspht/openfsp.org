@@ -103,7 +103,7 @@ The following conventions apply to all OpenFSP endpoints.
 
 **4.1.** The field is REQUIRED while the payment remains `pending` and absent after a terminal transition, except in the case defined in 4.1.1.
 
-**4.1.1.** A creation whose `effect` is `unknown` (10.6) leaves the payment `pending` without `next_action`. The server MUST nevertheless return it on retrieval (5.2), following the client recovery path in 10.6.3, and announce it once through `payment.created` ([webhooks 3](/en/docs/spec/webhooks#3)). The `next_action` field is populated if creation succeeds on retry with the same key. Until the creation outcome is established, the server MAY defer exposing the payment.
+**4.1.1.** A creation whose `effect` is `unknown` (10.6) leaves the payment `pending` without `next_action`. Until the creation outcome is established, the server MAY defer exposing the payment. Once it exposes it, and at the latest when that outcome is established, it MUST return it on retrieval (5.2), following the client recovery path in 10.6.3, and announce it once through `payment.created` ([webhooks 3](/en/docs/spec/webhooks#3)). The retrieval and the event then omit `next_action`, which is populated if creation succeeds on retry with the same key.
 
 **4.2.** The permitted types form the following closed enumeration:
 
@@ -174,7 +174,7 @@ POST /v1/payments
 
 **5.1.5.** After `reference-conflict`, the client SHOULD retrieve the existing payment under 5.2.
 
-**5.1.6.** For `504 provider-timeout` or `500 internal-error`, the value of `effect` is `unknown` (10.6.3).
+**5.1.6.** For `504 provider-timeout`, the value of `effect` is `unknown` (10.6.3). For `500 internal-error`, it follows 10.8.6.2.
 
 **5.1.7.** The server applies `locale` to the payer’s page if it is among the declared `locales` ([capabilities 3.2.2](/en/docs/spec/capabilities#3.2.2)); otherwise it ignores it. Any value other than `fr`, `ht` or `en` MUST be rejected with `invalid-field`.
 
