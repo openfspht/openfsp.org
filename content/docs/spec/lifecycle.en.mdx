@@ -128,7 +128,7 @@ stateDiagram-v2
 
 **9.1.** Any client or server displaying `failure_detail` MUST treat its contents as untrusted.
 
-**9.2.** The server SHOULD rate-limit payment creation to reduce account-enumeration risk through `payer_unreachable`.
+**9.2.** Rate-limiting creation ([idempotency 8.2](/en/docs/spec/idempotency#8.2)) also reduces account-enumeration risk through `payer_unreachable`.
 
 **9.3.** Client documentation SHOULD recommend against displaying the raw `failure_reason` value directly to the payer.
 

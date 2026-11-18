@@ -434,7 +434,7 @@ Le catalogue est fermé. Son extension nécessite une décision écrite.
 | `idempotency-request-in-progress` | 409    | true        | `unknown` | Requête de même clé en cours ([idempotence 3.4](/docs/spec/idempotency#3.4)).             |
 | `state-conflict`                  | 409    | false       | `none`    | Opération interdite depuis l'état courant ([cycle de vie 2.1](/docs/spec/lifecycle#2.1)). |
 
-**10.8.4.1.** La réponse `idempotency-request-in-progress` DEVRAIT inclure `Retry-After`.
+**10.8.4.1.** La réponse `idempotency-request-in-progress` porte `Retry-After` selon l’[idempotence 3.4](/docs/spec/idempotency#3.4).
 
 #### 10.8.5. Débit
 

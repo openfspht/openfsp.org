@@ -128,7 +128,7 @@ stateDiagram-v2
 
 **9.1.** Tout client ou serveur affichant `failure_detail` DOIT considérer son contenu comme non fiable.
 
-**9.2.** Le serveur DEVRAIT limiter le débit de création des paiements afin de réduire le risque d’énumération des comptes par `payer_unreachable`.
+**9.2.** La limitation du débit de création ([idempotence 8.2](/docs/spec/idempotency#8.2)) réduit aussi le risque d’énumération des comptes par `payer_unreachable`.
 
 **9.3.** La documentation destinée aux clients DEVRAIT recommander de ne pas présenter directement la valeur brute de `failure_reason` au payeur.
 

@@ -434,7 +434,7 @@ The catalogue is closed. Extending it requires a decision record.
 | `idempotency-request-in-progress` | 409    | true        | `unknown` | Request with the same key in progress ([idempotency 3.4](/en/docs/spec/idempotency#3.4)).    |
 | `state-conflict`                  | 409    | false       | `none`    | Operation not allowed from the current state ([lifecycle 2.1](/en/docs/spec/lifecycle#2.1)). |
 
-**10.8.4.1.** The `idempotency-request-in-progress` response SHOULD include `Retry-After`.
+**10.8.4.1.** The `idempotency-request-in-progress` response carries `Retry-After` under [idempotency 3.4](/en/docs/spec/idempotency#3.4).
 
 #### 10.8.5. Rate
 
