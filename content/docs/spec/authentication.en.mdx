@@ -7,7 +7,7 @@ Clients are authenticated using bearer keys; scopes determine the permitted oper
 
 ## 1. Scheme
 
-**1.1.** The client authenticates using an API key presented as a bearer token. All endpoints require authentication except the configuration document ([capabilities 3.1](/en/docs/spec/capabilities#3.1)), which publishes webhook keys ([webhooks 6.1](/en/docs/spec/webhooks#6.1)), and a health check outside `/v1`.
+**1.1.** The client authenticates using an API key presented as a bearer token. All endpoints require authentication except the configuration document ([capabilities 3.1](/en/docs/spec/capabilities#3.1)), which publishes webhook keys ([webhooks 6.1](/en/docs/spec/webhooks#6.1)), the conformance preparation endpoint, protected where needed by the operator’s access code ([conformance 4.8.7](/en/docs/spec/conformance#4.8.7)), and a health check outside `/v1`.
 
 **1.2.** The server MUST NOT permit unauthenticated access to other endpoints, including in development mode.
 

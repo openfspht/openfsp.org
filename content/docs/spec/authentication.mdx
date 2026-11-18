@@ -7,7 +7,7 @@ L’authentification des clients repose sur des clés porteuses ; les portées d
 
 ## 1. Schéma
 
-**1.1.** Le client s’authentifie au moyen d’une clé d’API présentée comme jeton porteur. Tous les points d’accès exigent une authentification, à l’exception du document de configuration ([capacités 3.1](/docs/spec/capabilities#3.1)), qui publie les clés de webhook ([webhooks 6.1](/docs/spec/webhooks#6.1)), et d’un contrôle de santé extérieur à `/v1`.
+**1.1.** Le client s’authentifie au moyen d’une clé d’API présentée comme jeton porteur. Tous les points d’accès exigent une authentification, à l’exception du document de configuration ([capacités 3.1](/docs/spec/capabilities#3.1)), qui publie les clés de webhook ([webhooks 6.1](/docs/spec/webhooks#6.1)), du point de préparation des essais de conformité, protégé au besoin par le code d’accès de l’exploitant ([conformité 4.8.7](/docs/spec/conformance#4.8.7)), et d’un contrôle de santé extérieur à `/v1`.
 
 **1.2.** Le serveur NE DOIT PAS permettre d’accès non authentifié aux autres points d’accès, y compris en mode développement.
 
