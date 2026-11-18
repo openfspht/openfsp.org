@@ -19,6 +19,8 @@ Un paiement reste en attente tant que les éléments faisant autorité ne permet
 
 **1.2.** Lorsqu’une valeur inconnue de `status` est reçue, le client DOIT la traiter comme une erreur de traitement et NE DOIT PAS en déduire un état terminal ou non terminal. L’introduction d’un état relève exclusivement du 8.
 
+**1.3.** L’état `canceled` est réservé : aucune opération de cette version ne le produit. Le client DOIT néanmoins le traiter comme un état terminal.
+
 ## 2. Transitions
 
 ```mermaid

@@ -315,7 +315,7 @@ sequenceDiagram
 
 **10.4.1.** Le serveur DOIT retourner le statut attribué au type d’erreur dans le catalogue.
 
-**10.4.2.** Les statuts respectent la RFC 9110 : `400` pour une requête illisible ou mal formée, `422` pour un contenu invalide et `409` pour un conflit avec l’état détenu par le serveur.
+**10.4.2.** Les statuts respectent la RFC 9110 : `400` pour une requête illisible ou mal formée, y compris un champ absent ou inconnu, `422` pour une valeur invalide et `409` pour un conflit avec l’état détenu par le serveur.
 
 **10.4.3.** Les erreurs `idempotency-key-reused` et `idempotency-request-in-progress` utilisent respectivement `422` et `409`, conformément au projet IETF `Idempotency-Key`.
 
@@ -406,7 +406,7 @@ Le catalogue est fermé. Son extension nécessite une décision écrite.
 | `missing-field`            | 400    | false       | `none`   | Champ obligatoire absent.                                                            |
 | `method-not-allowed`       | 405    | false       | `none`   | Méthode non implémentée sur un chemin connu (1.6). DOIT porter `Allow`.              |
 | `idempotency-key-required` | 400    | false       | `none`   | `Idempotency-Key` absente ([idempotence 1.3](/docs/spec/idempotency#1.3)).        |
-| `invalid-field`            | 422    | false       | `none`   | Contenu invalide. Porte `errors`.                                                    |
+| `invalid-field`            | 422    | false       | `none`   | Valeur invalide. Porte `errors` lorsque la valeur figure dans le corps (10.7.3).     |
 | `capability-not-supported` | 422    | false       | `none`   | Capacité non annoncée.                                                               |
 | `amount-out-of-range`      | 422    | false       | `none`   | Montant hors des bornes annoncées ([capacités 6.7](/docs/spec/capabilities#6.7)). |
 | `idempotency-key-reused`   | 422    | false       | `none`   | Même clé, corps différent ([idempotence 3.3](/docs/spec/idempotency#3.3)).        |
@@ -435,6 +435,8 @@ Le catalogue est fermé. Son extension nécessite une décision écrite.
 | `state-conflict`                  | 409    | false       | `none`    | Opération interdite depuis l'état courant ([cycle de vie 2.1](/docs/spec/lifecycle#2.1)). |
 
 **10.8.4.1.** La réponse `idempotency-request-in-progress` porte `Retry-After` selon l’[idempotence 3.4](/docs/spec/idempotency#3.4).
+
+**10.8.4.2.** L’erreur `state-conflict` est réservée : aucune opération de cette version ne la produit.
 
 #### 10.8.5. Débit
 

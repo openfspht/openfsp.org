@@ -19,6 +19,8 @@ A payment remains pending until authoritative evidence establishes its terminal 
 
 **1.2.** When an unknown `status` value is received, the client MUST treat it as a processing error and MUST NOT infer a terminal or non-terminal state. New states are introduced only under section 8.
 
+**1.3.** The `canceled` state is reserved: no operation of this version produces it. The client MUST nevertheless treat it as a terminal state.
+
 ## 2. Transitions
 
 ```mermaid

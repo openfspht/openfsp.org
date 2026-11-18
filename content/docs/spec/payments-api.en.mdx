@@ -315,7 +315,7 @@ sequenceDiagram
 
 **10.4.1.** The server MUST return the status assigned to the error type in the catalogue.
 
-**10.4.2.** Statuses follow RFC 9110: `400` for an unreadable or malformed request, `422` for invalid content and `409` for a conflict with server-held state.
+**10.4.2.** Statuses follow RFC 9110: `400` for an unreadable or malformed request, including a missing or unknown field, `422` for an invalid value and `409` for a conflict with server-held state.
 
 **10.4.3.** The errors `idempotency-key-reused` and `idempotency-request-in-progress` use `422` and `409`, respectively, following the IETF `Idempotency-Key` draft.
 
@@ -406,7 +406,7 @@ The catalogue is closed. Extending it requires a decision record.
 | `missing-field`            | 400    | false       | `none`   | Required field absent.                                                                 |
 | `method-not-allowed`       | 405    | false       | `none`   | Method not implemented on a known path (1.6). MUST carry `Allow`.                      |
 | `idempotency-key-required` | 400    | false       | `none`   | `Idempotency-Key` absent ([idempotency 1.3](/en/docs/spec/idempotency#1.3)).              |
-| `invalid-field`            | 422    | false       | `none`   | Invalid content. Carries `errors`.                                                     |
+| `invalid-field`            | 422    | false       | `none`   | Invalid value. Carries `errors` when the value is in the body (10.7.3).                |
 | `capability-not-supported` | 422    | false       | `none`   | Capability not announced.                                                              |
 | `amount-out-of-range`      | 422    | false       | `none`   | Amount outside the announced limits ([capabilities 6.7](/en/docs/spec/capabilities#6.7)). |
 | `idempotency-key-reused`   | 422    | false       | `none`   | Same key, different body ([idempotency 3.3](/en/docs/spec/idempotency#3.3)).              |
@@ -435,6 +435,8 @@ The catalogue is closed. Extending it requires a decision record.
 | `state-conflict`                  | 409    | false       | `none`    | Operation not allowed from the current state ([lifecycle 2.1](/en/docs/spec/lifecycle#2.1)). |
 
 **10.8.4.1.** The `idempotency-request-in-progress` response carries `Retry-After` under [idempotency 3.4](/en/docs/spec/idempotency#3.4).
+
+**10.8.4.2.** The `state-conflict` error is reserved: no operation of this version produces it.
 
 #### 10.8.5. Rate
 
