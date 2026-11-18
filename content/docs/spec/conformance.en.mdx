@@ -127,14 +127,14 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | `NO_CALLBACK`        | Outcome reached, no event delivered to `callback_url`.         | [Webhooks 10.2](/en/docs/spec/webhooks#10.2)    |
 | `LATE_CALLBACK`      | Event delivered very late to `callback_url`.                   | [Webhooks 8.3](/en/docs/spec/webhooks#8.3)      |
 | `DUPLICATE_CALLBACK` | Same event delivered several times to `callback_url`.          | [Webhooks 8.4](/en/docs/spec/webhooks#8.4)      |
-| `UNKNOWN_STATUS`     | Never-seen `status` value.                                     | [Lifecycle 1.2](/en/docs/spec/lifecycle#1.2)    |
+| `UNKNOWN_STATUS`     | Never-seen `status` value, for client tests (4.9.6).           | [Lifecycle 1.2](/en/docs/spec/lifecycle#1.2)    |
 | `PROVIDER_ERROR`     | Provider-side error.                                           | [API 10.8.6](/en/docs/spec/payments-api#10.8.6) |
 
 **4.9.4.** Scenario selection is deterministic at payment creation. No scenario occurs without explicit selection.
 
 **4.9.5.** An additional scenario is introduced only when a specification defines behaviour that cannot otherwise be triggered.
 
-**4.9.6.** The suite asks for a scenario only from a payment service that declares the capabilities the test exercises; otherwise the test is not applicable. The implementation MUST produce every scenario asked for this way. A refusal, signalled by `422`, fails the test.
+**4.9.6.** The suite asks for a scenario only from a payment service that declares the capabilities the test exercises; otherwise the test is not applicable. The implementation MUST produce every scenario asked for this way. A refusal, signalled by `422`, fails the test. Only the reference mock server produces `UNKNOWN_STATUS` (9.4.1); the suite never asks it of an assessed server, which remains bound by [lifecycle 8.3](/en/docs/spec/lifecycle#8.3).
 
 **4.9.7.** The implementation produces the requested outcome itself. The result MUST NOT depend on the behaviour of an external payment service.
 

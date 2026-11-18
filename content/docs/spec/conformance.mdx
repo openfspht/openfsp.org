@@ -127,14 +127,14 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | `NO_CALLBACK`        | Dénouement atteint, aucun événement livré à `callback_url`.           | [Webhooks 10.2](/docs/spec/webhooks#10.2)    |
 | `LATE_CALLBACK`      | Événement livré très tard à `callback_url`.                           | [Webhooks 8.3](/docs/spec/webhooks#8.3)      |
 | `DUPLICATE_CALLBACK` | Même événement livré plusieurs fois à `callback_url`.                 | [Webhooks 8.4](/docs/spec/webhooks#8.4)      |
-| `UNKNOWN_STATUS`     | Valeur de `status` jamais vue.                                        | [Cycle de vie 1.2](/docs/spec/lifecycle#1.2) |
+| `UNKNOWN_STATUS`     | Valeur de `status` jamais vue, pour les tests client (4.9.6).         | [Cycle de vie 1.2](/docs/spec/lifecycle#1.2) |
 | `PROVIDER_ERROR`     | Erreur côté opérateur.                                                | [API 10.8.6](/docs/spec/payments-api#10.8.6) |
 
 **4.9.4.** Le choix du scénario est déterministe lors de la création du paiement. Aucun scénario ne survient sans sélection explicite.
 
 **4.9.5.** Un scénario supplémentaire est introduit uniquement lorsqu’une spécification définit un comportement impossible à provoquer autrement.
 
-**4.9.6.** La suite ne demande un scénario qu’à un service de paiement déclarant les capacités que le test exerce ; sinon, le test est non applicable. L’implémentation DOIT produire tout scénario ainsi demandé. Un refus, signalé par `422`, fait échouer le test.
+**4.9.6.** La suite ne demande un scénario qu’à un service de paiement déclarant les capacités que le test exerce ; sinon, le test est non applicable. L’implémentation DOIT produire tout scénario ainsi demandé. Un refus, signalé par `422`, fait échouer le test. Seul le serveur simulé de référence produit `UNKNOWN_STATUS` (9.4.1) ; la suite ne le demande jamais à un serveur évalué, qui reste soumis au [cycle de vie 8.3](/docs/spec/lifecycle#8.3).
 
 **4.9.7.** L’implémentation produit elle-même l’issue demandée. Le résultat NE DOIT PAS dépendre du comportement d’un service de paiement extérieur.
 
