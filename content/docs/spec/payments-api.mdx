@@ -23,7 +23,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 **1.7.** Le périmètre de l’idempotence est défini en [idempotence 1](/docs/spec/idempotency#1). Aucune opération n’en est exemptée.
 
-**1.8.** Chaque réponse, de succès ou d’erreur, contient l’en-tête `Request-Id`, dont la valeur est égale à `request_id` (10.1.6).
+**1.8.** Chaque réponse, de succès ou d’erreur, contient l’en-tête `Request-Id`, propre à la requête reçue. Sa valeur est égale au `request_id` du corps (10.1.6), sauf pour un rejeu ([idempotence 3.2](/docs/spec/idempotency#3.2)), dont le corps restitué conserve le `request_id` de la requête initiale.
 
 **1.9.** Les champs inconnus sont rejetés dans les requêtes et tolérés dans les réponses ([modèle de données 2.3](/docs/spec/data-model#2.3), [2.4](/docs/spec/data-model#2.4)).
 

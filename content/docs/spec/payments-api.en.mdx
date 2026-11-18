@@ -23,7 +23,7 @@ The following conventions apply to all OpenFSP endpoints.
 
 **1.7.** The scope of idempotency is defined in [idempotency 1](/en/docs/spec/idempotency#1). No operation is exempt.
 
-**1.8.** Every response, successful or otherwise, contains a `Request-Id` header whose value equals `request_id` (10.1.6).
+**1.8.** Every response, successful or otherwise, contains a `Request-Id` header specific to the received request. Its value equals the body’s `request_id` (10.1.6), except for a replay ([idempotency 3.2](/en/docs/spec/idempotency#3.2)), whose returned body keeps the `request_id` of the initial request.
 
 **1.9.** Unknown fields are rejected in requests and tolerated in responses ([data model 2.3](/en/docs/spec/data-model#2.3), [2.4](/en/docs/spec/data-model#2.4)).
 

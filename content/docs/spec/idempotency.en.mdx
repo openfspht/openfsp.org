@@ -29,7 +29,7 @@ In the following rules, _P_ denotes the principal, _O_ the operation, _K_ the ke
 
 **3.1. First request.** If no record exists for (_P_, _O_, _K_), the server executes the operation. Once its outcome is established under section 5, it stores _F_, the status and the response body.
 
-**3.2. Replay.** If a record has the same fingerprint, the server MUST NOT execute the operation again. It MUST return the stored status and body byte for byte, with `Idempotent-Replay: true`.
+**3.2. Replay.** If a record has the same fingerprint, the server MUST NOT execute the operation again. It MUST return the stored status and body byte for byte, with `Idempotent-Replay: true`. Only the headers specific to the request, including a fresh `Request-Id` ([API 1.8](/en/docs/spec/payments-api#1.8)), differ from the initial response.
 
 **3.3. Conflict.** If the fingerprint differs, the server MUST reject the request with `idempotency-key-reused` (`422`) without executing the operation.
 
@@ -39,7 +39,7 @@ In the following rules, _P_ denotes the principal, _O_ the operation, _K_ the ke
 
 ## 4. Fingerprint
 
-**4.1.** Fingerprint _F_ is the SHA-256 digest of the parsed JSON body with object members sorted. Amounts are integers, so floating-point numbers are rejected before the fingerprint is computed. An empty body has the fingerprint of `{}`.
+**4.1.** Fingerprint _F_ is the SHA-256 digest of the JCS canonical form (RFC 8785) of the parsed JSON body, after removing members whose value is `null` at every level ([data model 2.5](/en/docs/spec/data-model#2.5)) and NFC normalisation of the strings covered by [data model 2.6](/en/docs/spec/data-model#2.6). Amounts are integers, so floating-point numbers are rejected before the fingerprint is computed. An empty body has the fingerprint of `{}`.
 
 **4.2.** Fingerprint computation covers only the body. The path, query parameters and headers are excluded.
 

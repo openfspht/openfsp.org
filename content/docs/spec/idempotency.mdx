@@ -29,7 +29,7 @@ Dans les règles suivantes, _P_ désigne le principal, _O_ l’opération, _K_ l
 
 **3.1. Première requête.** En l’absence d’enregistrement pour (_P_, _O_, _K_), le serveur exécute l’opération. Lorsque son résultat est déterminé selon le 5, il enregistre _F_, le statut et le corps de la réponse.
 
-**3.2. Rejeu.** Si un enregistrement possède la même empreinte, le serveur NE DOIT PAS exécuter de nouveau l’opération. Il DOIT restituer le statut et le corps enregistrés, identiques à l’octet près, avec `Idempotent-Replay: true`.
+**3.2. Rejeu.** Si un enregistrement possède la même empreinte, le serveur NE DOIT PAS exécuter de nouveau l’opération. Il DOIT restituer le statut et le corps enregistrés, identiques à l’octet près, avec `Idempotent-Replay: true`. Seuls les en-têtes propres à la requête, dont un nouveau `Request-Id` ([API 1.8](/docs/spec/payments-api#1.8)), diffèrent de la réponse initiale.
 
 **3.3. Conflit.** Si l’empreinte diffère, le serveur DOIT rejeter la requête avec `idempotency-key-reused` (`422`) sans exécuter l’opération.
 
@@ -39,7 +39,7 @@ Dans les règles suivantes, _P_ désigne le principal, _O_ l’opération, _K_ l
 
 ## 4. Empreinte
 
-**4.1.** L’empreinte _F_ est le condensé SHA-256 du corps JSON analysé, dont les membres d’objet sont triés. Les montants étant entiers, tout nombre à virgule flottante est rejeté avant le calcul de l’empreinte. Pour un corps vide, l’empreinte est celle de `{}`.
+**4.1.** L’empreinte _F_ est le condensé SHA-256 de la forme canonique JCS (RFC 8785) du corps JSON analysé, après retrait à tous les niveaux des membres valant `null` ([modèle de données 2.5](/docs/spec/data-model#2.5)) et normalisation NFC des chaînes visées au [modèle de données 2.6](/docs/spec/data-model#2.6). Les montants étant entiers, tout nombre à virgule flottante est rejeté avant le calcul de l’empreinte. Pour un corps vide, l’empreinte est celle de `{}`.
 
 **4.2.** Le calcul de l’empreinte porte uniquement sur le corps. Le chemin, les paramètres de requête et les en-têtes en sont exclus.
 
