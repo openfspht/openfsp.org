@@ -3,7 +3,7 @@ title: Payments API
 description: "HTTP payment interface: resources, operations, responses and error model."
 ---
 
-The API defines payment creation, retrieval and synchronisation, using the merchant reference for correlation. The error model distinguishes operation rejection from uncertainty about its effects, as described in [decision 0004](/en/docs/decisions#0004).
+The API defines payment creation and retrieval, using the merchant reference for correlation. The error model distinguishes operation rejection from uncertainty about its effects, as described in [decision 0004](/en/docs/decisions#0004).
 
 ## 1. HTTP conventions
 
@@ -21,7 +21,7 @@ The following conventions apply to all OpenFSP endpoints.
 
 **1.6.** `POST` creates a resource or performs an action; `GET` retrieves a resource. The methods `PATCH` and `DELETE` are not used in this version. A method not implemented for a known path MUST produce `405` with the `Allow` header.
 
-**1.7.** The scope of idempotency is defined in [idempotency 1](/en/docs/spec/idempotency#1). Only synchronisation (5.3) is exempt; the server MUST NOT extend this exemption.
+**1.7.** The scope of idempotency is defined in [idempotency 1](/en/docs/spec/idempotency#1). No operation is exempt.
 
 **1.8.** Every response, successful or otherwise, contains a `Request-Id` header whose value equals `request_id` (10.1.6).
 
@@ -35,7 +35,7 @@ The following conventions apply to all OpenFSP endpoints.
 
 ## 2. Base capability
 
-**2.1.** The three operations in section 5 constitute the `payments` capability. A conforming server MUST implement them for each provider served. When `payments.lookup` is unsupported, synchronisation follows [capabilities 5.3](/en/docs/spec/capabilities#5.3).
+**2.1.** The operations in section 5 constitute the `payments` capability. A conforming server MUST implement them for each provider served. When `payments.lookup` is unsupported, retrieval follows [capabilities 5.3](/en/docs/spec/capabilities#5.3).
 
 **2.2.** The server MUST NOT condition these operations on a prior capability discovery request.
 
@@ -103,7 +103,7 @@ The following conventions apply to all OpenFSP endpoints.
 
 **4.1.** The field is REQUIRED while the payment remains `pending` and absent after a terminal transition, except in the case defined in 4.1.1.
 
-**4.1.1.** A creation whose `effect` is `unknown` (10.6) leaves the payment `pending` without `next_action`. The server MUST nevertheless return it on retrieval (5.2) and synchronisation (5.3), following the client recovery path in 10.6.3, and announce it once through `payment.created` ([webhooks 3](/en/docs/spec/webhooks#3)). The `next_action` field is populated if creation succeeds on retry with the same key. Until the creation outcome is established, the server MAY defer exposing the payment.
+**4.1.1.** A creation whose `effect` is `unknown` (10.6) leaves the payment `pending` without `next_action`. The server MUST nevertheless return it on retrieval (5.2), following the client recovery path in 10.6.3, and announce it once through `payment.created` ([webhooks 3](/en/docs/spec/webhooks#3)). The `next_action` field is populated if creation succeeds on retry with the same key. Until the creation outcome is established, the server MAY defer exposing the payment.
 
 **4.2.** The permitted types form the following closed enumeration:
 
@@ -193,33 +193,17 @@ GET /v1/payments?reference={reference}
 
 **5.2.3.** Client libraries SHOULD provide an operation for lookup by reference.
 
-**5.2.4.** Retrieval returns the state stored by the server and MUST NOT trigger another lookup at the provider.
+**5.2.4.** Retrieval returns the most recent state the server can establish. How it establishes that state is up to the implementation.
 
-### 5.3. Synchronize a payment
+**5.2.5.** A terminal payment is returned as recorded.
 
-```
-POST /v1/payments/{id}/synchronize
-```
+**5.2.6.** The server MAY limit, per payment, the lookups a retrieval triggers at an external source. It then returns the last known state.
 
-**5.3.1.** The server queries the provider for the state, applies the corresponding transition under the [lifecycle](/en/docs/spec/lifecycle), then returns the payment.
-
-**5.3.2.** Implementation of this endpoint is mandatory: the server MUST expose it.
-
-**5.3.3.** For a terminal payment, the server MUST NOT query the state again and MUST return the unchanged payment with `200`.
-
-**5.3.3.1.** The terminal-state check precedes every other check, including capability checks ([capabilities 5.3](/en/docs/spec/capabilities#5.3)).
-
-**5.3.4.** If the provider is unreachable or does not respond in time, the response is `503 provider-unavailable` or `504 provider-timeout`. The payment remains `pending`.
-
-**5.3.5.** The server SHOULD apply a per-payment rate limit to this endpoint, using `429 rate-limited` and `Retry-After`.
-
-**5.3.6.** This endpoint has the `Idempotency-Key` exemption defined in [idempotency 1.4](/en/docs/spec/idempotency#1.4).
-
-**5.3.7.** The absence of a new state after synchronisation is not an error. The server returns `200` with the payment unchanged.
+**5.2.7.** If an external source is unreachable or does not respond in time, the server returns the last known state and the payment remains `pending`.
 
 ## 6. Tracking changes
 
-**6.1.** The client learns of state changes through retrieval (5.2), synchronisation (5.3) or a [webhook](/en/docs/spec/webhooks).
+**6.1.** The client learns of state changes through retrieval (5.2) or a [webhook](/en/docs/spec/webhooks).
 
 **6.2.** The client SHOULD progressively increase polling intervals and SHOULD stop polling when the payment becomes terminal.
 
@@ -250,7 +234,7 @@ sequenceDiagram
     P->>S: authentication, approval
     S-->>P: redirect to return_url
     P->>M: arrival on return_url
-    M->>S: POST /v1/payments/{id}/synchronize
+    M->>S: GET /v1/payments/{id}
     S-->>M: 200, succeeded
 ```
 

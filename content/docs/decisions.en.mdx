@@ -115,6 +115,16 @@ The following decisions document the choices adopted for the specification versi
 
 **Reference.** [Conformance 4.9](/en/docs/spec/conformance#4.9.1).
 
+## 0012. Retrieval without synchronisation
+
+**Decision.** Remove the `POST /v1/payments/{id}/synchronize` endpoint. Retrieving a payment returns the most recent state the server can establish, how it establishes it being up to the implementation. The server may limit the lookups a retrieval triggers and then returns the last known state.
+
+**Rationale.** Separating retrieval of stored state from synchronisation with the provider presumes an intermediary server distinct from the provider. For a provider that applies the specification itself, the two operations are the same. The specification defines the interface, not the architecture of the implementation.
+
+**Alternatives considered.** Synchronisation kept and reserved for intermediaries; a freshness parameter on retrieval; a header stating the age of the returned state.
+
+**Reference.** [Payments API 5.2](/en/docs/spec/payments-api#5.2.4).
+
 ## References
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

@@ -77,7 +77,7 @@ The gateway records a terminal state only from one of the following sources, lis
 
 ## Return relay [#return-relay]
 
-MonCash provides no per-payment return URL. The gateway therefore exposes one return endpoint per service, registered with the provider by the operator. On receipt, it looks up the payment by order identifier, triggers synchronisation and returns a `303` redirect to the `return_url` stored with the payment. A URL supplied in the request is never used as the destination. Unknown or malformed identifiers produce `404` without redirection. This endpoint is unauthenticated and rate-limited.
+MonCash provides no per-payment return URL. The gateway therefore exposes one return endpoint per service, registered with the provider by the operator. On receipt, it looks up the payment by order identifier, looks its state up at the provider and returns a `303` redirect to the `return_url` stored with the payment. A URL supplied in the request is never used as the destination. Unknown or malformed identifiers produce `404` without redirection. This endpoint is unauthenticated and rate-limited.
 
 ## Members and endpoints beyond the standard [#extensions]
 

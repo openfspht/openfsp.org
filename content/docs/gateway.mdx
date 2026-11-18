@@ -77,7 +77,7 @@ La passerelle enregistre un état terminal uniquement à partir de l’une des s
 
 ## Relais de retour [#return-relay]
 
-MonCash ne prévoit pas d’URL de retour propre à chaque paiement. La passerelle expose donc un point de retour par service, enregistré par l’exploitant auprès du fournisseur. À réception, elle recherche le paiement par l’identifiant de commande, déclenche sa synchronisation et retourne une redirection `303` vers la `return_url` conservée avec le paiement. Une URL transmise dans la requête n’est jamais utilisée comme destination. Un identifiant inconnu ou mal formé produit une réponse `404` sans redirection. Ce point d’accès est non authentifié et soumis à une limitation de débit.
+MonCash ne prévoit pas d’URL de retour propre à chaque paiement. La passerelle expose donc un point de retour par service, enregistré par l’exploitant auprès du fournisseur. À réception, elle recherche le paiement par l’identifiant de commande, consulte son état auprès du fournisseur et retourne une redirection `303` vers la `return_url` conservée avec le paiement. Une URL transmise dans la requête n’est jamais utilisée comme destination. Un identifiant inconnu ou mal formé produit une réponse `404` sans redirection. Ce point d’accès est non authentifié et soumis à une limitation de débit.
 
 ## Membres et points d'accès hors norme [#extensions]
 

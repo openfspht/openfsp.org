@@ -115,6 +115,16 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 **Référence.** [Conformité 4.9](/docs/spec/conformance#4.9.1).
 
+## 0012. Lecture sans synchronisation
+
+**Choix.** Retirer le point d’accès `POST /v1/payments/{id}/synchronize`. La lecture d’un paiement retourne l’état le plus récent que le serveur peut établir, la manière de l’établir relevant de l’implémentation. Le serveur peut limiter les consultations qu’une lecture provoque et retourne alors le dernier état connu.
+
+**Justification.** Distinguer la lecture de l’état conservé et la synchronisation auprès de l’opérateur suppose un serveur intermédiaire distinct de l’opérateur. Pour un opérateur qui applique la norme lui-même, les deux opérations se confondent. La norme définit l’interface, non l’architecture de l’implémentation.
+
+**Alternatives examinées.** Synchronisation conservée et réservée aux intermédiaires ; paramètre de fraîcheur sur la lecture ; en-tête indiquant l’âge de l’état retourné.
+
+**Référence.** [API des paiements 5.2](/docs/spec/payments-api#5.2.4).
+
 ## Références
 
 - RFC 3339, Date and Time on the Internet: Timestamps.

@@ -3,7 +3,7 @@ title: API des paiements
 description: "Interface HTTP des paiements : ressources, opérations, réponses et modèle d’erreur."
 ---
 
-L’API définit la création, la consultation et la synchronisation des paiements, avec la référence du marchand comme moyen de corrélation. Le modèle d’erreur distingue le refus d’une opération de l’incertitude sur ses effets, conformément à la [décision 0004](/docs/decisions#0004).
+L’API définit la création et la lecture des paiements, avec la référence du marchand comme moyen de corrélation. Le modèle d’erreur distingue le refus d’une opération de l’incertitude sur ses effets, conformément à la [décision 0004](/docs/decisions#0004).
 
 ## 1. Conventions HTTP
 
@@ -21,7 +21,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 **1.6.** `POST` crée une ressource ou exécute une action ; `GET` consulte une ressource. Les méthodes `PATCH` et `DELETE` ne sont pas utilisées dans cette version. Une méthode non implémentée pour un chemin connu DOIT produire `405` avec l’en-tête `Allow`.
 
-**1.7.** Le périmètre de l’idempotence est défini en [idempotence 1](/docs/spec/idempotency#1). Seule la synchronisation (5.3) en est exemptée ; le serveur NE DOIT PAS étendre cette exemption.
+**1.7.** Le périmètre de l’idempotence est défini en [idempotence 1](/docs/spec/idempotency#1). Aucune opération n’en est exemptée.
 
 **1.8.** Chaque réponse, de succès ou d’erreur, contient l’en-tête `Request-Id`, dont la valeur est égale à `request_id` (10.1.6).
 
@@ -35,7 +35,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 ## 2. Capacité de base
 
-**2.1.** Les trois opérations du 5 constituent la capacité `payments`. Le serveur conforme DOIT les implémenter pour chaque opérateur servi. Lorsque `payments.lookup` n’est pas pris en charge, la synchronisation suit les [capacités 5.3](/docs/spec/capabilities#5.3).
+**2.1.** Les opérations du 5 constituent la capacité `payments`. Le serveur conforme DOIT les implémenter pour chaque opérateur servi. Lorsque `payments.lookup` n’est pas pris en charge, la lecture suit les [capacités 5.3](/docs/spec/capabilities#5.3).
 
 **2.2.** Le serveur NE DOIT PAS conditionner l’exécution de ces opérations à une requête préalable de découverte des capacités.
 
@@ -103,7 +103,7 @@ Les conventions suivantes s’appliquent à tous les points d’accès OpenFSP.
 
 **4.1.** Le champ est OBLIGATOIRE tant que le paiement reste `pending` et absent après une transition terminale, sauf dans le cas du 4.1.1.
 
-**4.1.1.** Une création dont `effect` vaut `unknown` (10.6) laisse le paiement `pending` sans `next_action`. Le serveur DOIT néanmoins le restituer en consultation (5.2) et en synchronisation (5.3), conformément à la démarche du client définie au 10.6.3, et l’annoncer une seule fois par `payment.created` ([webhooks 3](/docs/spec/webhooks#3)). Le champ `next_action` est renseigné si une nouvelle tentative de création avec la même clé aboutit. Tant que le résultat de la création reste indéterminé, le serveur PEUT différer l’exposition du paiement.
+**4.1.1.** Une création dont `effect` vaut `unknown` (10.6) laisse le paiement `pending` sans `next_action`. Le serveur DOIT néanmoins le restituer en lecture (5.2), conformément à la démarche du client définie au 10.6.3, et l’annoncer une seule fois par `payment.created` ([webhooks 3](/docs/spec/webhooks#3)). Le champ `next_action` est renseigné si une nouvelle tentative de création avec la même clé aboutit. Tant que le résultat de la création reste indéterminé, le serveur PEUT différer l’exposition du paiement.
 
 **4.2.** Les types autorisés constituent l’énumération fermée suivante :
 
@@ -193,33 +193,17 @@ GET /v1/payments?reference={reference}
 
 **5.2.3.** Les bibliothèques clientes DEVRAIENT proposer une opération de recherche par référence.
 
-**5.2.4.** La consultation restitue l’état conservé par le serveur et NE DOIT PAS provoquer de nouvelle consultation auprès de l’opérateur.
+**5.2.4.** La lecture retourne l’état le plus récent que le serveur peut établir. La manière de l’établir relève de l’implémentation.
 
-### 5.3. Synchroniser un paiement
+**5.2.5.** Un paiement terminal est retourné tel qu’enregistré.
 
-```
-POST /v1/payments/{id}/synchronize
-```
+**5.2.6.** Le serveur PEUT limiter, par paiement, les consultations qu’une lecture provoque auprès d’une source extérieure. Il retourne alors le dernier état connu.
 
-**5.3.1.** Le serveur consulte l’état auprès de l’opérateur, applique la transition correspondante selon le [cycle de vie](/docs/spec/lifecycle), puis retourne le paiement.
-
-**5.3.2.** L’implémentation de ce point d’accès est une obligation : le serveur DOIT l’exposer.
-
-**5.3.3.** Pour un paiement terminal, le serveur NE DOIT PAS consulter de nouveau l’état et DOIT retourner le paiement inchangé avec `200`.
-
-**5.3.3.1.** La vérification de l’état terminal précède tous les autres contrôles, y compris celui des capacités ([capacités 5.3](/docs/spec/capabilities#5.3)).
-
-**5.3.4.** Si l’opérateur est injoignable ou ne répond pas dans le délai imparti, la réponse est `503 provider-unavailable` ou `504 provider-timeout`. Le paiement reste `pending`.
-
-**5.3.5.** Le serveur DEVRAIT appliquer une limitation de débit par paiement à ce point d’accès, avec `429 rate-limited` et `Retry-After`.
-
-**5.3.6.** Ce point d’accès bénéficie de l’exemption d’`Idempotency-Key` prévue en [idempotence 1.4](/docs/spec/idempotency#1.4).
-
-**5.3.7.** L’absence de nouvel état à l’issue d’une synchronisation ne constitue pas une erreur. Le serveur retourne `200` avec le paiement inchangé.
+**5.2.7.** Si une source extérieure est injoignable ou ne répond pas dans le délai imparti, le serveur retourne le dernier état connu et le paiement reste `pending`.
 
 ## 6. Suivi des changements
 
-**6.1.** Le client prend connaissance d’un changement d’état par consultation (5.2), synchronisation (5.3) ou [webhook](/docs/spec/webhooks).
+**6.1.** Le client prend connaissance d’un changement d’état par lecture (5.2) ou par [webhook](/docs/spec/webhooks).
 
 **6.2.** Le client DEVRAIT augmenter progressivement l’intervalle entre ses consultations et DEVRAIT les arrêter dès que le paiement devient terminal.
 
@@ -250,7 +234,7 @@ sequenceDiagram
     P->>S: authentification, approbation
     S-->>P: redirection vers return_url
     P->>M: arrivée sur return_url
-    M->>S: POST /v1/payments/{id}/synchronize
+    M->>S: GET /v1/payments/{id}
     S-->>M: 200, succeeded
 ```
 

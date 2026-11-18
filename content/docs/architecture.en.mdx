@@ -30,7 +30,7 @@ The application selects the payment service and uses the corresponding credentia
 | The merchant's reference allows correlation, including after a lost response.                     | [Merchant reference](/en/docs/spec/data-model#6.2) |
 | Payment states are explicit; terminal states cannot be left.                                      | [Lifecycle](/en/docs/spec/lifecycle)               |
 | Replayed creation follows idempotency rules; an indeterminate outcome is not turned into success. | [Idempotency](/en/docs/spec/idempotency)           |
-| The API exposes creation, retrieval and synchronisation over HTTP and JSON.                       | [Payments API](/en/docs/spec/payments-api)         |
+| The API exposes payment creation and retrieval over HTTP and JSON.                                | [Payments API](/en/docs/spec/payments-api)         |
 | Errors distinguish, in particular, no effect from an unknown effect.                              | [Errors and effect](/en/docs/spec/payments-api#10) |
 | Notifications have verifiable signatures, ordering and deduplication rules.                       | [Webhooks](/en/docs/spec/webhooks)                 |
 | Access to the contract is authenticated and restricted by scopes.                                 | [Authentication](/en/docs/spec/authentication)     |

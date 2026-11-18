@@ -23,7 +23,7 @@ La découverte expose les opérations prises en charge et les limites applicable
 
 | Nom                            | Statut                | Sens                                                                                                                       |
 | ------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `payments`                     | spécifié, obligatoire | Créer, lire, synchroniser un paiement ([API](/docs/spec/payments-api)).                                                 |
+| `payments`                     | spécifié, obligatoire | Créer et lire un paiement ([API](/docs/spec/payments-api)).                                                             |
 | `payments.lookup`              | spécifié              | Consultation faisant foi de l'état chez l'opérateur (5).                                                                   |
 | `payments.statement`           | spécifié              | Liste des transactions réussies du compte marchand chez l'opérateur, lisible par le client ([cycle de vie 10](/docs/spec/lifecycle#10)). |
 | `payments.fee`                 | spécifié              | L'opérateur communique les frais ([modèle de données 8](/docs/spec/data-model#8)).                                      |
@@ -161,11 +161,9 @@ Ce point d’accès nécessite une authentification.
 
 **5.1.** La capacité `payments.lookup` indique qu’une consultation peut établir l’état courant faisant autorité auprès de l’opérateur.
 
-**5.2.** Lorsque cette capacité est déclarée, la synchronisation ([API 5.3](/docs/spec/payments-api#5.3)) DOIT consulter l’état auprès de l’opérateur.
+**5.2.** Lorsque cette capacité est déclarée, la lecture d’un paiement en attente ([API 5.2](/docs/spec/payments-api#5.2.4)) DOIT établir l’état auprès de l’opérateur, sous réserve de l’[API 5.2.6](/docs/spec/payments-api#5.2.6).
 
-**5.3.** En l’absence de cette capacité, la synchronisation DOIT retourner `capability-not-supported` et NE DOIT PAS présenter l’état enregistré comme le résultat d’une nouvelle consultation.
-
-**5.3.1.** Par exception, un paiement terminal est retourné inchangé avec `200` ([API 5.3.3](/docs/spec/payments-api#5.3.3)).
+**5.3.** En l’absence de cette capacité, la lecture retourne l’état connu du serveur.
 
 ## 6. Bornes de montant
 

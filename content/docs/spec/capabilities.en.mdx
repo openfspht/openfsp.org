@@ -23,7 +23,7 @@ Discovery exposes supported operations and applicable account limits before paym
 
 | Name                           | Status              | Meaning                                                                                                                  |
 | ------------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `payments`                     | specified, required | Create, read, sync a payment ([API](/en/docs/spec/payments-api)).                                                           |
+| `payments`                     | specified, required | Create and read a payment ([API](/en/docs/spec/payments-api)).                                                         |
 | `payments.lookup`              | specified           | Authoritative lookup of the state at the provider (5).                                                                   |
 | `payments.statement`           | specified           | List of the successful transactions of the merchant account at the provider, readable by the client ([lifecycle 10](/en/docs/spec/lifecycle#10)). |
 | `payments.fee`                 | specified           | The provider reports fees ([data model 8](/en/docs/spec/data-model#8)).                                                     |
@@ -161,11 +161,9 @@ This endpoint requires authentication.
 
 **5.1.** The `payments.lookup` capability indicates that a lookup can establish the authoritative current state at the provider.
 
-**5.2.** When this capability is declared, synchronisation ([API 5.3](/en/docs/spec/payments-api#5.3)) MUST query the state at the provider.
+**5.2.** When this capability is declared, retrieving a pending payment ([API 5.2](/en/docs/spec/payments-api#5.2.4)) MUST establish the state at the provider, subject to [API 5.2.6](/en/docs/spec/payments-api#5.2.6).
 
-**5.3.** Without this capability, synchronisation MUST return `capability-not-supported` and MUST NOT present stored state as the result of a new lookup.
-
-**5.3.1.** As an exception, a terminal payment is returned unchanged with `200` ([API 5.3.3](/en/docs/spec/payments-api#5.3.3)).
+**5.3.** Without this capability, retrieval returns the state known to the server.
 
 ## 6. Amount limits
 

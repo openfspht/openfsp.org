@@ -30,7 +30,7 @@ L’application sélectionne le service de paiement et utilise les identifiants 
 | La référence choisie par le marchand permet la corrélation, y compris après la perte d'une réponse.          | [Référence du marchand](/docs/spec/data-model#6.2) |
 | Les états du paiement sont explicites ; un état terminal n'est pas quitté.                                   | [Cycle de vie](/docs/spec/lifecycle)               |
 | Une création rejouée suit les règles d'idempotence ; un résultat indéterminé n'est pas transformé en succès. | [Idempotence](/docs/spec/idempotency)              |
-| L'API expose la création, la lecture et la synchronisation par HTTP et JSON.                                 | [API des paiements](/docs/spec/payments-api)       |
+| L'API expose la création et la lecture des paiements par HTTP et JSON.                                       | [API des paiements](/docs/spec/payments-api)       |
 | Une erreur distingue notamment l'absence d'effet d'un effet inconnu.                                         | [Erreurs et effet](/docs/spec/payments-api#10)     |
 | Les notifications possèdent une signature vérifiable, des règles d'ordre et de déduplication.                | [Webhooks](/docs/spec/webhooks)                    |
 | L'accès au contrat est authentifié et limité par des portées.                                                | [Authentification](/docs/spec/authentication)      |
