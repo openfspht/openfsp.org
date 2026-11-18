@@ -1,127 +1,127 @@
 ---
 title: Décisions
-description: Choix de conception d’OpenFSP, justifications, alternatives examinées et conséquences pour l’implémentation.
+description: Choix de conception d’OpenFSP, justifications, alternatives écartées et conséquences pour l’implémentation.
 ---
 
-Les décisions suivantes documentent les choix retenus pour la version décrite de la spécification. Elles sont ouvertes à la discussion et à l’évolution selon le processus de modification du projet. Chaque entrée précise le choix, sa justification et les alternatives examinées, puis renvoie aux chapitres concernés. Les exigences numérotées restent la référence normative.
+Chaque décision donne mon choix, sa justification et les alternatives que j’ai écartées, puis renvoie aux chapitres concernés. Les exigences numérotées restent la référence normative.
 
 ## 0001. Architecture et périmètre
 
-**Choix.** Définir un contrat d’interface commun que chaque fournisseur peut exposer dans son système de paiement. Les applications marchandes utilisent cette interface directement ou au moyen de bibliothèques clientes. Un serveur simulé de référence et une suite de conformité accompagnent la spécification.
+**Choix.** Je définis un contrat d’interface commun que chaque fournisseur peut exposer dans son système de paiement. Les applications marchandes l’utilisent directement ou au moyen de bibliothèques clientes. Un serveur simulé de référence et une suite de conformité accompagnent la spécification.
 
-**Justification.** La mutualisation du contrat vise à réduire la multiplication des interfaces spécifiques. Dans le modèle d’intégration complète, le travail peut être organisé autour de `opérateurs + applications` implémentations plutôt que de `opérateurs × applications` intégrations spécifiques. Ce raisonnement suppose une adoption et des capacités compatibles ; il ne constitue pas une mesure empirique des coûts ni une garantie d’absence d’adaptation.
+**Justification.** Sans contrat commun, chacune des `L` applications intègre chacun des `O` services, soit `O × L` intégrations spécifiques. Avec un contrat commun, le travail se répartit en `O + L` implémentations : une par service et une par application. Ce raisonnement suppose l’adoption du contrat et des capacités compatibles ; il ne mesure ni les coûts de configuration et de validation de chaque déploiement, ni l’absence d’adaptation.
 
-**Alternatives examinées.** Bibliothèques propres à chaque langage sans contrat serveur commun ; spécification sans implémentation de référence ; service central hébergé ; adoption directe de GSMA Mobile Money API ; utilisation de Mojaloop. Le choix retenu privilégie la définition et l’implémentation distribuée de l’interface marchande. La comparaison porte sur ce périmètre : elle ne constitue pas une évaluation générale de ces solutions.
+**Alternatives écartées.** Bibliothèques propres à chaque langage sans contrat serveur commun ; spécification sans implémentation de référence ; service central hébergé ; adoption directe de GSMA Mobile Money API ; utilisation de Mojaloop. Je privilégie la définition et l’implémentation distribuée de l’interface marchande ; la comparaison porte sur ce périmètre et ne juge pas ces solutions en général.
 
 **Référence.** [Architecture](/docs/architecture).
 
 ## 0002. Modèle de données
 
-**Choix.** Représenter les montants par un nombre entier de centimes de gourde, borné à ±(2⁵³ - 1), avec une devise explicite fixée à `"HTG"`. L’exactitude doit être conservée pendant le stockage et les calculs, sans arrondi ; le type binary64 reste admis pour les centimes entiers selon les conditions du modèle de données. Les numéros de téléphone utilisent E.164, les horodatages RFC 3339 en UTC avec `Z`, et les identifiants sont opaques, avec UUIDv7 recommandé. Les champs inconnus sont ignorés dans les réponses et rejetés dans les requêtes.
+**Choix.** Je représente les montants par un nombre entier de centimes de gourde, borné à ±(2⁵³ - 1), avec une devise explicite fixée à `"HTG"`. L’exactitude est conservée pendant le stockage et les calculs, sans arrondi ; le type binary64 reste admis pour les centimes entiers selon les conditions du modèle de données. Les numéros de téléphone suivent E.164, les horodatages RFC 3339 en UTC avec `Z`, et les identifiants sont opaques, avec UUIDv7 recommandé. Les champs inconnus sont ignorés dans les réponses et rejetés dans les requêtes.
 
-**Justification.** Ces représentations établissent les primitives communes aux autres chapitres. La borne des montants permet leur représentation exacte en centimes entiers dans les environnements JSON utilisant la double précision. La distinction entre requêtes et réponses encadre les erreurs de saisie et l’évolution des formats.
+**Justification.** Ces représentations fixent les primitives des autres chapitres. La borne des montants garantit leur représentation exacte en centimes entiers dans les environnements JSON en double précision. Je traite différemment requêtes et réponses pour refuser les erreurs de saisie tout en laissant évoluer les formats de réponse.
 
-**Alternatives examinées.** Montants en chaînes décimales, montants fractionnaires en virgule flottante, chaîne combinant devise et montant (`"HTG 1250.00"`), prise en charge multidevise dans cette version, conversion des formats téléphoniques nationaux par le serveur, horodatages epoch et noms de champs en `camelCase`.
+**Alternatives écartées.** Montants en chaînes décimales, montants fractionnaires en virgule flottante, chaîne combinant devise et montant (`"HTG 1250.00"`), prise en charge multidevise dans cette version, conversion des formats téléphoniques nationaux par le serveur, horodatages epoch et noms de champs en `camelCase`.
 
 **Référence.** [Modèle de données](/docs/spec/data-model).
 
 ## 0003. Cycle de vie du paiement
 
-**Choix.** Définir cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Le seul écoulement du temps ne suffit pas à établir une expiration, sauf dans les conditions garanties par l’opérateur et précisées dans le cycle de vie.
+**Choix.** Je définis cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Seul l’opérateur établit une expiration, en la rapportant ou en la garantissant.
 
-**Justification.** L’application marchande peut déclencher la livraison d’un bien ou d’un service à partir de l’état du paiement. La stabilité des états terminaux fournit une base cohérente à cette décision. Une information contradictoire reçue ultérieurement doit être traitée selon les mécanismes prévus, sans réécrire l’état terminal.
+**Justification.** L’application marchande peut livrer un bien ou un service à partir de l’état du paiement. Des états terminaux stables donnent une base cohérente à cette décision. Une information contradictoire reçue plus tard suit les mécanismes prévus, sans réécrire l’état terminal.
 
-**Alternatives examinées.** États terminaux révisables ; états supplémentaires `unknown` et `processing` ; machine à états reproduisant les particularités de chaque service ; expiration fondée uniquement sur l’horloge ; état `refunded` pour le paiement ; état terminal unique `closed`.
+**Alternatives écartées.** États terminaux révisables ; états supplémentaires `unknown` et `processing` ; machine à états reproduisant les particularités de chaque service ; expiration fondée sur l’horloge du serveur ; état `refunded` pour le paiement ; état terminal unique `closed`.
 
 **Référence.** [Cycle de vie](/docs/spec/lifecycle).
 
 ## 0004. API des paiements
 
-**Choix.** Exposer l’API en HTTPS sous `/v1`, avec des représentations JSON et un catalogue fermé d’erreurs conforme au format RFC 9457, enrichi de `retryable` et `effect`. La capacité de base `payments` couvre la création et la lecture par `id` ou `reference`. Le client sélectionne le service de paiement. L’en-tête `Idempotency-Key` est obligatoire pour les opérations soumises à idempotence.
+**Choix.** J’expose l’API en HTTPS sous `/v1`, avec des représentations JSON et un catalogue fermé d’erreurs au format RFC 9457, enrichi de `retryable` et `effect`. La capacité de base `payments` couvre la création et la lecture par `id` ou `reference`. Le client sélectionne le service de paiement. L’en-tête `Idempotency-Key` est obligatoire pour les opérations soumises à idempotence.
 
-**Justification.** Ces opérations couvrent la création du paiement, sa récupération par une référence connue du marchand après la perte d’une réponse et la consultation de son état lorsqu’une notification manque. Les propriétés `retryable` et `effect` distinguent la possibilité d’une nouvelle tentative de l’incertitude sur les effets de l’opération initiale.
+**Justification.** Ces opérations couvrent la création du paiement, sa récupération par une référence connue du marchand après la perte d’une réponse et la lecture de son état lorsqu’une notification manque. Les propriétés `retryable` et `effect` séparent la possibilité d’une nouvelle tentative de l’incertitude sur les effets de l’opération initiale.
 
-**Alternatives examinées.** Sélection du service par le serveur ; réponse `404` pour une référence inconnue ; chemin `/by-reference` ; champ `next_action` limité à une URL ; point d’accès de liste générale des paiements dans cette version.
+**Alternatives écartées.** Sélection du service par le serveur ; réponse `404` pour une référence inconnue ; chemin `/by-reference` ; champ `next_action` limité à une URL ; point d’accès de liste générale des paiements dans cette version.
 
 **Références.** [API des paiements](/docs/spec/payments-api) et [Idempotence](/docs/spec/idempotency).
 
 ## 0005. Découverte de capacités
 
-**Choix.** Déclarer uniquement les capacités prises en charge par le service et refuser les opérations non annoncées. La découverte utilise deux points d’accès : `/.well-known/openfsp-configuration`, public et inspiré de la découverte OpenID Connect, puis `/v1/capabilities`, authentifié et détaillé par service. Les comportements propres au service et les limites du compte marchand (`limits`) sont représentés par des champs lisibles par machine.
+**Choix.** J’impose au serveur de déclarer uniquement les capacités que le service prend en charge et de refuser les opérations non annoncées. La découverte passe par deux points d’accès : `/.well-known/openfsp-configuration`, public et inspiré de la découverte OpenID Connect, puis `/v1/capabilities`, authentifié et détaillé par service. Les comportements propres au service et les limites du compte marchand (`limits`) sont des champs lisibles par machine.
 
-**Justification.** La déclaration explicite des capacités permet à l’application d’identifier les opérations disponibles avant de créer un paiement. L’émulation d’une fonction absente masquerait une différence de comportement ; une vérification par tentative de paiement pourrait avoir des effets financiers.
+**Justification.** Avec une déclaration explicite, l’application sait quelles opérations sont disponibles avant de créer un paiement. Émuler une fonction absente masquerait une différence de comportement ; tester la disponibilité par une tentative de paiement pourrait avoir des effets financiers.
 
-**Alternatives examinées.** Capacités fixes par version ; méthode HTTP `OPTIONS` ; découverte par tentative suivie du traitement d’une erreur ; versionnement séparé des capacités ; répétition des capacités dans chaque réponse de paiement ; capacités globales au serveur ; limites codées en dur.
+**Alternatives écartées.** Capacités fixes par version ; méthode HTTP `OPTIONS` ; découverte par tentative suivie du traitement d’une erreur ; versionnement séparé des capacités ; répétition des capacités dans chaque réponse de paiement ; capacités globales au serveur ; limites codées en dur.
 
 **Référence.** [Capacités](/docs/spec/capabilities).
 
 ## 0006. Webhooks et livraison des événements
 
-**Choix.** Utiliser une livraison au moins une fois, sans garantie d’ordre de réception, avec une `sequence` par ressource et un `id` pour la déduplication. Les événements sont signés selon la RFC 9421 avec Ed25519, une fenêtre de fraîcheur de 300 secondes et un nonce. Le corps contient un instantané complet de la ressource. Cinq types d’événement sont définis ; les nouvelles tentatives suivent un calendrier minimal avec variation aléatoire. L’interrogation périodique permet de récupérer les changements non reçus.
+**Choix.** Je retiens une livraison au moins une fois, sans garantie d’ordre de réception, avec une `sequence` par ressource et un `id` pour la déduplication. Les événements sont signés selon la RFC 9421 avec Ed25519, une fenêtre de fraîcheur de 300 secondes et un nonce. Le corps contient un instantané complet de la ressource. Cinq types d’événement sont définis ; les nouvelles tentatives suivent un calendrier minimal avec variation aléatoire. La lecture périodique récupère les changements non reçus.
 
-**Justification.** La signature à clé publique permet de vérifier l’intégrité et l’origine cryptographique d’un événement avec les clés publiées, y compris par un tiers disposant des éléments nécessaires. Cette vérification concerne le message signé ; elle ne démontre pas, à elle seule, l’exactitude financière de son contenu. La séquence et l’identifiant permettent de traiter les réceptions désordonnées et les doublons.
+**Justification.** Avec une signature à clé publique, quiconque dispose des clés publiées vérifie l’intégrité et l’origine cryptographique d’un événement, y compris un tiers. Cette vérification porte sur le message signé ; elle ne démontre pas à elle seule l’exactitude financière de son contenu. La séquence et l’identifiant traitent les réceptions désordonnées et les doublons.
 
-**Alternatives examinées.** HMAC à secret partagé ; en-tête de signature spécifique au projet ; TLS mutuel utilisé seul ; livraison exactement une fois ; événements ne contenant qu’une référence ; livraison par lots ; garantie d’ordre.
+**Alternatives écartées.** HMAC à secret partagé ; en-tête de signature propre au projet ; TLS mutuel seul ; livraison exactement une fois ; événements ne contenant qu’une référence ; livraison par lots ; garantie d’ordre.
 
 **Référence.** [Webhooks](/docs/spec/webhooks).
 
 ## 0007. Authentification et secrets
 
-**Choix.** Authentifier le client au moyen d’une clé `ofsp_<env>_<secret>` offrant au moins 128 bits d’entropie, transmise exclusivement dans `Authorization: Bearer`. Le serveur conserve un condensé SHA-256, effectue les comparaisons en temps constant et renvoie l’erreur unique `unauthenticated` pour les échecs d’authentification. Quatre portées indépendantes sont définies. Plusieurs clés peuvent être associées à un principal ; une révocation prend effet dans un délai maximal de 60 secondes.
+**Choix.** J’authentifie le client par une clé `ofsp_<env>_<secret>` d’au moins 128 bits d’entropie, transmise exclusivement dans `Authorization: Bearer`. Le serveur conserve un condensé SHA-256, compare en temps constant et renvoie l’erreur unique `unauthenticated` pour tout échec d’authentification. Je définis quatre portées indépendantes. Un principal peut avoir plusieurs clés ; une révocation prend effet en 60 secondes au plus.
 
-**Justification.** Des exigences communes encadrent le stockage des clés, les comparaisons et les réponses d’authentification. Elles visent notamment à éviter le stockage en clair et la divulgation de différences entre une clé inconnue et une clé révoquée.
+**Justification.** Des exigences communes encadrent le stockage des clés, les comparaisons et les réponses d’authentification. Elles excluent le stockage en clair et toute différence observable entre une clé inconnue et une clé révoquée.
 
-**Alternatives examinées.** OAuth 2.0 client credentials ; JWT autoémis ; signature HMAC des requêtes ; TLS mutuel comme mécanisme principal d’identification ; clé unique sans portée ; hachage lent des clés ; portées propres à chaque service. Ces options ne sont pas retenues pour le mécanisme d’authentification de cette version.
+**Alternatives écartées.** OAuth 2.0 client credentials ; JWT autoémis ; signature HMAC des requêtes ; TLS mutuel comme mécanisme principal d’identification ; clé unique sans portée ; hachage lent des clés ; portées propres à chaque service.
 
 **Référence.** [Authentification](/docs/spec/authentication).
 
 ## 0008. Conformité
 
-**Choix.** Définir la conformité par une cible (`client` ou `server`), un niveau et une version du protocole. Le niveau Core est obligatoire ; un profil s’applique à chaque capacité annoncée. Aucun score ni classement ne remplace la satisfaction des exigences. La suite peut être exécutée localement et hors ligne ; elle n’exige de l’implémentation que la préparation et l’interface de contrôle de l’environnement de test (0009, 0011). Le serveur de référence `mock_openfsp` reproduit les scénarios déclarés ; le rapport est lisible par machine et explicite les limites des vérifications.
+**Choix.** Je définis la conformité par une cible (`client` ou `server`), un niveau et une version du protocole. Le niveau Core est obligatoire ; un profil s’applique à chaque capacité annoncée. Aucun score ni classement ne remplace la satisfaction des exigences. La suite s’exécute localement et hors ligne ; elle n’exige de l’implémentation que la préparation et l’interface de contrôle de l’environnement de test (0009, 0011). Le serveur de référence `mock_openfsp` reproduit les scénarios déclarés ; le rapport est lisible par machine et explicite les limites des vérifications.
 
-**Justification.** Les scénarios en boîte noire comparent les capacités déclarées aux comportements observables dans l’environnement évalué. Le rapport conserve la liste des obligations non vérifiées, afin de distinguer un résultat de test d’une affirmation générale sur l’implémentation.
+**Justification.** Les scénarios en boîte noire comparent les capacités déclarées aux comportements observables dans l’environnement évalué. Le rapport garde la liste des obligations non vérifiées, pour qu’un résultat de test ne passe pas pour une affirmation générale sur l’implémentation.
 
-**Alternatives examinées.** Certification payante par le projet ; niveaux de classement bronze à or ; score en pourcentage ; dépendance aux bacs à sable des fournisseurs pour la suite de référence ; scénario sélectionné par le montant ; défaillances aléatoires.
+**Alternatives écartées.** Certification payante par le projet ; niveaux de classement bronze à or ; score en pourcentage ; dépendance aux bacs à sable des fournisseurs pour la suite de référence ; scénario sélectionné par le montant ; défaillances aléatoires.
 
 **Référence.** [Conformité](/docs/spec/conformance).
 
 ## 0009. Préparation des essais de conformité
 
-**Choix.** Exiger d’un serveur, en environnement de test, qu’il annonce dans son document de configuration un point d’accès `conformance_endpoint`. La suite y transmet l’adresse de son récepteur de webhooks et reçoit un jeu d’essai isolé et de courte durée : une clé de test complète, une clé sans `statements:read`, une clé révoquée, une clé expirée et les identifiants nécessaires aux tests qui exigent une configuration particulière. Le point d’accès n’existe qu’en environnement de test, ne délivre que des clés `ofsp_test_` et peut exiger un code d’accès remis par l’exploitant.
+**Choix.** J’exige du serveur, en environnement de test, qu’il annonce dans son document de configuration un point d’accès `conformance_endpoint`. La suite y transmet l’adresse de son récepteur de webhooks et reçoit un jeu d’essai isolé et de courte durée : une clé de test complète, une clé sans `statements:read`, une clé révoquée, une clé expirée et les identifiants nécessaires aux tests qui exigent une configuration particulière. Le point d’accès n’existe qu’en environnement de test, ne délivre que des clés `ofsp_test_` et peut exiger un code d’accès remis par l’exploitant.
 
-**Justification.** Une validation lancée à partir de la seule adresse du serveur supprime les copies manuelles et rend exécutables les tests jusque-là assistés. Obligatoire, la préparation donne à toute implémentation la même façon d’exécuter la suite, avec l’interface de contrôle de la décision 0011.
+**Justification.** Une validation lancée à partir de la seule adresse du serveur supprime les copies manuelles et rend exécutables les tests jusque-là assistés. Je rends la préparation obligatoire pour que toute implémentation s’évalue de la même façon, avec l’interface de contrôle de la décision 0011.
 
-**Alternatives examinées.** Clés de test fixes publiées dans la spécification ; saisie manuelle comme seul mode ; préparation facultative, avec saisie manuelle en son absence ; préparation par une interface propre à chaque serveur ; accès de la suite à l’administration du serveur.
+**Alternatives écartées.** Clés de test fixes publiées dans la spécification ; saisie manuelle comme seul mode ; préparation facultative, avec saisie manuelle en son absence ; préparation par une interface propre à chaque serveur ; accès de la suite à l’administration du serveur.
 
 **Référence.** [Conformité 4.8](/docs/spec/conformance#4.8).
 
 ## 0010. Relevé réduit à une liste de transactions
 
-**Choix.** Définir le relevé comme la liste des transactions réussies d’un opérateur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la norme.
+**Choix.** Je réduis le relevé à la liste des transactions réussies d’un opérateur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la norme.
 
 **Justification.** La norme définit une interface entre un client et un serveur. Ce que le client fait de la liste, dont le rapprochement avec ses propres enregistrements, relève de son architecture. Les obligations retirées portaient sur un comportement interne du serveur, qu’aucune suite ne peut observer.
 
-**Alternatives examinées.** Rapprochement normalisé avec verdict par ligne ; clôture de journée déclarée par le serveur ; second point d’accès réservé aux lignes non rapprochées.
+**Alternatives écartées.** Rapprochement normalisé avec verdict par ligne ; clôture de journée déclarée par le serveur ; second point d’accès réservé aux lignes non rapprochées.
 
 **Référence.** [Cycle de vie 10](/docs/spec/lifecycle#10).
 
 ## 0011. Issues choisies par la suite
 
-**Choix.** Exiger d’une implémentation, en environnement de test, une interface de contrôle par laquelle la suite fixe l’issue d’un paiement avant de le créer, résout un paiement en attente et déclenche un événement retenu. L’implémentation produit elle-même l’issue demandée. L’interface est annoncée dans la réponse de préparation et ne vaut que pour les clés de l’exécution. Sans elle, les tests qui choisissent une issue échouent.
+**Choix.** J’exige de l’implémentation, en environnement de test, une interface de contrôle par laquelle la suite fixe l’issue d’un paiement avant de le créer, résout un paiement en attente et déclenche un événement retenu. L’implémentation produit elle-même l’issue demandée. L’interface est annoncée dans la réponse de préparation et ne vaut que pour les clés de l’exécution. Sans elle, les tests qui choisissent une issue échouent.
 
-**Justification.** La conformité porte sur l’implémentation de la norme, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation, et les tests jusque-là assistés deviennent exécutables à partir de la seule adresse du serveur. Facultative, l’interface aurait laissé une seconde façon d’exécuter la suite, par des tests assistés dont le résultat dépend de l’exploitant.
+**Justification.** La conformité porte sur l’implémentation de la norme, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation, et les tests jusque-là assistés deviennent exécutables à partir de la seule adresse du serveur. Une interface facultative aurait laissé une seconde façon d’exécuter la suite, par des tests assistés dont le résultat dépend de l’exploitant.
 
-**Alternatives examinées.** Interface de contrôle réservée au serveur simulé de référence ; issue désignée par une valeur réservée du montant ou du numéro du payeur ; en-tête de requête propre aux essais.
+**Alternatives écartées.** Interface de contrôle réservée au serveur simulé de référence ; issue désignée par une valeur réservée du montant ou du numéro du payeur ; en-tête de requête propre aux essais.
 
 **Référence.** [Conformité 4.9](/docs/spec/conformance#4.9).
 
 ## 0012. Lecture sans synchronisation
 
-**Choix.** Retirer le point d’accès `POST /v1/payments/{id}/synchronize`. La lecture d’un paiement retourne l’état le plus récent que le serveur peut établir, la manière de l’établir relevant de l’implémentation. Le serveur peut limiter les consultations qu’une lecture provoque et retourne alors le dernier état connu.
+**Choix.** Je retire le point d’accès `POST /v1/payments/{id}/synchronize`. La lecture d’un paiement retourne l’état le plus récent que le serveur peut établir ; la manière de l’établir relève de l’implémentation. Le serveur peut limiter les consultations qu’une lecture provoque et retourne alors le dernier état connu.
 
-**Justification.** Distinguer la lecture de l’état conservé et la synchronisation auprès de l’opérateur suppose un serveur intermédiaire distinct de l’opérateur. Pour un opérateur qui applique la norme lui-même, les deux opérations se confondent. La norme définit l’interface, non l’architecture de l’implémentation.
+**Justification.** Séparer la lecture de l’état conservé et la synchronisation auprès de l’opérateur suppose un serveur intermédiaire distinct de l’opérateur. Pour un opérateur qui applique la norme lui-même, les deux opérations se confondent. La norme définit l’interface, non l’architecture de l’implémentation.
 
-**Alternatives examinées.** Synchronisation conservée et réservée aux intermédiaires ; paramètre de fraîcheur sur la lecture ; en-tête indiquant l’âge de l’état retourné.
+**Alternatives écartées.** Synchronisation conservée et réservée aux intermédiaires ; paramètre de fraîcheur sur la lecture ; en-tête indiquant l’âge de l’état retourné.
 
 **Référence.** [API des paiements 5.2](/docs/spec/payments-api#5.2).
 
