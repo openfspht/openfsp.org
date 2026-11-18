@@ -87,7 +87,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 | Input              | Value                                                                                              |
 | ------------------ | -------------------------------------------------------------------------------------------------- |
-| `restricted-key`   | Key of a second principal, with `payments:read` and `payments:write`, without `statements:read`.   |
+| `restricted-key`   | Key of a second principal of the same account, with `payments:read` and `payments:write`, without `statements:read`.   |
 | `statements-key`   | Key holding `statements:read`.                                                                     |
 | `revoked-key`      | Key revoked for longer than the delay of [authentication 7.3](/en/docs/spec/authentication#7.3).   |
 | `expired-key`      | Key whose expiry date has passed.                                                                  |
@@ -95,7 +95,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 
 **4.8.5.** When `webhook_url` is provided and the server declares `webhooks.emit`, the server delivers to that URL, until `expires_at`, the events of payments created with `api_key`, for every event type. It MUST NOT deliver the events of any other payment to it.
 
-**4.8.6.** The endpoint MUST issue only keys of the test environment. A deployment that accepts production keys MUST NOT expose it. The issued items MUST stop being valid at `expires_at`, and the keys of one call MUST NOT give access to payments created with those of another call.
+**4.8.6.** The endpoint MUST issue only keys of the test environment. A deployment that accepts production keys MUST NOT expose it. Each call creates a distinct test merchant account, to which the principals of the issued keys belong ([authentication 5.5](/en/docs/spec/authentication#5.5)). The issued items MUST stop being valid at `expires_at`. Under [authentication 5.6](/en/docs/spec/authentication#5.6), the keys of one call do not reach the payments created with those of another call.
 
 **4.8.7.** The server MAY require an access code issued by its operator, sent in `Authorization: Bearer`. Without a valid code, it responds `401` with the `unauthenticated` problem. The server SHOULD limit the number of simultaneous preparations and respond `429` beyond it.
 

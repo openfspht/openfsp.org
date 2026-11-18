@@ -87,7 +87,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 | Entrée             | Valeur                                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------- |
-| `restricted-key`   | Clé d’un second principal, avec `payments:read` et `payments:write`, sans `statements:read`.        |
+| `restricted-key`   | Clé d’un second principal du même compte, avec `payments:read` et `payments:write`, sans `statements:read`.        |
 | `statements-key`   | Clé disposant de `statements:read`.                                                                 |
 | `revoked-key`      | Clé révoquée depuis plus longtemps que le délai de l’[authentification 7.3](/docs/spec/authentication#7.3). |
 | `expired-key`      | Clé dont la date d’expiration est passée.                                                           |
@@ -95,7 +95,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 **4.8.5.** Lorsque `webhook_url` est fourni et que le serveur déclare `webhooks.emit`, le serveur livre à cette URL, jusqu’à `expires_at`, les événements des paiements créés avec `api_key`, pour tous les types d’événements. Il NE DOIT PAS y livrer les événements d’un autre paiement.
 
-**4.8.6.** Le point d’accès NE DOIT délivrer que des clés de l’environnement de test. Un déploiement qui accepte des clés de production NE DOIT PAS l’exposer. Les éléments délivrés DOIVENT cesser d’être valides à `expires_at`, et les clés d’un appel NE DOIVENT PAS donner accès aux paiements créés avec celles d’un autre appel.
+**4.8.6.** Le point d’accès NE DOIT délivrer que des clés de l’environnement de test. Un déploiement qui accepte des clés de production NE DOIT PAS l’exposer. Chaque appel crée un compte marchand de test distinct, auquel appartiennent les principaux des clés délivrées ([authentification 5.5](/docs/spec/authentication#5.5)). Les éléments délivrés DOIVENT cesser d’être valides à `expires_at`. Par l’[authentification 5.6](/docs/spec/authentication#5.6), les clés d’un appel n’accèdent pas aux paiements créés avec celles d’un autre appel.
 
 **4.8.7.** Le serveur PEUT exiger un code d’accès remis par son exploitant, transmis dans `Authorization: Bearer`. En l’absence d’un code valide, il répond `401` avec le problème `unauthenticated`. Le serveur DEVRAIT limiter le nombre de préparations simultanées et répondre `429` au-delà.
 
