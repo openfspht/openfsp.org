@@ -65,7 +65,7 @@ jobs:
           grep -q 'Page introuvable' /tmp/not-found.html
           curl -s -o /dev/null -w '%{http_code}' --path-as-is 'http://localhost:8080/fr/%5Cexample.com' | grep -q 404
           curl -s -o /dev/null -w '%{redirect_url}' 'http://localhost:8080/fr/docs/quickstart?a=1' | grep -q '/docs/quickstart?a=1$'
-          for path in / /fr/docs/quickstart /api/search-index/fr /missing-page /problems/provider-timeout; do
+          for path in / /fr/docs/quickstart /api/search-index/fr /missing-page /problems/provider-timeout /monitoring.json; do
             curl -sI "http://localhost:8080$path" > /tmp/headers.txt
             grep -qi '^Content-Security-Policy:' /tmp/headers.txt
             grep -qi '^Referrer-Policy:' /tmp/headers.txt
