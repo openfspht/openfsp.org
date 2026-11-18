@@ -167,7 +167,7 @@ make gateway-conformance   # terminal 2, port 8080
 make validate              # terminal 3
 ```
 
-Le profil `conformance` ajoute les services de test `mock_no_source`, `mock_statement_only` et `mock_unreachable`. La commande `make validate` ne reçoit aucune clé : la passerelle prépare elle-même l’exécution ([conformité 4.8](/docs/spec/conformance#4.8.1)), délivre des clés de courte durée et enregistre le récepteur de webhooks ouvert sur le port 8099. Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report.json`.
+Le profil `conformance` ajoute les services de test `mock_no_source`, `mock_statement_only` et `mock_unreachable`. La commande `make validate` ne reçoit aucune clé : la passerelle prépare elle-même l’exécution ([conformité 4.8](/docs/spec/conformance#4.8)), délivre des clés de courte durée et enregistre le récepteur de webhooks ouvert sur le port 8099. Le rapport est enregistré dans `backend/validator/infrastructure/build/conformance-report.json`.
 
 `make dev-sandbox` connecte la passerelle aux bacs à sable MonCash et NatCash. Les identifiants sont lus dans les variables du shell ou dans `.env.sandbox`, à la racine du dépôt et exclu du suivi Git, au format `NOM=valeur` sur chaque ligne :
 
