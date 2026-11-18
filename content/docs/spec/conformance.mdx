@@ -92,7 +92,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | `expired-key`      | Clé dont la date d’expiration est passée.                                                           |
 | `bounded-provider` | Identifiant d’un service de paiement déclarant `min_amount`, `max_amount` et `amount_step`.         |
 
-**4.8.5.** Lorsque `webhook_url` est fourni et que le serveur déclare `webhooks.emit`, le serveur livre à cette URL, jusqu’à `expires_at`, les événements des paiements créés avec `api_key`, pour tous les types d’événements.
+**4.8.5.** Lorsque `webhook_url` est fourni et que le serveur déclare `webhooks.emit`, le serveur livre à cette URL, jusqu’à `expires_at`, les événements des paiements créés avec `api_key`, pour tous les types d’événements. Il NE DOIT PAS y livrer les événements d’un autre paiement.
 
 **4.8.6.** Le point d’accès NE DOIT délivrer que des clés de l’environnement de test. Un déploiement qui accepte des clés de production NE DOIT PAS l’exposer. Les éléments délivrés DOIVENT cesser d’être valides à `expires_at`, et les clés d’un appel NE DOIVENT PAS donner accès aux paiements créés avec celles d’un autre appel.
 

@@ -92,7 +92,7 @@ Conformance is defined by target, protocol version and applicable capabilities. 
 | `expired-key`      | Key whose expiry date has passed.                                                                  |
 | `bounded-provider` | Identifier of a payment service declaring `min_amount`, `max_amount` and `amount_step`.            |
 
-**4.8.5.** When `webhook_url` is provided and the server declares `webhooks.emit`, the server delivers to that URL, until `expires_at`, the events of payments created with `api_key`, for every event type.
+**4.8.5.** When `webhook_url` is provided and the server declares `webhooks.emit`, the server delivers to that URL, until `expires_at`, the events of payments created with `api_key`, for every event type. It MUST NOT deliver the events of any other payment to it.
 
 **4.8.6.** The endpoint MUST issue only keys of the test environment. A deployment that accepts production keys MUST NOT expose it. The issued items MUST stop being valid at `expires_at`, and the keys of one call MUST NOT give access to payments created with those of another call.
 
