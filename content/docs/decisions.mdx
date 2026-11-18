@@ -37,11 +37,11 @@ Les décisions suivantes documentent les choix retenus pour la version décrite 
 
 ## 0004. API des paiements
 
-**Choix.** Exposer l’API en HTTPS sous `/v1`, avec des représentations JSON et un catalogue fermé d’erreurs conforme au format RFC 9457, enrichi de `retryable` et `effect`. La capacité de base `payments` couvre la création, la consultation par `id` ou `reference` et la synchronisation. Le client sélectionne le service de paiement. L’en-tête `Idempotency-Key` est obligatoire pour les opérations soumises à idempotence.
+**Choix.** Exposer l’API en HTTPS sous `/v1`, avec des représentations JSON et un catalogue fermé d’erreurs conforme au format RFC 9457, enrichi de `retryable` et `effect`. La capacité de base `payments` couvre la création et la lecture par `id` ou `reference`. Le client sélectionne le service de paiement. L’en-tête `Idempotency-Key` est obligatoire pour les opérations soumises à idempotence.
 
-**Justification.** Ces opérations couvrent la création du paiement, sa récupération par une référence connue du marchand après la perte d’une réponse et la consultation de son état lorsqu’une notification manque. Les propriétés `retryable` et `effect` distinguent la possibilité d’une nouvelle tentative de l’incertitude sur les effets de l’opération initiale. La synchronisation reste soumise aux capacités effectivement prises en charge.
+**Justification.** Ces opérations couvrent la création du paiement, sa récupération par une référence connue du marchand après la perte d’une réponse et la consultation de son état lorsqu’une notification manque. Les propriétés `retryable` et `effect` distinguent la possibilité d’une nouvelle tentative de l’incertitude sur les effets de l’opération initiale.
 
-**Alternatives examinées.** Sélection du service par le serveur ; synchronisation par `GET ?synchronize=true` ; réponse `404` pour une référence inconnue ; chemin `/by-reference` ; champ `next_action` limité à une URL ; point d’accès de liste générale des paiements dans cette version.
+**Alternatives examinées.** Sélection du service par le serveur ; réponse `404` pour une référence inconnue ; chemin `/by-reference` ; champ `next_action` limité à une URL ; point d’accès de liste générale des paiements dans cette version.
 
 **Références.** [API des paiements](/docs/spec/payments-api) et [Idempotence](/docs/spec/idempotency).
 

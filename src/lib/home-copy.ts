@@ -39,11 +39,11 @@ export const homeCopy = {
         },
         contract: {
             title: "Un contrat d’interface pour les opérations de paiement et les notifications.",
-            body: "La spécification définit la création, la consultation et la synchronisation des paiements, ainsi que la vérification des notifications d’événements.",
+            body: "La spécification définit la création et la lecture des paiements, ainsi que la vérification des notifications d’événements.",
             links: [
                 {
                     title: "API des paiements",
-                    body: "Création, consultation et synchronisation des paiements.",
+                    body: "Création et lecture des paiements.",
                     href: "/docs/spec/payments-api",
                 },
                 {
@@ -144,11 +144,11 @@ export const homeCopy = {
         },
         contract: {
             title: "An interface contract for payment operations and notifications.",
-            body: "The specification defines payment creation, retrieval and synchronisation, together with the verification of event notifications.",
+            body: "The specification defines payment creation and retrieval, together with the verification of event notifications.",
             links: [
                 {
                     title: "Payments API",
-                    body: "Payment creation, retrieval and synchronisation.",
+                    body: "Payment creation and retrieval.",
                     href: "/docs/spec/payments-api",
                 },
                 {

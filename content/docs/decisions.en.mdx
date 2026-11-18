@@ -37,11 +37,11 @@ The following decisions document the choices adopted for the specification versi
 
 ## 0004. Payments API
 
-**Decision.** Expose the API over HTTPS under `/v1`, using JSON representations and a closed RFC 9457 error catalogue extended with `retryable` and `effect`. The base `payments` capability covers creation, retrieval by `id` or `reference`, and synchronisation. The client selects the payment service. `Idempotency-Key` is required for operations subject to idempotency.
+**Decision.** Expose the API over HTTPS under `/v1`, using JSON representations and a closed RFC 9457 error catalogue extended with `retryable` and `effect`. The base `payments` capability covers creation and retrieval by `id` or `reference`. The client selects the payment service. `Idempotency-Key` is required for operations subject to idempotency.
 
-**Rationale.** These operations cover payment creation, recovery through a reference already known to the merchant after a lost response, and state retrieval when a notification is missing. The `retryable` and `effect` properties distinguish whether another attempt is appropriate from uncertainty about the initial operation’s effects. Synchronisation remains subject to supported capabilities.
+**Rationale.** These operations cover payment creation, recovery through a reference already known to the merchant after a lost response, and state retrieval when a notification is missing. The `retryable` and `effect` properties distinguish whether another attempt is appropriate from uncertainty about the initial operation’s effects.
 
-**Alternatives considered.** Server-side service selection; synchronisation through `GET ?synchronize=true`; `404` for an unknown reference; a `/by-reference` path; a URL-only `next_action`; a general payment-listing endpoint in this version.
+**Alternatives considered.** Server-side service selection; `404` for an unknown reference; a `/by-reference` path; a URL-only `next_action`; a general payment-listing endpoint in this version.
 
 **References.** [Payments API](/en/docs/spec/payments-api) and [Idempotency](/en/docs/spec/idempotency).
 
