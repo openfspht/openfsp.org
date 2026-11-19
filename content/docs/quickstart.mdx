@@ -21,22 +21,22 @@ make demo
 
 Au premier lancement, cette cible crée le fichier `.env` qui contient la clé `OPENFSP_APP_KEY`, comme `make keys`. Elle exécute ensuite `docker compose --profile demo up --build`, qui exige ce fichier, et démarre les services suivants :
 
-| Service                     | Adresse                 |
-| --------------------------- | ----------------------- |
-| Serveur OpenFSP             | `http://localhost:8080` |
-| Console                     | `http://localhost:5173` |
-| Interface du serveur simulé | `http://localhost:5175` |
-| Interface du validateur     | `http://localhost:5176` |
-| Boutique                    | `http://localhost:3000` |
+| Service                     | Adresse                         |
+| --------------------------- | ------------------------------- |
+| Serveur OpenFSP             | `http://localhost:8080`         |
+| Console                     | `http://console.localhost:8080` |
+| Serveur simulé              | `http://localhost:8090`         |
+| Validateur                  | `http://localhost:8095`         |
+| Boutique                    | `http://localhost:3000`         |
 
-Le simulateur est également accessible sur `127.0.0.1:8090`. PostgreSQL n’a pas de port hôte fixe, et le service de validation n’est joignable que par son interface. Pour accéder à la console, utilisez le jeton d’administration `demo-admin-token`. La découverte des points d’accès est disponible à `/.well-known/openfsp-configuration`. Le serveur sur le port 8080 correspond à la [passerelle](/docs/gateway), connectée aux services de paiement du simulateur.
+Chaque service sert son API et son interface depuis un seul conteneur. La passerelle ne sert la console et `/admin` que sur son hôte d’administration, `console.localhost` dans Compose, que Safari ne résout pas toujours. PostgreSQL n’a pas de port hôte fixe. Pour accéder à la console, utilisez le jeton d’administration `demo-admin-token`. La découverte des points d’accès est disponible à `/.well-known/openfsp-configuration`. Le serveur sur le port 8080 correspond à la [passerelle](/docs/gateway), connectée aux services de paiement du simulateur.
 
 ### Premier paiement simulé
 
 1. Attendez le démarrage des services, puis ouvrez la [boutique locale](http://localhost:3000).
 2. Ajoutez un produit au panier et sélectionnez un service portant la mention « (mock) ».
 3. Suivez les étapes du parcours simulé, sans compte marchand ni fonds réels.
-4. Accédez à la [console locale](http://localhost:5173) avec `demo-admin-token`, puis consultez le paiement. Le scénario de réussite produit la transition de `pending` vers `succeeded`.
+4. Accédez à la [console locale](http://console.localhost:8080) avec `demo-admin-token`, puis consultez le paiement. Le scénario de réussite produit la transition de `pending` vers `succeeded`.
 
 L’environnement Docker et le mode développement décrit ci-dessous utilisent les mêmes ports : arrêtez l’un avant de démarrer l’autre.
 

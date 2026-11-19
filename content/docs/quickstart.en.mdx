@@ -21,22 +21,22 @@ make demo
 
 On first launch, this target creates the `.env` file holding the `OPENFSP_APP_KEY` key, as `make keys` does. It then runs `docker compose --profile demo up --build`, which requires that file, and starts the following services:
 
-| Service      | Address                 |
-| ------------ | ----------------------- |
-| OpenFSP server | `http://localhost:8080` |
-| Console      | `http://localhost:5173` |
-| Simulator UI | `http://localhost:5175` |
-| Validator UI | `http://localhost:5176` |
-| Demo shop    | `http://localhost:3000` |
+| Service        | Address                         |
+| -------------- | ------------------------------- |
+| OpenFSP server | `http://localhost:8080`         |
+| Console        | `http://console.localhost:8080` |
+| Simulator      | `http://localhost:8090`         |
+| Validator      | `http://localhost:8095`         |
+| Demo shop      | `http://localhost:3000`         |
 
-The simulator is also available at `127.0.0.1:8090`. PostgreSQL has no fixed host port, and the validation service is reachable only through its interface. Use the `demo-admin-token` administration token to access the console. Endpoint discovery is available at `/.well-known/openfsp-configuration`. The server on port 8080 is the [gateway](/en/docs/gateway), connected to the simulator’s payment services.
+Each service serves its API and its interface from a single container. The gateway serves the console and `/admin` only on its admin host, `console.localhost` in Compose, which Safari does not always resolve. PostgreSQL has no fixed host port. Use the `demo-admin-token` administration token to access the console. Endpoint discovery is available at `/.well-known/openfsp-configuration`. The server on port 8080 is the [gateway](/en/docs/gateway), connected to the simulator’s payment services.
 
 ### First simulated payment
 
 1. Wait for the services to start, then open the [local shop](http://localhost:3000).
 2. Add a product to the cart and select a service marked “(mock)”.
 3. Complete the simulated flow without a merchant account or real funds.
-4. Open the [local console](http://localhost:5173) using `demo-admin-token`, then retrieve the payment. The success scenario produces a transition from `pending` to `succeeded`.
+4. Open the [local console](http://console.localhost:8080) using `demo-admin-token`, then retrieve the payment. The success scenario produces a transition from `pending` to `succeeded`.
 
 The Docker environment and the development mode described below use the same ports: stop one before starting the other.
 

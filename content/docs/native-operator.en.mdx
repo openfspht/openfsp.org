@@ -40,16 +40,22 @@ make validate TARGET=http://127.0.0.1:8090/mock_openfsp
 Against your implementation, its address is enough: `make validate TARGET=https://operator.example`. The Makefile opens the suite’s webhook receiver on port 8099 and writes the report to `backend/validator/infrastructure/build/conformance-report.json`. Without the Makefile:
 
 ```bash
-./backend/gradlew -p backend :validator:infrastructure:bootJar
-java -jar backend/validator/infrastructure/build/libs/app.jar validate \
-  --base-url https://operator.example \
-  --conformance conformance \
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example \
   --report conformance-report.json \
   --webhook-port 8098 \
   --webhook-url https://receiver.example/webhooks
 ```
 
-Add `--access-code` when preparation requires the operator’s access code ([conformance 4.8.7](/en/docs/spec/conformance#4.8.7)). Without `--webhook-port`, no receiver starts and the delivery tests do not run. `--webhook-url` gives the public HTTPS address forwarded to that port; otherwise the suite announces `http://127.0.0.1:8098/webhooks`, reachable only from a local instance.
+Without a clone of the repository, this script is enough; it runs the validator image, which bundles the suite, and Docker is its only requirement. The equivalent Docker command:
+
+```bash
+docker run --rm -it --user "$(id -u):$(id -g)" -p 8098:8098 -v "$PWD:/work" ghcr.io/openfspht/validator:0.5.0 validate https://operator.example \
+  --report conformance-report.json \
+  --webhook-port 8098 \
+  --webhook-url https://receiver.example/webhooks
+```
+
+Add `--access-code` when preparation requires the operator’s access code ([conformance 4.8.7](/en/docs/spec/conformance#4.8.7)). Without `--webhook-port`, no receiver starts and the delivery tests are inconclusive, with their reason. `--webhook-url` gives the public HTTPS address forwarded to that port; otherwise the suite announces `http://127.0.0.1:8098/webhooks`, reachable only from a local instance.
 
 The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
 
