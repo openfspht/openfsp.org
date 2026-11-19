@@ -38,7 +38,7 @@ The application explicitly selects the payment service. The gateway maintains pa
 
 ## Deployment and trust
 
-The operator, either the merchant or its representative, deploys the gateway and manages the secrets required by the payment service APIs. These secrets are not entrusted to the project. This architecture transfers no value between services and introduces no clearing operation. Each deployment serves a single merchant account, limiting the scope of credentials and data exposed by gateway compromise to that account. Each version provides multi-platform container images with build provenance and a software bill of materials (SBOM).
+The operator, either the merchant or its representative, deploys the gateway and manages the secrets required by the payment service APIs. These secrets are not entrusted to the project. This architecture transfers no value between services and introduces no clearing operation. A gateway serves several merchant accounts: payments, keys, statements and webhooks are isolated per account, and an API key reaches only the data of its own. Its compromise, however, exposes every account it serves; a merchant that wants a narrower scope deploys its own instance. Each version provides multi-platform container images with build provenance and a software bill of materials (SBOM).
 
 ## Adapters [#adapters]
 
@@ -91,6 +91,12 @@ Payment-specific notification URLs and signed callbacks apply only to exchanges 
 ## Provider secrets [#secrets]
 
 Service secrets are loaded from environment variables or a secrets manager, not exclusively from a configuration file. The gateway supports reloading them without a restart. No endpoint returns a secret, even partially; the health check reports only whether a service is reachable. Secrets are excluded from logs, traces, metrics, error reports, memory dumps and audit records. In error `detail` and `failure_detail`, values held as secrets are replaced with `[REDACTED]` by comparison with their actual values rather than by pattern matching.
+
+## Credentials per merchant account [#account-credentials]
+
+For each service, a merchant account uses either the platform credentials supplied by the configuration or its own MonCash or NatCash credentials. This mode is recorded per account and per service, never inferred. An account in own mode without active credentials has its new payments refused; they are never served with the platform credentials. Switching to platform mode is an explicit operator action, recorded in the audit.
+
+Each time credentials are stored, a revision is created, encrypted with AES-256-GCM and bound to its account, its service and its identifier; no endpoint returns it. The new revision is active and serves new payments, the previous one is retired. A payment keeps the revision that created it, or the platform credentials, and every later call to the service for that payment uses them, notification verification included. A retired revision stays encrypted while a pending payment depends on it, then its values are wiped. After a compromise, the operator revokes the revision: its values are wiped at once and no call is made any more for its payments, which stay `pending` and are signalled to the operator.
 
 ## Observed profiles [#profiles]
 

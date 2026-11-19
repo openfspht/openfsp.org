@@ -38,7 +38,7 @@ L’application sélectionne explicitement le service de paiement. La passerelle
 
 ## Déploiement et confiance
 
-L’exploitant, marchand ou mandataire, déploie la passerelle et gère les secrets nécessaires aux API des services de paiement. Ces secrets ne sont pas confiés au projet. Cette architecture ne transfère aucune valeur entre services et n’introduit aucune opération de compensation. Chaque déploiement sert un seul compte marchand, ce qui limite à ce compte le périmètre des identifiants et des données exposés par la compromission de la passerelle. Chaque version fournit des images de conteneur multiplateformes accompagnées de leur provenance de construction et d’une nomenclature des composants logiciels (SBOM).
+L’exploitant, marchand ou mandataire, déploie la passerelle et gère les secrets nécessaires aux API des services de paiement. Ces secrets ne sont pas confiés au projet. Cette architecture ne transfère aucune valeur entre services et n’introduit aucune opération de compensation. Une passerelle sert plusieurs comptes marchands : paiements, clés, relevés et webhooks sont isolés par compte, et une clé d’API n’atteint que les données du sien. Sa compromission expose en revanche tous les comptes qu’elle sert ; un marchand qui veut réduire ce périmètre déploie sa propre instance. Chaque version fournit des images de conteneur multiplateformes accompagnées de leur provenance de construction et d’une nomenclature des composants logiciels (SBOM).
 
 ## Adaptateurs [#adapters]
 
@@ -91,6 +91,12 @@ Les URL de notification propres au paiement et les notifications signées concer
 ## Secrets d'opérateur [#secrets]
 
 Les secrets des services sont chargés depuis des variables d’environnement ou un gestionnaire de secrets, et non exclusivement depuis un fichier de configuration. La passerelle permet leur rechargement sans redémarrage. Aucun point d’accès ne retourne un secret, même partiellement ; le contrôle de santé indique uniquement si un service est joignable. Les secrets sont exclus des journaux, traces, métriques, rapports d’erreur, vidages mémoire et enregistrements d’audit. Dans le `detail` des erreurs et dans `failure_detail`, les valeurs détenues comme secrets sont remplacées par `[REDACTED]` au moyen d’une comparaison avec les valeurs effectives, plutôt que par reconnaissance de motifs.
+
+## Identifiants par compte marchand [#account-credentials]
+
+Pour chaque service, un compte marchand utilise soit les identifiants de la plateforme, fournis par la configuration, soit ses propres identifiants MonCash ou NatCash. Ce mode est enregistré par compte et par service, jamais déduit. Un compte en mode propre sans identifiants actifs voit ses nouveaux paiements refusés ; ils ne sont jamais servis avec les identifiants de la plateforme. Le passage en mode plateforme est une action explicite de l’exploitant, consignée dans l’audit.
+
+Chaque enregistrement d’identifiants crée une révision, chiffrée en AES-256-GCM et liée à son compte, à son service et à son identifiant ; aucun point d’accès ne la retourne. La nouvelle révision est active et sert les nouveaux paiements, la précédente est retirée. Un paiement conserve la révision qui l’a créé, ou les identifiants de la plateforme, et tout appel ultérieur au service pour ce paiement les utilise, vérification des notifications comprise. Une révision retirée reste chiffrée tant qu’un paiement en attente en dépend, puis ses valeurs sont effacées. Après une compromission, l’exploitant révoque la révision : ses valeurs sont effacées aussitôt et plus aucun appel n’est émis pour ses paiements, qui restent `pending` et sont signalés à l’exploitant.
 
 ## Profils observés [#profiles]
 
