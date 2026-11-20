@@ -71,6 +71,7 @@ html > body[data-scroll-locked] {
 .prose h3,
 [data-docs-title] {
     letter-spacing: -0.02em;
+    color: var(--color-fd-primary);
 }
 
 .prose tr.problem,
@@ -81,8 +82,8 @@ html > body[data-scroll-locked] {
 
 .prose tr.problem:target,
 .prose p.rule:target {
-    background: color-mix(in oklab, var(--color-fd-primary) 14%, transparent);
-    box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-fd-primary) 14%, transparent);
+    outline: 2px solid var(--color-fd-primary);
+    outline-offset: 6px;
 }
 
 .prose a.rule-number {
@@ -110,7 +111,7 @@ html > body[data-scroll-locked] {
 }
 
 .btn:hover {
-    border-color: var(--color-fd-foreground);
+    border-color: var(--color-fd-primary);
 }
 
 .btn-primary {
@@ -176,8 +177,12 @@ html > body[data-scroll-locked] {
         transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .landing-button.is-primary {
-    background: var(--color-fd-foreground);
-    color: var(--color-fd-background);
+    background: var(--color-fd-primary);
+    color: var(--color-fd-primary-foreground);
+}
+.landing-button.is-secondary {
+    border-color: var(--color-fd-primary);
+    color: var(--color-fd-primary);
 }
 .text-link {
     display: inline-flex;
@@ -264,7 +269,7 @@ html > body[data-scroll-locked] {
 }
 @media (hover: hover) and (pointer: fine) {
     .landing-button.is-primary:hover {
-        background: color-mix(in oklab, var(--color-fd-foreground) 84%, var(--color-fd-background));
+        background: color-mix(in oklab, var(--color-fd-primary) 86%, var(--color-fd-background));
     }
     .landing-button.is-secondary:hover {
         background: var(--color-fd-muted);
@@ -303,4 +308,6 @@ html > body[data-scroll-locked] {
 #nd-sidebar a[data-active="true"],
 #nd-sidebar button[data-active="true"] {
     background-color: var(--color-fd-muted);
+    color: var(--color-fd-primary);
+    font-weight: 600;
 }

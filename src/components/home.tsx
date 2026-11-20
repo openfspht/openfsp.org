@@ -27,7 +27,7 @@ const EVENT_BODY = `{
 
 const muted = "text-fd-muted-foreground";
 const sectionTitle =
-    "text-[clamp(26px,3vw,36px)] leading-tight font-semibold tracking-[-0.03em] text-balance";
+    "text-[clamp(26px,3vw,36px)] leading-tight font-semibold tracking-[-0.03em] text-balance text-fd-primary";
 
 function HighlightedCode({ code }: { code: string }) {
     const tokens = code.split(/("(?:[^"\\]|\\.)*"\s*:|"(?:[^"\\]|\\.)*"|\b\d+\b|\bnull\b)/g);
@@ -121,7 +121,7 @@ function Brand() {
 function NativeRoute({ t }: { t: CopyText["native"] }) {
     const node =
         "flex min-h-24 flex-col items-center justify-center gap-2 rounded-md border p-4 text-center";
-    const arrow = `mx-auto shrink-0 rotate-90 md:rotate-0 ${muted}`;
+    const arrow = "mx-auto shrink-0 rotate-90 text-fd-primary md:rotate-0";
     return (
         <figure className="mt-8 rounded-lg border border-fd-border bg-fd-card p-4 sm:p-6">
             <figcaption className={`text-[13px] ${muted}`}>{t.caption}</figcaption>
@@ -168,7 +168,7 @@ export function Home({ locale }: { locale: Locale }) {
             <div>
                 <section className="landing-container py-14 sm:py-16 lg:py-24">
                     <div className="min-w-0">
-                        <h1 className="hero-title">
+                        <h1 className="hero-title text-fd-primary">
                             {t.headline.map((line, index) => (
                                 <span
                                     key={line}
@@ -222,9 +222,7 @@ export function Home({ locale }: { locale: Locale }) {
                                 key={step.title}
                                 className="grid grid-cols-[28px_1fr] gap-x-3 md:block"
                             >
-                                <span
-                                    className={`row-span-2 text-sm font-semibold tabular-nums md:mb-4 md:block ${muted}`}
-                                >
+                                <span className="row-span-2 text-sm font-semibold text-fd-primary tabular-nums md:mb-4 md:block">
                                     {index + 1}
                                 </span>
                                 <h3 className="text-base font-semibold tracking-[-0.01em]">
@@ -258,12 +256,14 @@ export function Home({ locale }: { locale: Locale }) {
                                     className="contract-link flex items-center justify-between gap-5 border-b border-fd-border py-4"
                                 >
                                     <div>
-                                        <h3 className="text-[15px] font-semibold">{item.title}</h3>
+                                        <h3 className="text-[15px] font-semibold text-fd-primary">
+                                            {item.title}
+                                        </h3>
                                         <p className={`mt-1 text-sm ${muted}`}>{item.body}</p>
                                     </div>
                                     <ArrowUpRight
                                         size={18}
-                                        className={`shrink-0 ${muted}`}
+                                        className="shrink-0 text-fd-primary"
                                         aria-hidden
                                     />
                                 </Link>
@@ -304,7 +304,7 @@ export function Home({ locale }: { locale: Locale }) {
                 >
                     <h2
                         id="gateway-title"
-                        className="text-[22px] leading-snug font-semibold tracking-[-0.02em] text-balance"
+                        className="text-[22px] leading-snug font-semibold tracking-[-0.02em] text-balance text-fd-primary"
                     >
                         {t.gateway.title}
                     </h2>
@@ -374,7 +374,10 @@ export function Home({ locale }: { locale: Locale }) {
                     className="landing-container my-10 grid gap-4 md:my-14 md:grid-cols-2 md:gap-14 lg:gap-24"
                     aria-labelledby="status-title"
                 >
-                    <h2 id="status-title" className="text-[22px] font-semibold tracking-[-0.02em]">
+                    <h2
+                        id="status-title"
+                        className="text-[22px] font-semibold tracking-[-0.02em] text-fd-primary"
+                    >
                         {t.status.title}
                     </h2>
                     <div>
@@ -414,7 +417,7 @@ export function Home({ locale }: { locale: Locale }) {
                             aria-label={t.footer.docs}
                             className={`flex flex-col items-start gap-2.5 text-sm ${muted}`}
                         >
-                            <h2 className="mb-1 text-sm font-semibold text-fd-foreground">
+                            <h2 className="mb-1 text-sm font-semibold text-fd-primary">
                                 {t.footer.docs}
                             </h2>
                             <Link to={href("/docs/quickstart")}>{t.footer.quickstart}</Link>
@@ -425,7 +428,7 @@ export function Home({ locale }: { locale: Locale }) {
                             aria-label={t.footer.project}
                             className={`flex flex-col items-start gap-2.5 text-sm ${muted}`}
                         >
-                            <h2 className="mb-1 text-sm font-semibold text-fd-foreground">
+                            <h2 className="mb-1 text-sm font-semibold text-fd-primary">
                                 {t.footer.project}
                             </h2>
                             <Link to={href("/docs/registry")}>{t.footer.registry}</Link>
