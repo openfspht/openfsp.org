@@ -23,6 +23,5 @@ TanStack Start, React 19, Fumadocs, MDX and Tailwind 4 on Vite+ (`vp`), with Bun
 ## Code and design
 
 - Colours come from the `--color-fd-*` tokens in `src/styles/app.css`, derived from the brand in `openfspht/art` (`BRAND.md`): ink, chalk, accent. No hex values in components.
-- `DESIGN.md` and `PRODUCT.md` describe the shipped design and the product; update them when either changes.
 - No comments except a non-obvious why; none in workflows, Dockerfile or nginx config.
 - Commits are conventional, one English line, no body.

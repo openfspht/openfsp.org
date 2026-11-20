@@ -17,7 +17,6 @@ export default defineConfig({
             ".tanstack",
             "src/routeTree.gen.ts",
             "bun.lock",
-            ".impeccable",
             "content",
             "CHANGELOG.md",
         ],
