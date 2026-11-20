@@ -90,7 +90,7 @@ Les URL de notification propres au paiement et les notifications signées concer
 
 ## Secrets d'opérateur [#secrets]
 
-Les secrets des services sont chargés depuis des variables d’environnement ou un gestionnaire de secrets, et non exclusivement depuis un fichier de configuration. La passerelle permet leur rechargement sans redémarrage. Aucun point d’accès ne retourne un secret, même partiellement ; le contrôle de santé indique uniquement si un service est joignable. Les secrets sont exclus des journaux, traces, métriques, rapports d’erreur, vidages mémoire et enregistrements d’audit. Dans le `detail` des erreurs et dans `failure_detail`, les valeurs détenues comme secrets sont remplacées par `[REDACTED]` au moyen d’une comparaison avec les valeurs effectives, plutôt que par reconnaissance de motifs.
+Les secrets des services sont chargés depuis des variables d’environnement ou un gestionnaire de secrets, et non exclusivement depuis un fichier de configuration. Les identifiants de la plateforme sont lus au démarrage : leur rotation exige un redémarrage. Les identifiants propres à un compte marchand changent sans redémarrage, par révision. Aucun point d’accès ne retourne un secret, même partiellement ; le contrôle de santé indique uniquement si un service est joignable. Les secrets sont exclus des journaux, traces, métriques, rapports d’erreur, vidages mémoire et enregistrements d’audit. Dans le `detail` des erreurs et dans `failure_detail`, les valeurs détenues comme secrets sont remplacées par `[REDACTED]` au moyen d’une comparaison avec les valeurs effectives, plutôt que par reconnaissance de motifs.
 
 ## Identifiants par compte marchand [#account-credentials]
 

@@ -90,7 +90,7 @@ Payment-specific notification URLs and signed callbacks apply only to exchanges 
 
 ## Provider secrets [#secrets]
 
-Service secrets are loaded from environment variables or a secrets manager, not exclusively from a configuration file. The gateway supports reloading them without a restart. No endpoint returns a secret, even partially; the health check reports only whether a service is reachable. Secrets are excluded from logs, traces, metrics, error reports, memory dumps and audit records. In error `detail` and `failure_detail`, values held as secrets are replaced with `[REDACTED]` by comparison with their actual values rather than by pattern matching.
+Service secrets are loaded from environment variables or a secrets manager, not exclusively from a configuration file. Platform credentials are read at startup: rotating them requires a restart. Credentials of a merchant account change without a restart, through revisions. No endpoint returns a secret, even partially; the health check reports only whether a service is reachable. Secrets are excluded from logs, traces, metrics, error reports, memory dumps and audit records. In error `detail` and `failure_detail`, values held as secrets are replaced with `[REDACTED]` by comparison with their actual values rather than by pattern matching.
 
 ## Credentials per merchant account [#account-credentials]
 
