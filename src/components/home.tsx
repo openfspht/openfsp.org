@@ -403,7 +403,7 @@ export function Home({ locale }: { locale: Locale }) {
             </div>
             <footer className="landing-footer border-t border-fd-border">
                 <div className="landing-container">
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-7 py-8 md:grid-cols-[2fr_1fr_1fr] md:gap-16 md:py-10">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-[2fr_1fr_1fr] md:gap-16 md:py-20">
                         <div className="col-span-2 md:col-span-1">
                             <Link to={href("/")} aria-label="OpenFSP">
                                 <Brand />
@@ -436,7 +436,7 @@ export function Home({ locale }: { locale: Locale }) {
                         </nav>
                     </div>
                     <div
-                        className={`flex flex-wrap items-center justify-between gap-4 border-t border-fd-border py-5 text-[13px] ${muted}`}
+                        className={`flex flex-wrap items-center justify-between gap-4 border-t border-fd-border py-7 text-[13px] md:py-9 ${muted}`}
                     >
                         <span>{t.footer.note}</span>
                         <a href={CODE_REPO} className="flex items-center gap-1.5">
