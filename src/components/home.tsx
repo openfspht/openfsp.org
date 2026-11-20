@@ -4,7 +4,8 @@ import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { Header } from "fumadocs-ui/layouts/home/slots/header";
 import { ArrowRight, ArrowUpRight, Building2, Check, Copy, Terminal, Webhook } from "lucide-react";
 import { localePath, type Locale } from "@/lib/i18n";
-import { CODE_REPO, baseOptions } from "@/lib/layout.shared";
+import { CODE_REPO, LINKEDIN_URL, X_URL, baseOptions, socialLinks } from "@/lib/layout.shared";
+import { LinkedInIcon, XIcon } from "@/components/social-icons";
 import { homeCopy } from "@/lib/home-copy";
 
 type CopyText = (typeof homeCopy)[Locale];
@@ -161,6 +162,7 @@ export function Home({ locale }: { locale: Locale }) {
             links={[
                 { text: t.footer.docs, url: href("/docs"), active: "none" },
                 { text: t.secondary, url: href("/docs/spec/payments-api"), active: "none" },
+                ...socialLinks,
             ]}
             githubUrl={CODE_REPO}
         >
@@ -439,10 +441,22 @@ export function Home({ locale }: { locale: Locale }) {
                         className={`flex flex-wrap items-center justify-between gap-4 border-t border-fd-border py-7 text-[13px] md:py-9 ${muted}`}
                     >
                         <span>{t.footer.note}</span>
-                        <a href={CODE_REPO} className="flex items-center gap-1.5">
-                            {t.footer.source}
-                            <ArrowUpRight size={14} aria-hidden />
-                        </a>
+                        <div className="flex items-center gap-5">
+                            <a href={X_URL} aria-label="X" className="hover:text-fd-primary">
+                                <XIcon />
+                            </a>
+                            <a
+                                href={LINKEDIN_URL}
+                                aria-label="LinkedIn"
+                                className="hover:text-fd-primary"
+                            >
+                                <LinkedInIcon />
+                            </a>
+                            <a href={CODE_REPO} className="flex items-center gap-1.5">
+                                {t.footer.source}
+                                <ArrowUpRight size={14} aria-hidden />
+                            </a>
+                        </div>
                     </div>
                 </div>
             </footer>
