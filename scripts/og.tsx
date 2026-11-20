@@ -6,9 +6,9 @@ import { OG_HEIGHT, OG_WIDTH } from "../src/lib/og";
 
 const INK = "#0B3B36";
 const ACCENT = "#E8A33D";
-const CHALK = "#F4F4F4";
-const MUTED = "#525252";
-const RULE = "#D4D4D4";
+const CHALK = "#EEF5F4";
+const MUTED = "#B9D3CF";
+const RULE = "#1F5A53";
 
 const modules = resolve(import.meta.dir, "../node_modules/@fontsource");
 const font = async (name: string, file: string, weight: Font["weight"]): Promise<Font> => ({
@@ -23,7 +23,7 @@ const fonts = await Promise.all([
     font("Inter", "inter/files/inter-latin-400-normal.woff", 400),
     font("Inter", "inter/files/inter-latin-500-normal.woff", 500),
 ]);
-const logo = `data:image/svg+xml;base64,${Buffer.from(await readFile(resolve(import.meta.dir, "../public/openfsp-logo.svg"))).toString("base64")}`;
+const logo = `data:image/svg+xml;base64,${Buffer.from(await readFile(resolve(import.meta.dir, "../public/openfsp-logo-inverse.svg"))).toString("base64")}`;
 
 export interface OgPage {
     path: string;
@@ -58,14 +58,12 @@ function Card({ page }: { page: OgPage }) {
                 height: OG_HEIGHT,
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor: CHALK,
-                color: INK,
+                backgroundColor: INK,
+                color: CHALK,
                 fontFamily: "Inter",
             }}
         >
-            <div style={{ display: "flex", height: 14, backgroundColor: INK }}>
-                <div style={{ width: 220, height: 14, backgroundColor: ACCENT }} />
-            </div>
+            <div style={{ display: "flex", height: 8, width: 220, backgroundColor: ACCENT }} />
             <div
                 style={{
                     display: "flex",
