@@ -3,6 +3,8 @@ import type { Locale } from "@/lib/i18n";
 export const homeCopy = {
     fr: {
         title: "Une spécification ouverte pour l’interopérabilité des paiements en Haïti",
+        version: "v0.1.0",
+        phase: "Phase 1 : développement en cours",
         headline: [
             "Une interface commune.",
             "Des échanges normalisés.",
@@ -10,17 +12,18 @@ export const homeCopy = {
         ],
         lead: "OpenFSP définit une interface commune entre les applications marchandes et les fournisseurs de services de paiement en Haïti. La spécification normalise les échanges et les comportements attendus afin de faciliter l’intégration des services compatibles.",
         primary: "Consulter la spécification",
-        secondary: "Consulter l’API",
+        secondary: "Essayer la démonstration",
         facts: ["Apache-2.0", "Implémentable librement", "Devise : HTG"],
         native: {
+            eyebrow: "Fonctionnement",
             title: "Une interface commune implémentée par chaque fournisseur.",
             caption: "Architecture d’intégration native",
             app: "Application marchande",
+            appDetail: "Boutique, application ou ERP",
             contract: "Bibliothèque cliente OpenFSP",
             contractDetail: "Interface HTTP et notifications signées",
             providers: "Fournisseurs implémentant OpenFSP",
             api: "Interfaces OpenFSP natives",
-            note: "Communication directe avec l’interface OpenFSP de chaque fournisseur compatible.",
             action: "Consulter le guide d’implémentation fournisseur",
             steps: [
                 {
@@ -38,6 +41,7 @@ export const homeCopy = {
             ],
         },
         contract: {
+            eyebrow: "Spécification",
             title: "Un contrat d’interface pour les opérations de paiement et les notifications.",
             body: "La spécification définit la création et la lecture des paiements, ainsi que la vérification des notifications d’événements.",
             links: [
@@ -57,7 +61,6 @@ export const homeCopy = {
                     href: "/docs/spec/conformance",
                 },
             ],
-            event: "Événement reçu par l’application marchande",
             payload: "Extrait d’un événement produit en simulation",
             docs: "Consulter le format de l’événement",
         },
@@ -66,39 +69,73 @@ export const homeCopy = {
             body: "La passerelle de référence traduit les requêtes OpenFSP vers les API existantes de MonCash et NatCash. Elle fournit un mode d’intégration transitoire ; l’état des vérifications et leurs limites sont documentés.",
             link: "Consulter le rôle de la passerelle",
         },
-        start: {
-            title: "Évaluer une implémentation depuis les images publiées.",
-            body: "La suite de conformité s’exécute depuis son image Docker, ici contre le serveur simulé de référence de la démonstration en ligne, qui permet aussi d’essayer un paiement simulé.",
-            action: "Consulter le guide de démarrage",
-            requirements: "Prérequis : Docker",
+        demo: {
+            eyebrow: "Démonstration",
+            title: "Essayer en ligne, évaluer depuis les images publiées.",
+            body: "Une boutique, la console de la passerelle, le simulateur et le validateur, reliés à des services de paiement simulés. Aucun fonds réel n’est engagé.",
+            shop: "Ouvrir la boutique",
+            guide: "Consulter le guide de démarrage",
+            requirements: "Évaluer le serveur simulé de référence. Prérequis : Docker",
             copy: "Copier les commandes",
             copied: "Commandes copiées",
             copyError:
                 "La copie automatique est indisponible. Sélectionnez les commandes pour les copier.",
+            services: [
+                {
+                    name: "Boutique",
+                    body: "Application marchande construite sur un SDK client OpenFSP.",
+                    host: "demo.openfsp.org",
+                },
+                {
+                    name: "Console",
+                    body: "Administration de la passerelle, avec le jeton demo-admin-token.",
+                    host: "console.openfsp.org",
+                },
+                {
+                    name: "Simulateur",
+                    body: "Services de paiement simulés et scénarios d’échec.",
+                    host: "simulator.openfsp.org",
+                },
+                {
+                    name: "Validateur",
+                    body: "Suite de conformité exécutée contre un serveur OpenFSP.",
+                    host: "validator.openfsp.org",
+                },
+                {
+                    name: "Passerelle",
+                    body: "Passerelle de référence vers MonCash et NatCash, en API seule.",
+                    host: "gateway.openfsp.org",
+                },
+            ],
         },
         status: {
-            title: "État de développement et périmètre de validation",
-            body: "La version 0.1.0 comprend la spécification, les bibliothèques clientes et la suite de conformité. Un validateur est accessible sur validator.openfsp.org. L’environnement de démonstration s’exécute localement avec des services simulés.",
+            title: "État de développement et périmètre de validation.",
+            body: "La version 0.1.0 comprend la spécification, les bibliothèques clientes et la suite de conformité. Le validateur est accessible sur validator.openfsp.org et la démonstration s’exécute en ligne avec des services simulés.",
             phases: [
                 {
-                    title: "Phase 1 : développement en cours",
+                    state: "En cours",
+                    title: "Phase 1 : intégration marchande",
                     body: "Définition de l’interface d’intégration marchande, implémentations de référence et vérifications de conformité reproductibles.",
                 },
                 {
+                    state: "Disponible",
                     title: "Bibliothèques clientes",
                     body: "Les bibliothèques Kotlin, Java et TypeScript et leurs outils de test sont publiés sur Maven Central et npm. Leur installation est décrite dans le démarrage rapide.",
                 },
                 {
-                    title: "Phase 2 : extension envisagée",
-                    body: "Paiement de proximité fondé sur un jeton éphémère présenté par le client. Ce parcours se situe hors du périmètre de la version actuelle.",
+                    state: "Envisagé",
+                    title: "Phase 2 : paiement de proximité",
+                    body: "Paiement fondé sur un jeton éphémère présenté par le client. Ce parcours se situe hors du périmètre de la version actuelle.",
                 },
             ],
             link: "Consulter le périmètre et les phases",
         },
         sponsors: {
-            title: "Sponsors",
-            body: "Organisations qui financent la spécification et ses outils.",
+            eyebrow: "Sponsors",
+            title: "Organisations qui financent la spécification et ses outils.",
             cta: "Devenir sponsor",
+            contribute: "Contribuer au code",
+            placeholder: "Votre logo ici",
         },
         footer: {
             description:
@@ -126,25 +163,28 @@ export const homeCopy = {
             validator: "Validateur",
             sdkKotlin: "SDK Kotlin et Java",
             sdkTypescript: "SDK TypeScript",
-            note: "Karako Systems · Apache-2.0",
+            maintained: "Maintenu par",
         },
     },
     en: {
         title: "An open specification for payment interoperability in Haiti",
+        version: "v0.1.0",
+        phase: "Phase 1: development in progress",
         headline: ["A common interface.", "Standardised exchanges.", "Reusable integrations."],
         lead: "OpenFSP defines a common interface between merchant applications and payment service providers in Haiti. The specification standardises exchanges and expected behaviour to support the integration of compatible payment services.",
         primary: "Read the specification",
-        secondary: "Explore the API",
+        secondary: "Try the demonstration",
         facts: ["Apache-2.0", "Open to all implementers", "Currency: HTG"],
         native: {
+            eyebrow: "How it works",
             title: "A common interface implemented by each provider.",
             caption: "Native integration architecture",
             app: "Merchant application",
+            appDetail: "Shop, application or ERP",
             contract: "OpenFSP client library",
             contractDetail: "HTTP interface and signed notifications",
             providers: "Providers implementing OpenFSP",
             api: "Native OpenFSP interfaces",
-            note: "Direct communication with each compatible provider’s OpenFSP interface.",
             action: "Read the provider implementation guide",
             steps: [
                 {
@@ -162,6 +202,7 @@ export const homeCopy = {
             ],
         },
         contract: {
+            eyebrow: "Specification",
             title: "An interface contract for payment operations and notifications.",
             body: "The specification defines payment creation and retrieval, together with the verification of event notifications.",
             links: [
@@ -181,7 +222,6 @@ export const homeCopy = {
                     href: "/docs/spec/conformance",
                 },
             ],
-            event: "Event received by the merchant application",
             payload: "Excerpt from an event produced in simulation",
             docs: "View the event format",
         },
@@ -190,38 +230,72 @@ export const homeCopy = {
             body: "The reference gateway translates OpenFSP requests into the existing MonCash and NatCash APIs. It provides a transitional integration option; verification status and limitations are documented.",
             link: "Read about the gateway’s role",
         },
-        start: {
-            title: "Assess an implementation from the published images.",
-            body: "The conformance suite runs from its Docker image, here against the reference mock server of the online demonstration, which also lets you try a simulated payment.",
-            action: "Read the quickstart guide",
-            requirements: "Requirements: Docker",
+        demo: {
+            eyebrow: "Demonstration",
+            title: "Try it online, assess from the published images.",
+            body: "A shop, the gateway console, the simulator and the validator, wired to simulated payment services. No real funds move.",
+            shop: "Open the shop",
+            guide: "Read the quickstart guide",
+            requirements: "Assess the reference mock server. Requirements: Docker",
             copy: "Copy commands",
             copied: "Commands copied",
             copyError: "Automatic copying is unavailable. Select the commands to copy them.",
+            services: [
+                {
+                    name: "Shop",
+                    body: "Merchant application built on an OpenFSP client SDK.",
+                    host: "demo.openfsp.org",
+                },
+                {
+                    name: "Console",
+                    body: "Gateway administration, with the token demo-admin-token.",
+                    host: "console.openfsp.org",
+                },
+                {
+                    name: "Simulator",
+                    body: "Simulated payment services and failure scenarios.",
+                    host: "simulator.openfsp.org",
+                },
+                {
+                    name: "Validator",
+                    body: "Conformance suite run against an OpenFSP server.",
+                    host: "validator.openfsp.org",
+                },
+                {
+                    name: "Gateway",
+                    body: "Reference gateway to MonCash and NatCash, API only.",
+                    host: "gateway.openfsp.org",
+                },
+            ],
         },
         status: {
-            title: "Development status and validation scope",
-            body: "Version 0.1.0 includes the specification, client libraries and conformance suite. A validator is available at validator.openfsp.org. The demonstration environment runs locally with simulated services.",
+            title: "Development status and validation scope.",
+            body: "Version 0.1.0 includes the specification, client libraries and conformance suite. The validator is available at validator.openfsp.org and the demonstration runs online with simulated services.",
             phases: [
                 {
-                    title: "Phase 1: development in progress",
+                    state: "In progress",
+                    title: "Phase 1: merchant integration",
                     body: "Definition of the merchant integration interface, reference implementations and reproducible conformance checks.",
                 },
                 {
+                    state: "Available",
                     title: "Client libraries",
                     body: "The Kotlin, Java and TypeScript libraries and their testing tools are published on Maven Central and npm. Their installation is described in the quickstart.",
                 },
                 {
-                    title: "Phase 2: proposed extension",
-                    body: "Proximity payments based on a short-lived token presented by the customer. This flow is outside the scope of the current version.",
+                    state: "Proposed",
+                    title: "Phase 2: proximity payments",
+                    body: "Payments based on a short-lived token presented by the customer. This flow is outside the scope of the current version.",
                 },
             ],
             link: "View scope and development phases",
         },
         sponsors: {
-            title: "Sponsors",
-            body: "Organisations funding the specification and its tooling.",
+            eyebrow: "Sponsors",
+            title: "Organisations funding the specification and its tooling.",
             cta: "Become a sponsor",
+            contribute: "Contribute code",
+            placeholder: "Your logo here",
         },
         footer: {
             description:
@@ -249,7 +323,7 @@ export const homeCopy = {
             validator: "Validator",
             sdkKotlin: "Kotlin and Java SDK",
             sdkTypescript: "TypeScript SDK",
-            note: "Karako Systems · Apache-2.0",
+            maintained: "Maintained by",
         },
     },
 } satisfies Record<Locale, unknown>;

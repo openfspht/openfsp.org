@@ -2,9 +2,29 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { HomeLayout } from "fumadocs-ui/layouts/home";
 import { Header } from "fumadocs-ui/layouts/home/slots/header";
-import { ArrowRight, ArrowUpRight, Building2, Check, Copy, Terminal, Webhook } from "lucide-react";
+import {
+    ArrowRight,
+    ArrowUpRight,
+    Check,
+    ChevronRight,
+    Copy,
+    Heart,
+    Landmark,
+    LayoutPanelLeft,
+    ShieldCheck,
+    ShoppingCart,
+    Waves,
+    type LucideIcon,
+} from "lucide-react";
 import { localePath, type Locale } from "@/lib/i18n";
-import { CODE_REPO, LINKEDIN_URL, X_URL, baseOptions, socialLinks } from "@/lib/layout.shared";
+import {
+    CODE_REPO,
+    GITHUB_URL,
+    LINKEDIN_URL,
+    X_URL,
+    baseOptions,
+    socialLinks,
+} from "@/lib/layout.shared";
 import { GitHubIcon, LinkedInIcon, XIcon } from "@/components/social-icons";
 import { homeCopy } from "@/lib/home-copy";
 
@@ -25,22 +45,105 @@ const EVENT_BODY = `{
   }
 }`;
 
+const DEMO_SHOP = "https://demo.openfsp.org";
 const SPONSOR_CONTACT = "mailto:hey@openfsp.org";
 const GOVERNANCE_REPO = "https://github.com/openfspht/governance";
 const VALIDATOR_URL = "https://validator.openfsp.org";
 const MAVEN_SDK = "https://central.sonatype.com/artifact/org.openfsp/openfsp-sdk";
 const NPM_SDK = "https://www.npmjs.com/package/@openfsp/sdk";
-const SPONSORS = [
-    {
-        name: "Karako Systems",
-        url: "https://karakosystems.com",
-        logo: "https://cdn.karakosystems.com/karako/logos/logo-full-black.png",
-        logoDark: "https://cdn.karakosystems.com/karako/logos/logo-full-white.png",
-    },
-];
+const KARAKO = {
+    name: "Karako Systems",
+    url: "https://karakosystems.com",
+    logo: "https://cdn.karakosystems.com/karako/logos/logo-full-black.png",
+    logoDark: "https://cdn.karakosystems.com/karako/logos/logo-full-white.png",
+};
+const SERVICE_ICONS: LucideIcon[] = [ShoppingCart, LayoutPanelLeft, Waves, ShieldCheck, Landmark];
+
 const muted = "text-fd-muted-foreground";
-const sectionTitle =
-    "text-[clamp(26px,3vw,36px)] leading-tight font-semibold tracking-[-0.03em] text-balance text-fd-primary";
+const subtle = "text-text-3";
+
+const RING_ARCS = [
+    "M492.1 565.7A300 300 0 0 1 48.1 446.8",
+    "M21.1 346.1A300 300 0 0 1 346.1 21.1",
+    "M446.8 48.1A300 300 0 0 1 565.7 492.1",
+    "M451.1 411.8A160 160 0 0 1 206.9 433.1",
+    "M175.0 387.6A160 160 0 0 1 278.6 165.5",
+    "M333.9 160.6A160 160 0 0 1 474.5 361.4",
+];
+const DASHED_ARCS = [
+    "M340.0 549.1A230 230 0 0 1 90.9 300.0",
+    "M111.5 222.8A230 230 0 0 1 451.9 131.6",
+    "M508.4 188.1A230 230 0 0 1 417.2 528.5",
+];
+const RING_NODES = [
+    [492.1, 565.7],
+    [48.1, 446.8],
+    [21.1, 346.1],
+    [346.1, 21.1],
+    [446.8, 48.1],
+    [565.7, 492.1],
+    [340.0, 549.1],
+    [90.9, 300.0],
+    [111.5, 222.8],
+    [451.9, 131.6],
+    [508.4, 188.1],
+    [417.2, 528.5],
+    [451.1, 411.8],
+    [206.9, 433.1],
+    [175.0, 387.6],
+    [278.6, 165.5],
+    [333.9, 160.6],
+    [474.5, 361.4],
+];
+
+function HeroRings() {
+    return (
+        <svg
+            width="640"
+            height="640"
+            viewBox="0 0 640 640"
+            fill="none"
+            aria-hidden
+            className="pointer-events-none absolute top-2 -right-[220px] hidden lg:block"
+        >
+            {RING_ARCS.map((d) => (
+                <path key={d} d={d} className="stroke-hero-line" strokeWidth={1.5} />
+            ))}
+            {DASHED_ARCS.map((d) => (
+                <path
+                    key={d}
+                    d={d}
+                    className="stroke-hero-line"
+                    strokeWidth={1.5}
+                    strokeDasharray="2 8"
+                />
+            ))}
+            <path
+                d="M512.8 90.2A300 300 0 0 1 618.9 346.1"
+                className="stroke-brand-accent"
+                strokeWidth={3}
+                strokeLinecap="round"
+            />
+            <path
+                d="M292.2 477.6A160 160 0 0 1 169.6 374.7"
+                className="stroke-fd-primary"
+                strokeWidth={3}
+                strokeLinecap="round"
+            />
+            {RING_NODES.map(([cx, cy]) => (
+                <circle
+                    key={`${cx}-${cy}`}
+                    cx={cx}
+                    cy={cy}
+                    r={3.5}
+                    className="fill-fd-background stroke-hero-line-strong"
+                    strokeWidth={1.5}
+                />
+            ))}
+            <circle cx={320} cy={320} r={5} className="fill-brand-accent" />
+        </svg>
+    );
+}
 
 function HighlightedCode({ code }: { code: string }) {
     const tokens = code.split(/("(?:[^"\\]|\\.)*"\s*:|"(?:[^"\\]|\\.)*"|\b\d+\b|\bnull\b)/g);
@@ -95,9 +198,9 @@ function CopyButton({
                 }}
             >
                 {message === copied ? (
-                    <Check size={15} aria-hidden />
+                    <Check size={14} aria-hidden />
                 ) : (
-                    <Copy size={15} aria-hidden />
+                    <Copy size={14} aria-hidden />
                 )}
             </button>
             <span role="status" className="sr-only">
@@ -115,19 +218,45 @@ function LandingHeader() {
     );
 }
 
+function Brand({ height = 22 }: { height?: number }) {
+    const width = Math.round((height * 499.9) / 90);
+    return (
+        <span className="inline-flex items-center">
+            <img
+                src="/openfsp-logo.svg"
+                alt="OpenFSP"
+                width={width}
+                height={height}
+                className="dark:hidden"
+            />
+            <img
+                src="/openfsp-logo-inverse.svg"
+                alt="OpenFSP"
+                width={width}
+                height={height}
+                className="hidden dark:block"
+            />
+        </span>
+    );
+}
+
+function Eyebrow({ children }: { children: string }) {
+    return <p className="eyebrow">{children}</p>;
+}
+
 type FooterLink = { label: string } & ({ to: string } | { url: string });
 
 function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) {
     return (
         <nav aria-label={title} className={`flex flex-col items-start gap-2.5 text-sm ${muted}`}>
-            <h2 className="mb-1 text-sm font-semibold text-fd-primary">{title}</h2>
+            <h2 className="mb-1 text-sm font-semibold text-fd-foreground">{title}</h2>
             {links.map((link) =>
                 "to" in link ? (
-                    <Link key={link.label} to={link.to} className="hover:text-fd-primary">
+                    <Link key={link.label} to={link.to}>
                         {link.label}
                     </Link>
                 ) : (
-                    <a key={link.label} href={link.url} className="hover:text-fd-primary">
+                    <a key={link.label} href={link.url}>
                         {link.label}
                     </a>
                 ),
@@ -136,48 +265,32 @@ function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) 
     );
 }
 
-function Brand() {
-    return (
-        <span className="inline-flex items-center gap-2 text-[21px] font-bold tracking-[-0.03em] text-fd-primary md:text-[23px] dark:text-fd-foreground">
-            <img src="/openfsp-mark.svg" alt="" width={27} height={27} className="dark:hidden" />
-            <img
-                src="/openfsp-mark-inverse.svg"
-                alt=""
-                width={27}
-                height={27}
-                className="hidden dark:block"
-            />
-            <span>OpenFSP</span>
-        </span>
-    );
-}
-
 function NativeRoute({ t }: { t: CopyText["native"] }) {
-    const node =
-        "flex min-h-24 flex-col items-center justify-center gap-2 rounded-md border p-4 text-center";
-    const arrow = "mx-auto shrink-0 rotate-90 text-fd-primary md:rotate-0";
+    const cell = "flex flex-[1_1_240px] flex-col gap-1.5 p-7";
     return (
-        <figure className="mt-8 rounded-lg border border-fd-border bg-fd-card p-4 sm:p-6">
-            <figcaption className={`text-[13px] ${muted}`}>{t.caption}</figcaption>
-            <div className="mt-5 grid items-center gap-3 md:grid-cols-[1fr_auto_1fr_auto_1.2fr] md:gap-5">
-                <div className={`${node} border-fd-border bg-fd-background`}>
-                    <Terminal size={19} aria-hidden />
-                    <strong className="text-sm font-semibold">{t.app}</strong>
+        <figure className="mt-12">
+            <figcaption className="sr-only">{t.caption}</figcaption>
+            <div className="flex flex-wrap items-stretch overflow-hidden rounded-2xl border border-fd-border bg-surface">
+                <div className={cell}>
+                    <span className={`font-mono text-xs ${subtle}`}>01</span>
+                    <span className="font-semibold">{t.app}</span>
+                    <span className={`text-sm ${subtle}`}>{t.appDetail}</span>
                 </div>
-                <ArrowRight size={19} className={arrow} aria-hidden />
-                <div className={`${node} border-brand-ink bg-brand-ink text-white`}>
-                    <img src="/openfsp-mark-inverse.svg" width={25} height={25} alt="" />
-                    <strong className="text-sm font-semibold">{t.contract}</strong>
-                    <span className="text-[13px] text-white/75">{t.contractDetail}</span>
+                <div
+                    className={`${cell} bg-brand-ink text-white shadow-[inset_0_3px_0_var(--color-brand-accent)]`}
+                >
+                    <span className="flex items-center gap-2.5">
+                        <img src="/openfsp-mark-inverse.svg" width={22} height={22} alt="" />
+                        <span className="font-semibold">{t.contract}</span>
+                    </span>
+                    <span className="text-sm text-brand-chalk/80">{t.contractDetail}</span>
                 </div>
-                <ArrowRight size={19} className={arrow} aria-hidden />
-                <div className={`${node} border-fd-border bg-fd-background`}>
-                    <Building2 size={19} aria-hidden />
-                    <strong className="text-sm font-semibold">{t.providers}</strong>
-                    <span className={`text-[13px] ${muted}`}>{t.api}</span>
+                <div className={cell}>
+                    <span className={`font-mono text-xs ${subtle}`}>03</span>
+                    <span className="font-semibold">{t.providers}</span>
+                    <span className={`text-sm ${subtle}`}>{t.api}</span>
                 </div>
             </div>
-            <p className={`mt-5 text-center text-sm ${muted}`}>{t.note}</p>
         </figure>
     );
 }
@@ -194,298 +307,388 @@ export function Home({ locale }: { locale: Locale }) {
             nav={{ ...options.nav, title: <Brand /> }}
             links={[
                 { text: t.footer.docs, url: href("/docs"), active: "none" },
-                { text: t.secondary, url: href("/docs/spec/payments-api"), active: "none" },
+                { text: t.footer.spec, url: href("/docs/spec"), active: "none" },
+                { text: t.footer.status, url: href("/docs/status"), active: "none" },
                 ...socialLinks,
             ]}
             githubUrl={CODE_REPO}
         >
             <div>
-                <section className="landing-container py-14 sm:py-16 lg:py-24">
-                    <div className="min-w-0">
-                        <h1 className="hero-title text-fd-primary">
+                <div className="relative overflow-hidden">
+                    <div className="landing-container relative">
+                        <HeroRings />
+                    </div>
+                    <section className="landing-container relative pt-12 pb-16 md:pt-28 md:pb-24">
+                        <Link
+                            to={href("/docs/status")}
+                            className={`inline-flex items-center gap-2 rounded-full border border-fd-border py-1 pr-3 pl-1.5 text-[13px] ${muted}`}
+                        >
+                            <span className="rounded-full bg-fd-primary px-2 py-px text-xs font-semibold text-fd-primary-foreground">
+                                {t.version}
+                            </span>
+                            <span className="size-1.5 rounded-full bg-brand-accent" aria-hidden />
+                            <span>{t.phase}</span>
+                            <ChevronRight size={12} aria-hidden />
+                        </Link>
+                        <h1 className="hero-title mt-7 max-w-[880px]">
                             {t.headline.map((line, index) => (
-                                <span
-                                    key={line}
-                                    className={
-                                        index === t.headline.length - 1
-                                            ? "text-brand-accent-deep dark:text-brand-accent"
-                                            : undefined
-                                    }
-                                >
-                                    {line}
+                                <span key={line}>
+                                    <span
+                                        className={
+                                            index === t.headline.length - 1
+                                                ? "accent-underline"
+                                                : undefined
+                                        }
+                                    >
+                                        {line}
+                                    </span>
                                 </span>
                             ))}
                         </h1>
                         <p
-                            className={`mt-6 max-w-[38rem] text-base/7 text-pretty md:text-[18px]/[1.75] ${muted}`}
+                            className={`mt-7 max-w-[620px] text-[17px]/[1.6] text-pretty md:text-[19px] ${muted}`}
                         >
                             {t.lead}
                         </p>
-                        <div className="mt-7 flex flex-wrap items-center gap-2">
-                            <Link to={href("/docs/spec")} className="landing-button is-primary">
-                                {t.primary}
-                                <ArrowUpRight size={17} aria-hidden />
-                            </Link>
+                        <div className="mt-10 flex flex-wrap gap-3">
                             <Link
-                                to={href("/docs/spec/payments-api")}
-                                className="landing-button is-secondary"
+                                to={href("/docs/spec")}
+                                className="landing-button is-primary is-large"
                             >
-                                {t.secondary}
+                                {t.primary}
                                 <ArrowRight size={16} aria-hidden />
                             </Link>
+                            <a href="#demo" className="landing-button is-secondary is-large">
+                                {t.secondary}
+                            </a>
                         </div>
-                        <ul className={`mt-6 flex flex-wrap gap-x-4 gap-y-1 text-[13px] ${muted}`}>
+                        <ul className={`mt-12 flex flex-wrap gap-x-8 gap-y-2 text-sm ${subtle}`}>
                             {t.facts.map((fact) => (
-                                <li key={fact}>{fact}</li>
+                                <li key={fact} className="font-semibold text-fd-foreground">
+                                    {fact}
+                                </li>
                             ))}
+                        </ul>
+                    </section>
+                </div>
+
+                <section className="landing-section is-alt" aria-labelledby="native-title">
+                    <div className="landing-container">
+                        <Eyebrow>{t.native.eyebrow}</Eyebrow>
+                        <h2 id="native-title" className="section-title mt-3 max-w-[640px]">
+                            {t.native.title}
+                        </h2>
+                        <NativeRoute t={t.native} />
+                        <ol className="mt-12 grid gap-10 md:grid-cols-3">
+                            {t.native.steps.map((step, index) => (
+                                <li key={step.title}>
+                                    <span className="step-number">{index + 1}</span>
+                                    <h3 className="mt-3.5 text-[17px] font-semibold">
+                                        {step.title}
+                                    </h3>
+                                    <p className={`mt-2 text-[15px]/[1.6] ${muted}`}>{step.body}</p>
+                                </li>
+                            ))}
+                        </ol>
+                        <Link
+                            to={href("/docs/native-operator")}
+                            className="arrow-link mt-10 text-[15px]"
+                        >
+                            {t.native.action}
+                            <ArrowRight size={14} aria-hidden />
+                        </Link>
+                    </div>
+                </section>
+
+                <section className="landing-section" aria-labelledby="contract-title">
+                    <div className="landing-container grid items-start gap-16 lg:grid-cols-[1fr_1.15fr]">
+                        <div className="min-w-0">
+                            <Eyebrow>{t.contract.eyebrow}</Eyebrow>
+                            <h2 id="contract-title" className="section-title mt-3">
+                                {t.contract.title}
+                            </h2>
+                            <p className={`mt-4 ${muted}`}>{t.contract.body}</p>
+                            <div className="mt-8 border-t border-fd-border">
+                                {t.contract.links.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        to={href(item.href)}
+                                        className="row-link flex items-center gap-4 border-b border-fd-border py-5"
+                                    >
+                                        <span className="flex-1">
+                                            <span className="row-title block font-semibold">
+                                                {item.title}
+                                            </span>
+                                            <span className={`block text-sm ${subtle}`}>
+                                                {item.body}
+                                            </span>
+                                        </span>
+                                        <ChevronRight
+                                            size={16}
+                                            className="shrink-0 text-icon-muted"
+                                            aria-hidden
+                                        />
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                        <figure className="code-window">
+                            <figcaption className="flex items-center gap-2 border-b border-code-line px-5 py-3.5 text-[13px] text-code-muted">
+                                <span className="size-2 rounded-full bg-brand-accent" aria-hidden />
+                                <span className="text-code-fg">payment.succeeded</span>
+                                <span className="ml-auto font-mono text-xs">JSON</span>
+                            </figcaption>
+                            <pre
+                                className="code-block"
+                                role="region"
+                                tabIndex={0}
+                                aria-label={t.contract.payload}
+                            >
+                                <HighlightedCode code={EVENT_BODY} />
+                            </pre>
+                            <Link
+                                to={href("/docs/spec/webhooks")}
+                                className="flex items-center gap-1.5 border-t border-code-line px-5 py-3.5 text-[13px] text-code-fg hover:underline"
+                            >
+                                {t.contract.docs}
+                                <ArrowRight size={12} aria-hidden />
+                            </Link>
+                        </figure>
+                    </div>
+                </section>
+
+                <aside className="border-t border-border-soft" aria-labelledby="gateway-title">
+                    <div className="landing-container flex flex-wrap items-baseline gap-x-16 gap-y-6 py-14">
+                        <h2
+                            id="gateway-title"
+                            className="flex-[1_1_300px] text-[22px] font-semibold tracking-[-0.015em] text-balance"
+                        >
+                            {t.gateway.title}
+                        </h2>
+                        <div className="flex-[2_1_420px]">
+                            <p className={muted}>{t.gateway.body}</p>
+                            <Link
+                                to={href("/docs/gateway")}
+                                className="arrow-link mt-3 text-[15px]"
+                            >
+                                {t.gateway.link}
+                                <ArrowRight size={14} aria-hidden />
+                            </Link>
+                        </div>
+                    </div>
+                </aside>
+
+                <section id="demo" className="landing-section is-alt" aria-labelledby="demo-title">
+                    <div className="landing-container">
+                        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.15fr]">
+                            <div className="min-w-0">
+                                <Eyebrow>{t.demo.eyebrow}</Eyebrow>
+                                <h2 id="demo-title" className="section-title mt-3">
+                                    {t.demo.title}
+                                </h2>
+                                <p className={`mt-4 ${muted}`}>{t.demo.body}</p>
+                                <div className="mt-7 flex flex-wrap gap-3">
+                                    <a href={DEMO_SHOP} className="landing-button is-primary">
+                                        {t.demo.shop}
+                                        <ArrowUpRight size={14} aria-hidden />
+                                    </a>
+                                    <Link
+                                        to={href("/docs/quickstart")}
+                                        className="landing-button is-secondary"
+                                    >
+                                        {t.demo.guide}
+                                    </Link>
+                                </div>
+                            </div>
+                            <div className="min-w-0 overflow-hidden rounded-[14px] border border-fd-border bg-surface">
+                                <div
+                                    className={`flex items-center gap-2 border-b border-border-soft py-2.5 pr-3 pl-5 text-[13px] ${subtle}`}
+                                >
+                                    <span>{t.demo.requirements}</span>
+                                    <CopyButton
+                                        value={DEMO_COMMANDS.join("\n")}
+                                        label={t.demo.copy}
+                                        copied={t.demo.copied}
+                                        error={t.demo.copyError}
+                                    />
+                                </div>
+                                <pre
+                                    className="overflow-x-auto px-5 py-6 font-mono text-sm/[2]"
+                                    role="region"
+                                    tabIndex={0}
+                                    aria-label={t.demo.copy}
+                                >
+                                    <code>
+                                        {DEMO_COMMANDS.map((command) => (
+                                            <span key={command} className="block">
+                                                <span className="text-accent-text select-none">
+                                                    ${" "}
+                                                </span>
+                                                {command}
+                                            </span>
+                                        ))}
+                                    </code>
+                                </pre>
+                            </div>
+                        </div>
+                        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                            {t.demo.services.map((service, index) => {
+                                const Icon = SERVICE_ICONS[index] ?? Landmark;
+                                return (
+                                    <li key={service.host}>
+                                        <a
+                                            href={`https://${service.host}`}
+                                            className="card-link flex h-full flex-col gap-2.5 rounded-[14px] border border-fd-border bg-surface p-5"
+                                        >
+                                            <span className="flex items-center gap-2.5">
+                                                <span className="flex size-8 items-center justify-center rounded-lg border border-border-soft bg-bg-alt text-fd-primary">
+                                                    <Icon size={16} aria-hidden />
+                                                </span>
+                                                <span className="font-semibold">
+                                                    {service.name}
+                                                </span>
+                                                <ArrowUpRight
+                                                    size={13}
+                                                    className="ml-auto text-icon-muted"
+                                                    aria-hidden
+                                                />
+                                            </span>
+                                            <span className={`text-sm/[1.5] ${muted}`}>
+                                                {service.body}
+                                            </span>
+                                            <span className="mt-auto font-mono text-xs text-link">
+                                                {service.host}
+                                            </span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                 </section>
 
-                <section
-                    className="landing-container border-t border-fd-border pt-10 pb-14 md:pb-16"
-                    aria-labelledby="native-title"
-                >
-                    <h2 id="native-title" className={`${sectionTitle} max-w-[40rem]`}>
-                        {t.native.title}
-                    </h2>
-                    <NativeRoute t={t.native} />
-                    <ol className="mt-9 grid gap-6 md:grid-cols-3 md:gap-12">
-                        {t.native.steps.map((step, index) => (
-                            <li
-                                key={step.title}
-                                className="grid grid-cols-[28px_1fr] gap-x-3 md:block"
-                            >
-                                <span className="row-span-2 text-sm font-semibold text-fd-primary tabular-nums md:mb-4 md:block">
-                                    {index + 1}
-                                </span>
-                                <h3 className="text-base font-semibold tracking-[-0.01em]">
-                                    {step.title}
-                                </h3>
-                                <p
-                                    className={`mt-2 max-w-[20rem] text-[15px]/[1.7] md:max-w-none ${muted}`}
-                                >
-                                    {step.body}
-                                </p>
-                            </li>
-                        ))}
-                    </ol>
-                    <a href={href("/docs/native-operator")} className="text-link mt-7 text-[15px]">
-                        {t.native.action}
-                        <ArrowUpRight size={16} aria-hidden />
-                    </a>
-                </section>
-
-                <section className="landing-container grid items-center gap-10 py-12 md:grid-cols-2 md:gap-14 md:py-20 lg:gap-24">
-                    <div className="min-w-0">
-                        <h2 className={sectionTitle}>{t.contract.title}</h2>
-                        <p className={`mt-5 max-w-[30rem] text-[15px]/[1.75] ${muted}`}>
-                            {t.contract.body}
-                        </p>
-                        <div className="mt-6">
-                            {t.contract.links.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    to={href(item.href)}
-                                    className="contract-link flex items-center justify-between gap-5 border-b border-fd-border py-4"
-                                >
-                                    <div>
-                                        <h3 className="text-[15px] font-semibold text-fd-primary">
-                                            {item.title}
-                                        </h3>
-                                        <p className={`mt-1 text-sm ${muted}`}>{item.body}</p>
-                                    </div>
-                                    <ArrowUpRight
-                                        size={18}
-                                        className="shrink-0 text-fd-primary"
-                                        aria-hidden
-                                    />
-                                </Link>
-                            ))}
+                <section className="landing-section" aria-labelledby="status-title">
+                    <div className="landing-container">
+                        <div className="flex flex-wrap items-baseline gap-x-16 gap-y-4">
+                            <h2 id="status-title" className="section-title flex-[1_1_300px]">
+                                {t.status.title}
+                            </h2>
+                            <p className={`flex-[2_1_420px] ${muted}`}>{t.status.body}</p>
                         </div>
-                    </div>
-                    <figure className="code-window">
-                        <figcaption className="flex items-center justify-between gap-3 border-b border-(--code-line) px-4 py-3.5 text-sm sm:px-5">
-                            <span className="flex items-center gap-2">
-                                <Webhook size={16} aria-hidden />
-                                {t.contract.event}
-                            </span>
-                            <span className="text-[13px] text-(--code-muted)">JSON</span>
-                        </figcaption>
-                        <pre
-                            className="code-block"
-                            role="region"
-                            tabIndex={0}
-                            aria-label={t.contract.payload}
-                        >
-                            <HighlightedCode code={EVENT_BODY} />
-                        </pre>
-                        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-(--code-line) px-4 py-3.5 text-[13px] text-(--code-muted) sm:px-5">
-                            <Link
-                                to={href("/docs/spec/webhooks")}
-                                className="flex items-center gap-1.5 hover:underline"
-                            >
-                                {t.contract.docs}
-                                <ArrowUpRight size={14} aria-hidden />
-                            </Link>
-                        </div>
-                    </figure>
-                </section>
-
-                <aside
-                    className="landing-container mb-10 grid gap-3 border-y border-fd-border py-7 md:grid-cols-[1fr_1.25fr] md:gap-12"
-                    aria-labelledby="gateway-title"
-                >
-                    <h2
-                        id="gateway-title"
-                        className="text-[22px] leading-snug font-semibold tracking-[-0.02em] text-balance text-fd-primary"
-                    >
-                        {t.gateway.title}
-                    </h2>
-                    <div>
-                        <p className={`text-[15px]/[1.75] ${muted}`}>{t.gateway.body}</p>
-                        <Link to={href("/docs/gateway")} className="text-link mt-3 text-[15px]">
-                            {t.gateway.link}
-                            <ArrowUpRight size={15} aria-hidden />
-                        </Link>
-                    </div>
-                </aside>
-
-                <section className="landing-container grid items-center gap-7 rounded-xl border border-fd-border bg-fd-card px-4 py-6 sm:p-8 lg:grid-cols-2 lg:gap-16 lg:p-10">
-                    <div className="min-w-0">
-                        <h2 className={sectionTitle}>{t.start.title}</h2>
-                        <p className={`mt-3.5 max-w-[26rem] text-[15px]/[1.75] ${muted}`}>
-                            {t.start.body}
-                        </p>
-                        <a
-                            href={`${href("/docs/quickstart")}#1`}
-                            className="landing-button is-primary mt-6"
-                        >
-                            {t.start.action}
-                            <ArrowUpRight size={17} aria-hidden />
-                        </a>
-                    </div>
-                    <div className="min-w-0 rounded-lg border border-fd-border bg-fd-background">
-                        <div
-                            className={`flex items-center gap-2.5 border-b border-fd-border px-4 py-2.5 text-[13px] ${muted}`}
-                        >
-                            <Terminal size={15} aria-hidden />
-                            {t.start.requirements}
-                            <CopyButton
-                                value={DEMO_COMMANDS.join("\n")}
-                                label={t.start.copy}
-                                copied={t.start.copied}
-                                error={t.start.copyError}
-                            />
-                        </div>
-                        <pre
-                            className="overflow-x-auto px-4 py-4 font-mono text-[13px]/[2.1]"
-                            role="region"
-                            tabIndex={0}
-                            aria-label={t.start.copy}
-                        >
-                            <code>
-                                {DEMO_COMMANDS.map((command, index) => (
-                                    <span key={command} className="block">
-                                        <span className={`select-none ${muted}`}>$ </span>
-                                        <span
-                                            className={
-                                                index === DEMO_COMMANDS.length - 1
-                                                    ? "font-semibold text-fd-primary"
-                                                    : undefined
-                                            }
-                                        >
-                                            {command}
-                                        </span>
-                                    </span>
-                                ))}
-                            </code>
-                        </pre>
-                    </div>
-                </section>
-
-                <aside
-                    className="landing-container my-10 grid gap-4 md:my-14 md:grid-cols-2 md:gap-14 lg:gap-24"
-                    aria-labelledby="status-title"
-                >
-                    <h2
-                        id="status-title"
-                        className="text-[22px] font-semibold tracking-[-0.02em] text-fd-primary"
-                    >
-                        {t.status.title}
-                    </h2>
-                    <div>
-                        <p className={`text-[15px]/[1.75] ${muted}`}>{t.status.body}</p>
-                        <div className="mt-6 grid gap-5">
+                        <ul className="mt-12 grid gap-4 md:grid-cols-3">
                             {t.status.phases.map((phase, index) => (
-                                <div
+                                <li
                                     key={phase.title}
-                                    className={`border-l-2 pl-3.5 ${index === 0 ? "border-brand-accent" : "border-fd-border"}`}
+                                    className={
+                                        index === 0
+                                            ? "rounded-[14px] border border-accent-border bg-surface p-6"
+                                            : index === 1
+                                              ? "rounded-[14px] border border-fd-border bg-surface p-6"
+                                              : "rounded-[14px] border border-dashed border-border-strong bg-bg-alt p-6"
+                                    }
                                 >
-                                    <h3 className="mb-1.5 text-[15px] font-semibold">
+                                    <span
+                                        className={`flex items-center gap-2 text-[13px] font-semibold ${
+                                            index === 0
+                                                ? "text-accent-text"
+                                                : index === 1
+                                                  ? "text-fd-primary"
+                                                  : subtle
+                                        }`}
+                                    >
+                                        <span
+                                            aria-hidden
+                                            className={`size-2 rounded-full ${
+                                                index === 0
+                                                    ? "bg-brand-accent"
+                                                    : index === 1
+                                                      ? "bg-fd-primary"
+                                                      : "border-[1.5px] border-icon-muted"
+                                            }`}
+                                        />
+                                        {phase.state}
+                                    </span>
+                                    <h3 className="mt-3.5 text-[17px] font-semibold">
                                         {phase.title}
                                     </h3>
-                                    <p className={`text-[15px]/[1.7] ${muted}`}>{phase.body}</p>
-                                </div>
+                                    <p className={`mt-2 text-[15px]/[1.6] ${muted}`}>
+                                        {phase.body}
+                                    </p>
+                                </li>
                             ))}
-                        </div>
-                        <a href={`${href("/docs")}#phases`} className="text-link mt-5 text-[15px]">
+                        </ul>
+                        <a href={`${href("/docs")}#phases`} className="arrow-link mt-8 text-[15px]">
                             {t.status.link}
-                            <ArrowUpRight size={15} aria-hidden />
+                            <ArrowRight size={14} aria-hidden />
                         </a>
                     </div>
-                </aside>
+                </section>
 
-                <section
-                    className="landing-container border-t border-fd-border py-14 text-center md:py-20"
-                    aria-labelledby="sponsors-title"
-                >
-                    <h2 id="sponsors-title" className={sectionTitle}>
-                        {t.sponsors.title}
-                    </h2>
-                    <p className={`mx-auto mt-4 max-w-[34rem] text-[15px]/[1.75] ${muted}`}>
-                        {t.sponsors.body}
-                    </p>
-                    <ul className="mt-9 flex flex-wrap items-center justify-center gap-4">
-                        {SPONSORS.map((sponsor) => (
-                            <li key={sponsor.name}>
+                <section className="landing-section is-alt" aria-labelledby="sponsors-title">
+                    <div className="landing-container">
+                        <div className="flex flex-wrap items-end gap-x-16 gap-y-6">
+                            <div className="flex-[1_1_420px]">
+                                <Eyebrow>{t.sponsors.eyebrow}</Eyebrow>
+                                <h2
+                                    id="sponsors-title"
+                                    className="section-title mt-3 max-w-[640px]"
+                                >
+                                    {t.sponsors.title}
+                                </h2>
+                            </div>
+                            <div className="flex flex-wrap gap-3">
+                                <a href={SPONSOR_CONTACT} className="landing-button is-primary">
+                                    <Heart size={16} className="text-brand-accent" aria-hidden />
+                                    {t.sponsors.cta}
+                                </a>
+                                <a href={GITHUB_URL} className="landing-button is-secondary">
+                                    {t.sponsors.contribute}
+                                </a>
+                            </div>
+                        </div>
+                        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <li>
                                 <a
-                                    href={sponsor.url}
-                                    aria-label={sponsor.name}
-                                    className="flex h-24 w-64 items-center justify-center rounded-lg border border-fd-border transition-colors hover:border-fd-primary"
+                                    href={KARAKO.url}
+                                    aria-label={KARAKO.name}
+                                    className="card-link flex h-28 items-center justify-center rounded-[14px] border border-fd-border bg-surface"
                                 >
                                     <img
-                                        src={sponsor.logo}
+                                        src={KARAKO.logo}
                                         alt=""
-                                        width={150}
-                                        height={50}
+                                        width={143}
+                                        height={48}
                                         className="h-12 w-auto dark:hidden"
                                     />
                                     <img
-                                        src={sponsor.logoDark}
+                                        src={KARAKO.logoDark}
                                         alt=""
-                                        width={150}
-                                        height={50}
+                                        width={143}
+                                        height={48}
                                         className="hidden h-12 w-auto dark:block"
                                     />
                                 </a>
                             </li>
-                        ))}
-                    </ul>
-                    <a href={SPONSOR_CONTACT} className="landing-button is-secondary mt-8">
-                        {t.sponsors.cta}
-                        <ArrowUpRight size={18} aria-hidden />
-                    </a>
+                            <li>
+                                <a
+                                    href={SPONSOR_CONTACT}
+                                    className={`card-link flex h-28 items-center justify-center rounded-[14px] border border-dashed border-border-strong bg-surface text-sm ${subtle}`}
+                                >
+                                    {t.sponsors.placeholder}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </section>
             </div>
-            <footer className="landing-footer border-t border-fd-border">
-                <div className="landing-container">
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-3 md:gap-12 md:py-20 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
+            <footer className="landing-footer border-t border-border-soft">
+                <div className="landing-container pt-16 pb-8">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] lg:gap-12">
                         <div className="col-span-2 md:col-span-3 lg:col-span-1">
-                            <Link to={href("/")} aria-label="OpenFSP">
+                            <Link to={href("/")} aria-label="OpenFSP" className="inline-flex">
                                 <Brand />
                             </Link>
-                            <p className={`mt-3 max-w-[18rem] text-sm/relaxed ${muted}`}>
+                            <p className={`mt-4 max-w-[300px] text-sm ${subtle}`}>
                                 {t.footer.description}
                             </p>
                         </div>
@@ -539,27 +742,54 @@ export function Home({ locale }: { locale: Locale }) {
                         />
                     </div>
                     <div
-                        className={`flex flex-wrap items-center justify-between gap-4 border-t border-fd-border py-7 text-[13px] md:py-9 ${muted}`}
+                        className={`mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-fd-border pt-6 text-[13px] ${subtle}`}
                     >
-                        <span>{t.footer.note}</span>
-                        <div className="flex items-center gap-5">
-                            <a href={X_URL} aria-label="X" className="hover:text-fd-primary">
-                                <XIcon />
-                            </a>
-                            <a
-                                href={LINKEDIN_URL}
-                                aria-label="LinkedIn"
-                                className="hover:text-fd-primary"
-                            >
-                                <LinkedInIcon />
-                            </a>
-                            <a
-                                href={CODE_REPO}
-                                aria-label={t.footer.source}
-                                className="hover:text-fd-primary"
-                            >
-                                <GitHubIcon />
-                            </a>
+                        <a
+                            href={KARAKO.url}
+                            aria-label={`${t.footer.maintained} ${KARAKO.name}`}
+                            className="flex items-center gap-3"
+                        >
+                            <span>{t.footer.maintained}</span>
+                            <img
+                                src={KARAKO.logo}
+                                alt=""
+                                width={101}
+                                height={34}
+                                className="h-[34px] w-auto dark:hidden"
+                            />
+                            <img
+                                src={KARAKO.logoDark}
+                                alt=""
+                                width={101}
+                                height={34}
+                                className="hidden h-[34px] w-auto dark:block"
+                            />
+                        </a>
+                        <div className="flex items-center gap-4">
+                            <span>Apache-2.0</span>
+                            <div className={`flex items-center gap-1 ${muted}`}>
+                                <a
+                                    href={GITHUB_URL}
+                                    aria-label="GitHub"
+                                    className="flex size-9 items-center justify-center rounded-lg"
+                                >
+                                    <GitHubIcon />
+                                </a>
+                                <a
+                                    href={X_URL}
+                                    aria-label="X"
+                                    className="flex size-9 items-center justify-center rounded-lg"
+                                >
+                                    <XIcon />
+                                </a>
+                                <a
+                                    href={LINKEDIN_URL}
+                                    aria-label="LinkedIn"
+                                    className="flex size-9 items-center justify-center rounded-lg"
+                                >
+                                    <LinkedInIcon />
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
