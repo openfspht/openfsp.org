@@ -30,13 +30,13 @@ In the test environment, the implementation provides preparation ([conformance 4
 Against the reference mock server `mock_openfsp` of the online demonstration:
 
 ```bash
-curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://simulator-api.openfsp.org/mock_openfsp
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://simulator-api.openfsp.org/mock_openfsp
 ```
 
 Against your implementation, its address is enough:
 
 ```bash
-curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://operator.example \
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example \
   --report conformance-report.json \
   --webhook-port 8098 \
   --webhook-url https://receiver.example/webhooks

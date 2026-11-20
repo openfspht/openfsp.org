@@ -31,8 +31,7 @@ import { homeCopy } from "@/lib/home-copy";
 type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
-    "curl -fsSLO https://cdn.openfsp.org/validate.sh",
-    "sh validate.sh https://simulator-api.openfsp.org/mock_openfsp",
+    "curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://simulator-api.openfsp.org/mock_openfsp",
 ];
 
 const EVENT_BODY = `{

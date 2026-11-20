@@ -30,13 +30,13 @@ En environnement de test, l’implémentation fournit la préparation ([conformi
 Contre le serveur simulé de référence `mock_openfsp` de la démonstration en ligne :
 
 ```bash
-curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://simulator-api.openfsp.org/mock_openfsp
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://simulator-api.openfsp.org/mock_openfsp
 ```
 
 Contre votre implémentation, son adresse suffit :
 
 ```bash
-curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://operator.example \
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example \
   --report conformance-report.json \
   --webhook-port 8098 \
   --webhook-url https://receiver.example/webhooks

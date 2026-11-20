@@ -35,7 +35,7 @@ Les images `gateway`, `simulator` et `validator` sont publiées sur GHCR (`ghcr.
 ## 3. Conformité d’une implémentation
 
 ```bash
-curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://operator.example
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example
 ```
 
 La suite évalue une implémentation à partir de sa seule adresse : elle lui demande ses clés de test et son interface de contrôle ([conformité 4.8](/docs/spec/conformance#4.8) et [4.9](/docs/spec/conformance#4.9)). Le [guide d’implémentation](/docs/native-operator) décrit les options et la lecture du rapport.
