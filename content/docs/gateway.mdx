@@ -56,12 +56,12 @@ La passerelle exige PostgreSQL 18. Sa configuration passe par l’environnement 
 
 ```bash
 docker run --rm -it ghcr.io/openfspht/gateway:0.5.0 hash
-docker run -d --name openfsp-gateway -p 8080:8080 --env-file gateway.env \
+docker run -d --name openfsp-gateway --network proxy --env-file gateway.env \
   -v "$PWD/providers.yaml:/config/providers.yaml:ro" \
   ghcr.io/openfspht/gateway:0.5.0
 ```
 
-Avec `SPRING_CONFIG_ADDITIONAL_LOCATION=/config/providers.yaml` dans `gateway.env`, `providers.yaml` déclare chaque service sous `openfsp.providers`, sur le modèle du [profil `sandbox`](https://github.com/openfspht/openfsp/blob/main/backend/gateway/infrastructure/src/main/resources/application-sandbox.yaml). Ses secrets y sont référencés par des variables d’environnement, ou lus dans `OPENFSP_SECRETS_DIR`. Le démarrage échoue tant qu’une valeur obligatoire manque ou qu’une clé publiée par le projet est fournie.
+La passerelle n’est pas publiée sur l’hôte : le mandataire TLS l’atteint par son réseau Docker, ici `proxy`. Avec `SPRING_CONFIG_ADDITIONAL_LOCATION=/config/providers.yaml` dans `gateway.env`, `providers.yaml` déclare chaque service sous `openfsp.providers`, sur le modèle du [profil `sandbox`](https://github.com/openfspht/openfsp/blob/main/backend/gateway/infrastructure/src/main/resources/application-sandbox.yaml). Ses secrets y sont référencés par des variables d’environnement, ou lus dans `OPENFSP_SECRETS_DIR`. Le démarrage échoue tant qu’une valeur obligatoire manque ou qu’une clé publiée par le projet est fournie.
 
 ## Adaptateurs [#adapters]
 

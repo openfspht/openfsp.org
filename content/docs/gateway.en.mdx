@@ -56,12 +56,12 @@ The gateway requires PostgreSQL 18. It is configured through the environment:
 
 ```bash
 docker run --rm -it ghcr.io/openfspht/gateway:0.5.0 hash
-docker run -d --name openfsp-gateway -p 8080:8080 --env-file gateway.env \
+docker run -d --name openfsp-gateway --network proxy --env-file gateway.env \
   -v "$PWD/providers.yaml:/config/providers.yaml:ro" \
   ghcr.io/openfspht/gateway:0.5.0
 ```
 
-With `SPRING_CONFIG_ADDITIONAL_LOCATION=/config/providers.yaml` in `gateway.env`, `providers.yaml` declares each service under `openfsp.providers`, following the [`sandbox` profile](https://github.com/openfspht/openfsp/blob/main/backend/gateway/infrastructure/src/main/resources/application-sandbox.yaml). Its secrets are referenced there as environment variables, or read from `OPENFSP_SECRETS_DIR`. Startup fails while a required value is missing or a key published by the project is supplied.
+The gateway is not published on the host: the TLS proxy reaches it over its Docker network, here `proxy`. With `SPRING_CONFIG_ADDITIONAL_LOCATION=/config/providers.yaml` in `gateway.env`, `providers.yaml` declares each service under `openfsp.providers`, following the [`sandbox` profile](https://github.com/openfspht/openfsp/blob/main/backend/gateway/infrastructure/src/main/resources/application-sandbox.yaml). Its secrets are referenced there as environment variables, or read from `OPENFSP_SECRETS_DIR`. Startup fails while a required value is missing or a key published by the project is supplied.
 
 ## Adapters [#adapters]
 
