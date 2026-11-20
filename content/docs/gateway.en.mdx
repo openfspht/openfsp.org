@@ -40,6 +40,29 @@ The application explicitly selects the payment service. The gateway maintains pa
 
 The operator, either the merchant or its representative, deploys the gateway and manages the secrets required by the payment service APIs. These secrets are not entrusted to the project. This architecture transfers no value between services and introduces no clearing operation. A gateway serves several merchant accounts: payments, keys, statements and webhooks are isolated per account, and an API key reaches only the data of its own. Its compromise, however, exposes every account it serves; a merchant that wants a narrower scope deploys its own instance. Each version provides multi-platform container images with build provenance and a software bill of materials (SBOM).
 
+### Run the image [#run]
+
+The gateway requires PostgreSQL 18. It is configured through the environment:
+
+| Variable | Role |
+| --- | --- |
+| `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | PostgreSQL database |
+| `OPENFSP_APP_KEY` | Application key, 32 random bytes in base64 (`openssl rand -base64 32`); it encrypts service credentials and is kept across versions |
+| `OPENFSP_ADMIN_TOKEN` | Argon2id hash of the admin token, produced by the `hash` command |
+| `OPENFSP_PUBLIC_BASE_URL` | Public HTTPS address of the API |
+| `OPENFSP_ADMIN_HOST` | The only host name serving the console and the admin API |
+| `OPENFSP_TLS_TERMINATED_BY_PROXY`, `OPENFSP_TRUSTED_PROXIES` | TLS terminated by a proxy, and its IP addresses |
+| `SPRING_CONFIG_ADDITIONAL_LOCATION` | YAML file declaring the payment services |
+
+```bash
+docker run --rm -it ghcr.io/openfspht/gateway:0.5.0 hash
+docker run -d --name openfsp-gateway -p 8080:8080 --env-file gateway.env \
+  -v "$PWD/providers.yaml:/config/providers.yaml:ro" \
+  ghcr.io/openfspht/gateway:0.5.0
+```
+
+With `SPRING_CONFIG_ADDITIONAL_LOCATION=/config/providers.yaml` in `gateway.env`, `providers.yaml` declares each service under `openfsp.providers`, following the [`sandbox` profile](https://github.com/openfspht/openfsp/blob/main/backend/gateway/infrastructure/src/main/resources/application-sandbox.yaml). Its secrets are referenced there as environment variables, or read from `OPENFSP_SECRETS_DIR`. Startup fails while a required value is missing or a key published by the project is supplied.
+
 ## Adapters [#adapters]
 
 An adapter translates an OpenFSP operation into the relevant service API and converts the response. Payment persistence, idempotency, state transitions and audit remain the gateway’s responsibility. The adapter is the only application component that holds the service secret.

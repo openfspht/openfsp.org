@@ -40,6 +40,29 @@ L’application sélectionne explicitement le service de paiement. La passerelle
 
 L’exploitant, marchand ou mandataire, déploie la passerelle et gère les secrets nécessaires aux API des services de paiement. Ces secrets ne sont pas confiés au projet. Cette architecture ne transfère aucune valeur entre services et n’introduit aucune opération de compensation. Une passerelle sert plusieurs comptes marchands : paiements, clés, relevés et webhooks sont isolés par compte, et une clé d’API n’atteint que les données du sien. Sa compromission expose en revanche tous les comptes qu’elle sert ; un marchand qui veut réduire ce périmètre déploie sa propre instance. Chaque version fournit des images de conteneur multiplateformes accompagnées de leur provenance de construction et d’une nomenclature des composants logiciels (SBOM).
 
+### Exécuter l’image [#run]
+
+La passerelle exige PostgreSQL 18. Sa configuration passe par l’environnement :
+
+| Variable | Rôle |
+| --- | --- |
+| `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` | Base PostgreSQL |
+| `OPENFSP_APP_KEY` | Clé d’application, 32 octets aléatoires en base64 (`openssl rand -base64 32`) ; elle chiffre les identifiants des services et se conserve d’une version à l’autre |
+| `OPENFSP_ADMIN_TOKEN` | Empreinte Argon2id du jeton d’administration, produite par la commande `hash` |
+| `OPENFSP_PUBLIC_BASE_URL` | Adresse HTTPS publique de l’API |
+| `OPENFSP_ADMIN_HOST` | Seul nom d’hôte servant la console et l’API d’administration |
+| `OPENFSP_TLS_TERMINATED_BY_PROXY`, `OPENFSP_TRUSTED_PROXIES` | TLS terminé par un mandataire, et ses adresses IP |
+| `SPRING_CONFIG_ADDITIONAL_LOCATION` | Fichier YAML déclarant les services de paiement |
+
+```bash
+docker run --rm -it ghcr.io/openfspht/gateway:0.5.0 hash
+docker run -d --name openfsp-gateway -p 8080:8080 --env-file gateway.env \
+  -v "$PWD/providers.yaml:/config/providers.yaml:ro" \
+  ghcr.io/openfspht/gateway:0.5.0
+```
+
+Avec `SPRING_CONFIG_ADDITIONAL_LOCATION=/config/providers.yaml` dans `gateway.env`, `providers.yaml` déclare chaque service sous `openfsp.providers`, sur le modèle du [profil `sandbox`](https://github.com/openfspht/openfsp/blob/main/backend/gateway/infrastructure/src/main/resources/application-sandbox.yaml). Ses secrets y sont référencés par des variables d’environnement, ou lus dans `OPENFSP_SECRETS_DIR`. Le démarrage échoue tant qu’une valeur obligatoire manque ou qu’une clé publiée par le projet est fournie.
+
 ## Adaptateurs [#adapters]
 
 L’adaptateur traduit une opération OpenFSP vers l’API du service concerné et convertit la réponse reçue. La persistance des paiements, l’idempotence, les transitions d’état et l’audit restent à la charge de la passerelle. L’adaptateur est le seul composant applicatif qui détient le secret du service.
