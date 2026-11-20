@@ -67,10 +67,10 @@ export const homeCopy = {
             link: "Consulter le rôle de la passerelle",
         },
         start: {
-            title: "Exécuter un paiement simulé en environnement local.",
-            body: "L’environnement de démonstration comprend une application marchande et des services de paiement simulés. La suite de conformité peut également évaluer une implémentation native simulée.",
+            title: "Évaluer une implémentation depuis les images publiées.",
+            body: "Le serveur simulé de référence et la suite de conformité s’exécutent depuis leurs images Docker. La démonstration en ligne permet d’essayer un paiement simulé.",
             action: "Consulter le guide de démarrage",
-            requirements: "Prérequis : Git, Make et Docker Compose",
+            requirements: "Prérequis : Docker",
             copy: "Copier les commandes",
             copied: "Commandes copiées",
             copyError:
@@ -191,10 +191,10 @@ export const homeCopy = {
             link: "Read about the gateway’s role",
         },
         start: {
-            title: "Run a simulated payment locally.",
-            body: "The demonstration environment includes a merchant application and simulated payment services. The conformance suite can also assess a simulated native implementation.",
+            title: "Assess an implementation from the published images.",
+            body: "The reference mock server and the conformance suite run from their Docker images. The online demonstration lets you try a simulated payment.",
             action: "Read the quickstart guide",
-            requirements: "Requirements: Git, Make and Docker Compose",
+            requirements: "Requirements: Docker",
             copy: "Copy commands",
             copied: "Commands copied",
             copyError: "Automatic copying is unavailable. Select the commands to copy them.",

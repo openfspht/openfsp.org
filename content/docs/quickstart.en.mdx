@@ -3,73 +3,45 @@ title: Quickstart
 description: Client library installation, simulated payment execution and an initial conformance assessment.
 ---
 
-The `make demo` command starts an environment for experimenting with OpenFSP payments without a merchant account or real funds. Run the following commands from the root of the [`openfsp`](https://github.com/openfspht/openfsp) repository.
+The online demonstration lets you try an OpenFSP payment without a merchant account or real funds. The other commands on this page run the images published on GHCR; Docker is their only requirement.
 
 To integrate a merchant application server, use the [Kotlin and Java SDK](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) or the [TypeScript SDK](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`). These packages are published on Maven Central and npm. Set `OPENFSP_BASE_URL` and `OPENFSP_API_KEY`, and keep the key exclusively on the server.
 
-To expose the provider-side API, follow the [implementation guide](/en/docs/native-operator). The [public validator](https://validator.openfsp.org) also supports assessment of the requirements covered by the suite.
+To expose the provider-side API, follow the [implementation guide](/en/docs/native-operator).
 
-## 1. Demo with Docker
+## 1. Online demonstration
 
-Requirements: Git, Make and Docker with the Compose plugin. Verify the plugin with `docker compose version`. The first launch downloads images and builds services, requiring an Internet connection and potentially several minutes.
+| Service | Address |
+| --- | --- |
+| Shop | [demo.openfsp.org](https://demo.openfsp.org) |
+| OpenFSP server | `https://gateway.openfsp.org` |
+| Console | [console.openfsp.org](https://console.openfsp.org) |
+| Mock server | [simulator.openfsp.org](https://simulator.openfsp.org) |
+| Validator | [validator.openfsp.org](https://validator.openfsp.org) |
 
-```bash
-git clone https://github.com/openfspht/openfsp.git
-cd openfsp
-make demo
-```
-
-On first launch, this target creates the `.env` file holding the `OPENFSP_APP_KEY` key, as `make keys` does. It then runs `docker compose --profile demo up --build`, which requires that file, and starts the following services:
-
-| Service        | Address                         |
-| -------------- | ------------------------------- |
-| OpenFSP server | `http://localhost:8080`         |
-| Console        | `http://console.localhost:8080` |
-| Simulator      | `http://localhost:8090`         |
-| Validator      | `http://localhost:8095`         |
-| Demo shop      | `http://localhost:3000`         |
-
-Each service serves its API and its interface from a single container. The gateway serves the console and `/admin` only on its admin host, `console.localhost` in Compose, which Safari does not always resolve. PostgreSQL has no fixed host port. Use the `demo-admin-token` administration token to access the console. Endpoint discovery is available at `/.well-known/openfsp-configuration`. The server on port 8080 is the [gateway](/en/docs/gateway), connected to the simulator’s payment services.
+The OpenFSP server is the [gateway](/en/docs/gateway), connected to the simulator’s payment services. The console opens with the admin token `demo-admin-token`, and the demonstration API key `ofsp_test_DemoShopKeyPublishedForTheSimulator01` is public. Data in this environment is shared and may be erased.
 
 ### First simulated payment
 
-1. Wait for the services to start, then open the [local shop](http://localhost:3000).
+1. Open the [shop](https://demo.openfsp.org).
 2. Add a product to the cart and select a service marked “(mock)”.
-3. Complete the simulated flow without a merchant account or real funds.
-4. Open the [local console](http://console.localhost:8080) using `demo-admin-token`, then retrieve the payment. The success scenario produces a transition from `pending` to `succeeded`.
+3. Follow the simulated flow, with no merchant account or real funds.
+4. Sign in to the [console](https://console.openfsp.org) with `demo-admin-token`, then open the payment. The success scenario produces the transition from `pending` to `succeeded`.
 
-The Docker environment and the development mode described below use the same ports: stop one before starting the other.
+## 2. Images
 
-To stop the demonstration, press Ctrl+C, then run:
-
-```bash
-docker compose --profile demo down
-```
-
-PostgreSQL data stays in a named volume after `down`; `docker compose --profile demo down -v` removes it. If startup fails, inspect the logs with `docker compose --profile demo logs --tail=100`. If a required port is occupied, release it before running `make demo` again. Also verify that Docker is running and images are accessible.
-
-## 2. Development
-
-The development environment requires JDK 25, Bun and a PostgreSQL instance accessible at `127.0.0.1:5432`. By default, the `openfsp` role, with password `openfsp`, owns the `openfsp` database. Use `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD` to adapt this configuration.
+The mock server runs without configuration:
 
 ```bash
-make install
-make dev
+docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0
 ```
 
-`make dev` opens a terminal with one process per tab and authenticates the console with `demo-admin-token`. The demonstration merchant application is maintained in [openfspht/demo](https://github.com/openfspht/demo). Run it alongside the services using the demonstration API key.
-
-| Process      | Port               |
-| ------------ | ------------------ |
-| OpenFSP server | 8080             |
-| Simulator    | 8090               |
-| Validator    | 8095               |
-| Console      | 5173               |
-| Simulator UI | 5175               |
-| Validator UI | 5176               |
-
-`make check` runs compilation, static analysis, type checking and tests for the backend and frontend components.
+Its interface is served on `http://localhost:8090` and the reference server on `http://localhost:8090/mock_openfsp`. The gateway requires PostgreSQL and an application key; its [deployment](/en/docs/gateway) describes its configuration.
 
 ## 3. Conformance of an implementation
 
-`make validate TARGET=<address>` assesses an implementation from its address alone: the suite asks it for its test keys and its control interface ([conformance 4.8](/en/docs/spec/conformance#4.8) and [4.9](/en/docs/spec/conformance#4.9)). The [implementation guide](/en/docs/native-operator) describes the run against the reference mock server and how to read the report.
+```bash
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example
+```
+
+The suite assesses an implementation from its address alone: it asks for its test keys and its control interface ([conformance 4.8](/en/docs/spec/conformance#4.8) and [4.9](/en/docs/spec/conformance#4.9)). The [implementation guide](/en/docs/native-operator) describes the options and how to read the report.

@@ -27,17 +27,17 @@ In the test environment, the implementation provides preparation ([conformance 4
 
 ## Run the suite
 
-Against the reference mock server `mock_openfsp`, from the [openfsp](https://github.com/openfspht/openfsp) repository and with the [development prerequisites](/en/docs/quickstart#2):
+Against the reference mock server `mock_openfsp`, run the simulator image, then the suite:
 
 ```bash title="Terminal 1: simulated provider"
-make simulator
+docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0
 ```
 
 ```bash title="Terminal 2: suite"
-make validate TARGET=http://127.0.0.1:8090/mock_openfsp
+curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- http://127.0.0.1:8090/mock_openfsp
 ```
 
-Against your implementation, its address is enough: `make validate TARGET=https://operator.example`. The Makefile opens the suite’s webhook receiver on port 8099 and writes the report to `backend/validator/infrastructure/build/conformance-report.json`. Without the Makefile:
+Against your implementation, its address is enough:
 
 ```bash
 curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example \
@@ -46,7 +46,7 @@ curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.examp
   --webhook-url https://receiver.example/webhooks
 ```
 
-Without a clone of the repository, this script is enough; it runs the validator image, which bundles the suite, and Docker is its only requirement. The equivalent Docker command:
+This script runs the validator image, which bundles the suite; Docker is its only requirement. The equivalent Docker command:
 
 ```bash
 docker run --rm -it --user "$(id -u):$(id -g)" -p 8098:8098 -v "$PWD:/work" ghcr.io/openfspht/validator:0.5.0 validate https://operator.example \
@@ -57,7 +57,7 @@ docker run --rm -it --user "$(id -u):$(id -g)" -p 8098:8098 -v "$PWD:/work" ghcr
 
 Add `--access-code` when preparation requires the operator’s access code ([conformance 4.8.7](/en/docs/spec/conformance#4.8.7)). Without `--webhook-port`, no receiver starts and the delivery tests are inconclusive, with their reason. `--webhook-url` gives the public HTTPS address forwarded to that port; otherwise the suite announces `http://127.0.0.1:8098/webhooks`, reachable only from a local instance.
 
-The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/org/openfsp/simulator/dialects/openfsp) and [Makefile](https://github.com/openfspht/openfsp/blob/main/Makefile) document its behaviour and execution parameters, respectively.
+The [simulated native implementation sources](https://github.com/openfspht/openfsp/tree/main/backend/simulator/infrastructure/src/main/kotlin/dialects/openfsp) document its behaviour.
 
 ## Read and publish the result
 

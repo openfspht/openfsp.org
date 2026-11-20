@@ -11,16 +11,15 @@ import { homeCopy } from "@/lib/home-copy";
 type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
-    "git clone https://github.com/openfspht/openfsp.git",
-    "cd openfsp",
-    "make demo",
+    "docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0",
+    "curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- http://127.0.0.1:8090/mock_openfsp",
 ];
 
 const EVENT_BODY = `{
   "type": "payment.succeeded",
   "data": {
     "id": "pay_06GY9B9M4HVRD2XV5QQ81Z4WAW",
-    "reference": "ORDER-184",
+    "reference": "5f0c1a2e-8b3d-4c9a-9e71-2d4b6a8c0f13",
     "status": "succeeded",
     "amount": { "amount": 125000, "currency": "HTG" }
   }
