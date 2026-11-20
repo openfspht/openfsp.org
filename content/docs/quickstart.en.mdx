@@ -30,13 +30,7 @@ The OpenFSP server is the [gateway](/en/docs/gateway), connected to the simulato
 
 ## 2. Images
 
-The mock server runs without configuration:
-
-```bash
-docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0
-```
-
-Its interface is served on `http://localhost:8090` and the reference server on `http://localhost:8090/mock_openfsp`. The gateway requires PostgreSQL and an application key; its [deployment](/en/docs/gateway) describes its configuration.
+The `gateway`, `simulator` and `validator` images are published on GHCR (`ghcr.io/openfspht/<image>:0.5.0`). The gateway requires PostgreSQL and an application key; [running it](/en/docs/gateway#run) describes its configuration. The simulator receives its public address through `OPENFSP_SIMULATOR_URL` and the address of the gateway it notifies through `OPENFSP_GATEWAY_URL`.
 
 ## 3. Conformance of an implementation
 
