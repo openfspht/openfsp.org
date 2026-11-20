@@ -5,7 +5,7 @@ import { Header } from "fumadocs-ui/layouts/home/slots/header";
 import { ArrowRight, ArrowUpRight, Building2, Check, Copy, Terminal, Webhook } from "lucide-react";
 import { localePath, type Locale } from "@/lib/i18n";
 import { CODE_REPO, LINKEDIN_URL, X_URL, baseOptions, socialLinks } from "@/lib/layout.shared";
-import { LinkedInIcon, XIcon } from "@/components/social-icons";
+import { GitHubIcon, LinkedInIcon, XIcon } from "@/components/social-icons";
 import { homeCopy } from "@/lib/home-copy";
 
 type CopyText = (typeof homeCopy)[Locale];
@@ -27,6 +27,10 @@ const EVENT_BODY = `{
 }`;
 
 const SPONSOR_CONTACT = "mailto:hey@openfsp.org";
+const GOVERNANCE_REPO = "https://github.com/openfspht/governance";
+const VALIDATOR_URL = "https://validator.openfsp.org";
+const MAVEN_SDK = "https://central.sonatype.com/artifact/org.openfsp/openfsp-sdk";
+const NPM_SDK = "https://www.npmjs.com/package/@openfsp/sdk";
 const SPONSORS = [
     {
         name: "Karako Systems",
@@ -108,6 +112,27 @@ function LandingHeader() {
     return (
         <nav className="sticky top-0 z-40" aria-label="OpenFSP">
             <Header aria-label={undefined} />
+        </nav>
+    );
+}
+
+type FooterLink = { label: string } & ({ to: string } | { url: string });
+
+function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) {
+    return (
+        <nav aria-label={title} className={`flex flex-col items-start gap-2.5 text-sm ${muted}`}>
+            <h2 className="mb-1 text-sm font-semibold text-fd-primary">{title}</h2>
+            {links.map((link) =>
+                "to" in link ? (
+                    <Link key={link.label} to={link.to} className="hover:text-fd-primary">
+                        {link.label}
+                    </Link>
+                ) : (
+                    <a key={link.label} href={link.url} className="hover:text-fd-primary">
+                        {link.label}
+                    </a>
+                ),
+            )}
         </nav>
     );
 }
@@ -456,8 +481,8 @@ export function Home({ locale }: { locale: Locale }) {
             </div>
             <footer className="landing-footer border-t border-fd-border">
                 <div className="landing-container">
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-[2fr_1fr_1fr] md:gap-16 md:py-20">
-                        <div className="col-span-2 md:col-span-1">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-3 md:gap-12 md:py-20 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
+                        <div className="col-span-2 md:col-span-3 lg:col-span-1">
                             <Link to={href("/")} aria-label="OpenFSP">
                                 <Brand />
                             </Link>
@@ -465,28 +490,54 @@ export function Home({ locale }: { locale: Locale }) {
                                 {t.footer.description}
                             </p>
                         </div>
-                        <nav
-                            aria-label={t.footer.docs}
-                            className={`flex flex-col items-start gap-2.5 text-sm ${muted}`}
-                        >
-                            <h2 className="mb-1 text-sm font-semibold text-fd-primary">
-                                {t.footer.docs}
-                            </h2>
-                            <Link to={href("/docs/quickstart")}>{t.footer.quickstart}</Link>
-                            <Link to={href("/docs/spec")}>{t.footer.spec}</Link>
-                            <Link to={href("/docs/architecture")}>{t.footer.architecture}</Link>
-                        </nav>
-                        <nav
-                            aria-label={t.footer.project}
-                            className={`flex flex-col items-start gap-2.5 text-sm ${muted}`}
-                        >
-                            <h2 className="mb-1 text-sm font-semibold text-fd-primary">
-                                {t.footer.project}
-                            </h2>
-                            <Link to={href("/docs/registry")}>{t.footer.registry}</Link>
-                            <Link to={href("/docs/decisions")}>{t.footer.decisions}</Link>
-                            <Link to={href("/docs/verify")}>{t.footer.verify}</Link>
-                        </nav>
+                        <FooterColumn
+                            title={t.footer.spec}
+                            links={[
+                                { label: t.footer.specOverview, to: href("/docs/spec") },
+                                {
+                                    label: t.footer.paymentsApi,
+                                    to: href("/docs/spec/payments-api"),
+                                },
+                                { label: t.footer.webhooks, to: href("/docs/spec/webhooks") },
+                                {
+                                    label: t.footer.authentication,
+                                    to: href("/docs/spec/authentication"),
+                                },
+                                { label: t.footer.conformance, to: href("/docs/spec/conformance") },
+                            ]}
+                        />
+                        <FooterColumn
+                            title={t.footer.docs}
+                            links={[
+                                { label: t.footer.quickstart, to: href("/docs/quickstart") },
+                                { label: t.footer.architecture, to: href("/docs/architecture") },
+                                { label: t.footer.gateway, to: href("/docs/gateway") },
+                                {
+                                    label: t.footer.nativeOperator,
+                                    to: href("/docs/native-operator"),
+                                },
+                                { label: t.footer.status, to: href("/docs/status") },
+                            ]}
+                        />
+                        <FooterColumn
+                            title={t.footer.project}
+                            links={[
+                                { label: t.footer.registry, to: href("/docs/registry") },
+                                { label: t.footer.decisions, to: href("/docs/decisions") },
+                                { label: t.footer.verify, to: href("/docs/verify") },
+                                { label: t.footer.governance, url: GOVERNANCE_REPO },
+                                { label: t.footer.sponsor, url: SPONSOR_CONTACT },
+                            ]}
+                        />
+                        <FooterColumn
+                            title={t.footer.tools}
+                            links={[
+                                { label: t.footer.validator, url: VALIDATOR_URL },
+                                { label: t.footer.sdkKotlin, url: MAVEN_SDK },
+                                { label: t.footer.sdkTypescript, url: NPM_SDK },
+                                { label: t.footer.source, url: CODE_REPO },
+                            ]}
+                        />
                     </div>
                     <div
                         className={`flex flex-wrap items-center justify-between gap-4 border-t border-fd-border py-7 text-[13px] md:py-9 ${muted}`}
@@ -503,9 +554,12 @@ export function Home({ locale }: { locale: Locale }) {
                             >
                                 <LinkedInIcon />
                             </a>
-                            <a href={CODE_REPO} className="flex items-center gap-1.5">
-                                {t.footer.source}
-                                <ArrowUpRight size={14} aria-hidden />
+                            <a
+                                href={CODE_REPO}
+                                aria-label={t.footer.source}
+                                className="hover:text-fd-primary"
+                            >
+                                <GitHubIcon />
                             </a>
                         </div>
                     </div>
