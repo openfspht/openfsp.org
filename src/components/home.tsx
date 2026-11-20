@@ -380,15 +380,43 @@ export function Home({ locale }: { locale: Locale }) {
                     </div>
                 </section>
 
+                <aside
+                    className="landing-container my-10 grid gap-4 md:my-14 md:grid-cols-2 md:gap-14 lg:gap-24"
+                    aria-labelledby="status-title"
+                >
+                    <h2
+                        id="status-title"
+                        className="text-[22px] font-semibold tracking-[-0.02em] text-fd-primary"
+                    >
+                        {t.status.title}
+                    </h2>
+                    <div>
+                        <p className={`text-[15px]/[1.75] ${muted}`}>{t.status.body}</p>
+                        <div className="mt-6 grid gap-5">
+                            {t.status.phases.map((phase, index) => (
+                                <div
+                                    key={phase.title}
+                                    className={`border-l-2 pl-3.5 ${index === 0 ? "border-brand-accent" : "border-fd-border"}`}
+                                >
+                                    <h3 className="mb-1.5 text-[15px] font-semibold">
+                                        {phase.title}
+                                    </h3>
+                                    <p className={`text-[15px]/[1.7] ${muted}`}>{phase.body}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <a href={`${href("/docs")}#phases`} className="text-link mt-5 text-[15px]">
+                            {t.status.link}
+                            <ArrowUpRight size={15} aria-hidden />
+                        </a>
+                    </div>
+                </aside>
+
                 <section
-                    className="landing-container mt-14 mb-8 text-center md:mt-20 md:mb-14"
+                    className="landing-container border-t border-fd-border py-14 text-center md:py-20"
                     aria-labelledby="sponsors-title"
                 >
-                    <p className="text-sm font-semibold text-fd-primary">{t.sponsors.label}</p>
-                    <h2
-                        id="sponsors-title"
-                        className={`${sectionTitle} mx-auto mt-3 max-w-[36rem]`}
-                    >
+                    <h2 id="sponsors-title" className={sectionTitle}>
                         {t.sponsors.title}
                     </h2>
                     <p className={`mx-auto mt-4 max-w-[34rem] text-[15px]/[1.75] ${muted}`}>
@@ -425,38 +453,6 @@ export function Home({ locale }: { locale: Locale }) {
                         <ArrowUpRight size={18} aria-hidden />
                     </a>
                 </section>
-
-                <aside
-                    className="landing-container my-10 grid gap-4 md:my-14 md:grid-cols-2 md:gap-14 lg:gap-24"
-                    aria-labelledby="status-title"
-                >
-                    <h2
-                        id="status-title"
-                        className="text-[22px] font-semibold tracking-[-0.02em] text-fd-primary"
-                    >
-                        {t.status.title}
-                    </h2>
-                    <div>
-                        <p className={`text-[15px]/[1.75] ${muted}`}>{t.status.body}</p>
-                        <div className="mt-6 grid gap-5">
-                            {t.status.phases.map((phase, index) => (
-                                <div
-                                    key={phase.title}
-                                    className={`border-l-2 pl-3.5 ${index === 0 ? "border-brand-accent" : "border-fd-border"}`}
-                                >
-                                    <h3 className="mb-1.5 text-[15px] font-semibold">
-                                        {phase.title}
-                                    </h3>
-                                    <p className={`text-[15px]/[1.7] ${muted}`}>{phase.body}</p>
-                                </div>
-                            ))}
-                        </div>
-                        <a href={`${href("/docs")}#phases`} className="text-link mt-5 text-[15px]">
-                            {t.status.link}
-                            <ArrowUpRight size={15} aria-hidden />
-                        </a>
-                    </div>
-                </aside>
             </div>
             <footer className="landing-footer border-t border-fd-border">
                 <div className="landing-container">

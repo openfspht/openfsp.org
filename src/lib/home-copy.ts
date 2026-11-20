@@ -96,9 +96,8 @@ export const homeCopy = {
             link: "Consulter le périmètre et les phases",
         },
         sponsors: {
-            label: "Sponsors",
-            title: "OpenFSP reste ouvert grâce à ses sponsors.",
-            body: "Aucune fonctionnalité réservée, aucun investisseur. Ces organisations financent la spécification et ses outils.",
+            title: "Sponsors",
+            body: "Organisations qui financent la spécification et ses outils.",
             cta: "Devenir sponsor",
         },
         footer: {
@@ -206,9 +205,8 @@ export const homeCopy = {
             link: "View scope and development phases",
         },
         sponsors: {
-            label: "Sponsors",
-            title: "OpenFSP stays open thanks to its sponsors.",
-            body: "No gated features and no investors. These organisations fund the specification and its tooling.",
+            title: "Sponsors",
+            body: "Organisations funding the specification and its tooling.",
             cta: "Become a sponsor",
         },
         footer: {
