@@ -26,6 +26,15 @@ const EVENT_BODY = `{
   }
 }`;
 
+const SPONSOR_CONTACT = "mailto:hey@openfsp.org";
+const SPONSORS = [
+    {
+        name: "Karako Systems",
+        url: "https://karakosystems.com",
+        logo: "https://cdn.karakosystems.com/karako/logos/logo-full-black.png",
+        logoDark: "https://cdn.karakosystems.com/karako/logos/logo-full-white.png",
+    },
+];
 const muted = "text-fd-muted-foreground";
 const sectionTitle =
     "text-[clamp(26px,3vw,36px)] leading-tight font-semibold tracking-[-0.03em] text-balance text-fd-primary";
@@ -369,6 +378,52 @@ export function Home({ locale }: { locale: Locale }) {
                             </code>
                         </pre>
                     </div>
+                </section>
+
+                <section
+                    className="landing-container mt-14 mb-8 text-center md:mt-20 md:mb-14"
+                    aria-labelledby="sponsors-title"
+                >
+                    <p className="text-sm font-semibold text-fd-primary">{t.sponsors.label}</p>
+                    <h2
+                        id="sponsors-title"
+                        className={`${sectionTitle} mx-auto mt-3 max-w-[36rem]`}
+                    >
+                        {t.sponsors.title}
+                    </h2>
+                    <p className={`mx-auto mt-4 max-w-[34rem] text-[15px]/[1.75] ${muted}`}>
+                        {t.sponsors.body}
+                    </p>
+                    <ul className="mt-9 flex flex-wrap items-center justify-center gap-4">
+                        {SPONSORS.map((sponsor) => (
+                            <li key={sponsor.name}>
+                                <a
+                                    href={sponsor.url}
+                                    aria-label={sponsor.name}
+                                    className="flex h-24 w-64 items-center justify-center rounded-lg border border-fd-border transition-colors hover:border-fd-primary"
+                                >
+                                    <img
+                                        src={sponsor.logo}
+                                        alt=""
+                                        width={150}
+                                        height={50}
+                                        className="h-12 w-auto dark:hidden"
+                                    />
+                                    <img
+                                        src={sponsor.logoDark}
+                                        alt=""
+                                        width={150}
+                                        height={50}
+                                        className="hidden h-12 w-auto dark:block"
+                                    />
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                    <a href={SPONSOR_CONTACT} className="landing-button is-secondary mt-8">
+                        {t.sponsors.cta}
+                        <ArrowUpRight size={18} aria-hidden />
+                    </a>
                 </section>
 
                 <aside
