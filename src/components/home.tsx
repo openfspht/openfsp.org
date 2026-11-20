@@ -744,7 +744,7 @@ export function Home({ locale }: { locale: Locale }) {
                                 { label: t.footer.decisions, to: href("/docs/decisions") },
                                 { label: t.footer.verify, to: href("/docs/verify") },
                                 { label: t.footer.governance, url: GOVERNANCE_REPO },
-                                { label: t.footer.sponsor, url: SPONSOR_CONTACT },
+                                { label: t.footer.sponsor, url: "#sponsors" },
                             ]}
                         />
                         <FooterColumn

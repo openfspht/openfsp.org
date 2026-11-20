@@ -10,7 +10,7 @@ export const homeCopy = {
             demo: "Démo",
             sponsors: "Sponsors",
         },
-        version: "v0.1.0",
+        version: "Spécification 0.1.0",
         phase: "Phase 1 en développement",
         headline: {
             before: "Une interface entre marchands et fournisseurs de paiement en ",
@@ -122,7 +122,7 @@ export const homeCopy = {
         status: {
             title: "État et périmètre.",
             body: {
-                before: "La version 0.1.0 comprend la spécification, les bibliothèques clientes et la suite de conformité. Un validateur tourne sur ",
+                before: "La spécification 0.1.0 est publiée avec ses bibliothèques clientes et sa suite de conformité. Un validateur tourne sur ",
                 validator: "validator.openfsp.org",
                 middle: ", et l’",
                 demo: "environnement de démonstration",
@@ -137,7 +137,7 @@ export const homeCopy = {
                 {
                     state: "Disponible",
                     title: "Bibliothèques clientes",
-                    body: "Les bibliothèques clientes et leurs outils de test sont livrés avec la 0.1.0. Leur installation est décrite dans la documentation technique.",
+                    body: "Les bibliothèques Kotlin, Java et TypeScript et leurs outils de test sont publiés sur Maven Central et npm. Leur installation est décrite dans le démarrage rapide.",
                 },
                 {
                     state: "Envisagé",
@@ -150,7 +150,7 @@ export const homeCopy = {
         sponsors: {
             eyebrow: "Sponsors",
             title: "Garder OpenFSP ouvert et indépendant.",
-            body: "OpenFSP est libre d’implémentation. Les sponsors financent le travail sur la spécification, la suite de conformité et les implémentations de référence. Un sponsor n’achète jamais de voix dans la norme.",
+            body: "OpenFSP est libre d’implémentation. Les sponsors financent le travail sur la spécification, la suite de conformité et les implémentations de référence.",
             cta: "Devenir sponsor",
             contribute: "Contribuer au code",
             placeholder: "Votre logo ici",
@@ -173,7 +173,7 @@ export const homeCopy = {
             gateway: "Passerelle",
             nativeOperator: "Implémentation fournisseur",
             status: "État du projet",
-            registry: "Registre des fournisseurs",
+            registry: "Registre des opérateurs",
             decisions: "Décisions de conception",
             verify: "Vérification d’une attestation",
             governance: "Gouvernance",
@@ -193,7 +193,7 @@ export const homeCopy = {
             demo: "Demo",
             sponsors: "Sponsors",
         },
-        version: "v0.1.0",
+        version: "Specification 0.1.0",
         phase: "Phase 1 in development",
         headline: {
             before: "One interface between merchants and payment providers in ",
@@ -304,7 +304,7 @@ export const homeCopy = {
         status: {
             title: "Status and scope.",
             body: {
-                before: "Version 0.1.0 includes the specification, client libraries and conformance suite. A validator runs at ",
+                before: "Specification 0.1.0 is published with its client libraries and conformance suite. A validator runs at ",
                 validator: "validator.openfsp.org",
                 middle: ", and the full ",
                 demo: "demo environment",
@@ -319,7 +319,7 @@ export const homeCopy = {
                 {
                     state: "Available",
                     title: "Client libraries",
-                    body: "Client libraries and testing tools ship with 0.1.0. Installation is covered in the technical documentation.",
+                    body: "The Kotlin, Java and TypeScript libraries and their testing tools are published on Maven Central and npm. Installation is covered in the quickstart.",
                 },
                 {
                     state: "Proposed",
@@ -332,7 +332,7 @@ export const homeCopy = {
         sponsors: {
             eyebrow: "Sponsors",
             title: "Keep OpenFSP open and independent.",
-            body: "OpenFSP is free to implement. Sponsors fund the specification work, the conformance suite and the reference implementations. Sponsorship never buys a say in the standard.",
+            body: "OpenFSP is free to implement. Sponsors fund the specification work, the conformance suite and the reference implementations.",
             cta: "Become a sponsor",
             contribute: "Contribute code",
             placeholder: "Your logo here",
