@@ -68,7 +68,7 @@ export const homeCopy = {
         },
         start: {
             title: "Évaluer une implémentation depuis les images publiées.",
-            body: "Le serveur simulé de référence et la suite de conformité s’exécutent depuis leurs images Docker. La démonstration en ligne permet d’essayer un paiement simulé.",
+            body: "La suite de conformité s’exécute depuis son image Docker, ici contre le serveur simulé de référence de la démonstration en ligne, qui permet aussi d’essayer un paiement simulé.",
             action: "Consulter le guide de démarrage",
             requirements: "Prérequis : Docker",
             copy: "Copier les commandes",
@@ -192,7 +192,7 @@ export const homeCopy = {
         },
         start: {
             title: "Assess an implementation from the published images.",
-            body: "The reference mock server and the conformance suite run from their Docker images. The online demonstration lets you try a simulated payment.",
+            body: "The conformance suite runs from its Docker image, here against the reference mock server of the online demonstration, which also lets you try a simulated payment.",
             action: "Read the quickstart guide",
             requirements: "Requirements: Docker",
             copy: "Copy commands",

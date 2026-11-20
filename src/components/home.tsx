@@ -11,8 +11,8 @@ import { homeCopy } from "@/lib/home-copy";
 type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
-    "docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0",
-    "curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- http://127.0.0.1:8090/mock_openfsp",
+    "curl -fsSLO https://cdn.openfsp.org/validate.sh",
+    "sh validate.sh https://simulator-api.openfsp.org/mock_openfsp",
 ];
 
 const EVENT_BODY = `{

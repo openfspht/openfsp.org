@@ -27,20 +27,16 @@ En environnement de test, l’implémentation fournit la préparation ([conformi
 
 ## Exécuter la suite
 
-Contre le serveur simulé de référence `mock_openfsp`, exécutez l’image du simulateur, puis la suite :
+Contre le serveur simulé de référence `mock_openfsp` de la démonstration en ligne :
 
-```bash title="Terminal 1 : opérateur simulé"
-docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0
-```
-
-```bash title="Terminal 2 : suite"
-curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- http://127.0.0.1:8090/mock_openfsp
+```bash
+curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://simulator-api.openfsp.org/mock_openfsp
 ```
 
 Contre votre implémentation, son adresse suffit :
 
 ```bash
-curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example \
+curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://operator.example \
   --report conformance-report.json \
   --webhook-port 8098 \
   --webhook-url https://receiver.example/webhooks

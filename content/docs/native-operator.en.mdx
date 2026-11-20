@@ -27,20 +27,16 @@ In the test environment, the implementation provides preparation ([conformance 4
 
 ## Run the suite
 
-Against the reference mock server `mock_openfsp`, run the simulator image, then the suite:
+Against the reference mock server `mock_openfsp` of the online demonstration:
 
-```bash title="Terminal 1: simulated provider"
-docker run --rm -p 8090:8090 ghcr.io/openfspht/simulator:0.5.0
-```
-
-```bash title="Terminal 2: suite"
-curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- http://127.0.0.1:8090/mock_openfsp
+```bash
+curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://simulator-api.openfsp.org/mock_openfsp
 ```
 
 Against your implementation, its address is enough:
 
 ```bash
-curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example \
+curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://operator.example \
   --report conformance-report.json \
   --webhook-port 8098 \
   --webhook-url https://receiver.example/webhooks

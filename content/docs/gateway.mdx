@@ -168,7 +168,7 @@ Ces tests évaluent le comportement de l’adaptateur face aux représentations 
 La passerelle de démonstration s’évalue depuis son adresse :
 
 ```bash
-curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://gateway.openfsp.org
+curl -fsSLO https://cdn.openfsp.org/validate.sh && sh validate.sh https://gateway.openfsp.org
 ```
 
 La suite ne reçoit aucune clé : la passerelle prépare elle-même l’exécution ([conformité 4.8](/docs/spec/conformance#4.8)) et délivre des clés de courte durée. Le profil Spring `conformance` ajoute les opérateurs de test de la [conformité 9.3.5](/docs/spec/conformance#9.3.5) et un service injoignable.
