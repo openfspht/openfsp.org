@@ -44,7 +44,7 @@ The following conventions apply to all OpenFSP endpoints.
 ```json
 {
   "id": "pay_01J9ZK3QF8XN2M7VYB4C6D8E0G",
-  "reference": "INV-2026-00184",
+  "reference": "5f0c1a2e-8b3d-4c9a-9e71-2d4b6a8c0f13",
   "status": "pending",
   "amount": { "amount": 125000, "currency": "HTG" },
   "provider": "moncash",
@@ -62,7 +62,7 @@ The following conventions apply to all OpenFSP endpoints.
   "failure_reason": null,
   "failure_detail": null,
   "fee": null,
-  "metadata": { "order_id": "184" }
+  "metadata": { "invoice_number": "INV-2026-00184" }
 }
 ```
 
@@ -133,14 +133,14 @@ POST /v1/payments
 
 ```json
 {
-  "reference": "INV-2026-00184",
+  "reference": "5f0c1a2e-8b3d-4c9a-9e71-2d4b6a8c0f13",
   "amount": { "amount": 125000, "currency": "HTG" },
   "provider": "moncash",
   "payer": { "phone_number": "+50934567890" },
   "description": "Invoice 184",
   "return_url": "https://merchant.example/checkout/184/return",
   "expires_at": "2026-08-17T15:02:07Z",
-  "metadata": { "order_id": "184" }
+  "metadata": { "invoice_number": "INV-2026-00184" }
 }
 ```
 

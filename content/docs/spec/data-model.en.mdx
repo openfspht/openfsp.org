@@ -13,11 +13,11 @@ The interface contract uses integer amounts, an explicit currency and opaque ide
 | `Currency`          | string, single value `HTG`    | `"HTG"`                                                                 |
 | `PhoneNumber`       | string, E.164                 | `"+50934567890"`                                                        |
 | `ResourceId`        | opaque string                 | `"pay_01J9ZK3QF8XN2M7VYB4C6D8E0G"`                                      |
-| `Reference`         | string chosen by the merchant | `"INV-2026-00184"`                                                      |
+| `Reference`         | string chosen by the merchant | `"5f0c1a2e-8b3d-4c9a-9e71-2d4b6a8c0f13"`                                |
 | `Timestamp`         | string, RFC 3339 UTC          | `"2026-08-17T14:32:07.412Z"`                                            |
 | `Date`              | string, RFC 3339 `full-date`  | `"2026-09-28"` ([lifecycle 10.1](/en/docs/spec/lifecycle#10.1))            |
 | `Fee`               | object                        | `{"amount": {"amount": 1250, "currency": "HTG"}, "bearer": "merchant"}` |
-| `Metadata`          | object of strings             | `{"order_id": "184"}`                                                   |
+| `Metadata`          | object of strings             | `{"invoice_number": "INV-2026-00184"}`                                  |
 
 ## 2. JSON conventions
 
