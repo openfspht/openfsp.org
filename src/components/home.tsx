@@ -31,7 +31,8 @@ import { homeCopy } from "@/lib/home-copy";
 type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
-    "curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://simulator-api.openfsp.org/mock_openfsp",
+    "curl -fsSL https://cdn.openfsp.org/validate.sh \\",
+    "  | sh -s -- https://simulator-api.openfsp.org/mock_openfsp",
 ];
 
 const EVENT_BODY = `{
@@ -305,9 +306,11 @@ export function Home({ locale }: { locale: Locale }) {
             slots={{ header: LandingHeader }}
             nav={{ ...options.nav, title: <Brand /> }}
             links={[
-                { text: t.footer.docs, url: href("/docs"), active: "none" },
-                { text: t.footer.spec, url: href("/docs/spec"), active: "none" },
-                { text: t.footer.status, url: href("/docs/status"), active: "none" },
+                { text: t.nav.docs, url: href("/docs"), active: "none" },
+                { text: t.nav.api, url: href("/docs/spec/payments-api"), active: "none" },
+                { text: t.nav.status, url: "#status", active: "none" },
+                { text: t.nav.demo, url: "#demo", active: "none" },
+                { text: t.nav.sponsors, url: "#sponsors", active: "none" },
                 ...socialLinks,
             ]}
             githubUrl={CODE_REPO}
@@ -318,8 +321,8 @@ export function Home({ locale }: { locale: Locale }) {
                         <HeroRings />
                     </div>
                     <section className="landing-container relative pt-12 pb-16 md:pt-28 md:pb-24">
-                        <Link
-                            to={href("/docs/status")}
+                        <a
+                            href="#status"
                             className={`inline-flex items-center gap-2 rounded-full border border-fd-border py-1 pr-3 pl-1.5 text-[13px] ${muted}`}
                         >
                             <span className="rounded-full bg-fd-primary px-2 py-px text-xs font-semibold text-fd-primary-foreground">
@@ -328,21 +331,11 @@ export function Home({ locale }: { locale: Locale }) {
                             <span className="size-1.5 rounded-full bg-brand-accent" aria-hidden />
                             <span>{t.phase}</span>
                             <ChevronRight size={12} aria-hidden />
-                        </Link>
-                        <h1 className="hero-title mt-7 max-w-[880px]">
-                            {t.headline.map((line, index) => (
-                                <span key={line}>
-                                    <span
-                                        className={
-                                            index === t.headline.length - 1
-                                                ? "accent-underline"
-                                                : undefined
-                                        }
-                                    >
-                                        {line}
-                                    </span>
-                                </span>
-                            ))}
+                        </a>
+                        <h1 className="hero-title mt-7 max-w-[720px]">
+                            {t.headline.before}
+                            <span className="accent-underline">{t.headline.highlight}</span>
+                            {t.headline.after}
                         </h1>
                         <p
                             className={`mt-7 max-w-[620px] text-[17px]/[1.6] text-pretty md:text-[19px] ${muted}`}
@@ -363,8 +356,12 @@ export function Home({ locale }: { locale: Locale }) {
                         </div>
                         <ul className={`mt-12 flex flex-wrap gap-x-8 gap-y-2 text-sm ${subtle}`}>
                             {t.facts.map((fact) => (
-                                <li key={fact} className="font-semibold text-fd-foreground">
-                                    {fact}
+                                <li key={fact.strong}>
+                                    {fact.before}
+                                    <span className="font-semibold text-fd-foreground">
+                                        {fact.strong}
+                                    </span>
+                                    {fact.after}
                                 </li>
                             ))}
                         </ul>
@@ -435,7 +432,7 @@ export function Home({ locale }: { locale: Locale }) {
                             <figcaption className="flex items-center gap-2 border-b border-code-line px-5 py-3.5 text-[13px] text-code-muted">
                                 <span className="size-2 rounded-full bg-brand-accent" aria-hidden />
                                 <span className="text-code-fg">payment.succeeded</span>
-                                <span className="ml-auto font-mono text-xs">JSON</span>
+                                <span className="ml-auto font-mono text-xs">POST /webhooks</span>
                             </figcaption>
                             <pre
                                 className="code-block"
@@ -491,12 +488,12 @@ export function Home({ locale }: { locale: Locale }) {
                                         {t.demo.shop}
                                         <ArrowUpRight size={14} aria-hidden />
                                     </a>
-                                    <Link
-                                        to={href("/docs/quickstart")}
+                                    <a
+                                        href={`${href("/docs/quickstart")}#1`}
                                         className="landing-button is-secondary"
                                     >
-                                        {t.demo.guide}
-                                    </Link>
+                                        {t.demo.all}
+                                    </a>
                                 </div>
                             </div>
                             <div className="min-w-0 overflow-hidden rounded-[14px] border border-fd-border bg-surface">
@@ -518,10 +515,13 @@ export function Home({ locale }: { locale: Locale }) {
                                     aria-label={t.demo.copy}
                                 >
                                     <code>
-                                        {DEMO_COMMANDS.map((command) => (
+                                        {DEMO_COMMANDS.map((command, index) => (
                                             <span key={command} className="block">
-                                                <span className="text-accent-text select-none">
-                                                    ${" "}
+                                                <span
+                                                    className="text-accent-text select-none"
+                                                    aria-hidden
+                                                >
+                                                    {index === 0 ? "$ " : "  "}
                                                 </span>
                                                 {command}
                                             </span>
@@ -566,13 +566,23 @@ export function Home({ locale }: { locale: Locale }) {
                     </div>
                 </section>
 
-                <section className="landing-section" aria-labelledby="status-title">
+                <section id="status" className="landing-section" aria-labelledby="status-title">
                     <div className="landing-container">
                         <div className="flex flex-wrap items-baseline gap-x-16 gap-y-4">
                             <h2 id="status-title" className="section-title flex-[1_1_300px]">
                                 {t.status.title}
                             </h2>
-                            <p className={`flex-[2_1_420px] ${muted}`}>{t.status.body}</p>
+                            <p className={`flex-[2_1_420px] ${muted}`}>
+                                {t.status.body.before}
+                                <a href={VALIDATOR_URL} className="font-medium text-link">
+                                    {t.status.body.validator}
+                                </a>
+                                {t.status.body.middle}
+                                <a href="#demo" className="font-medium text-link">
+                                    {t.status.body.demo}
+                                </a>
+                                {t.status.body.after}
+                            </p>
                         </div>
                         <ul className="mt-12 grid gap-4 md:grid-cols-3">
                             {t.status.phases.map((phase, index) => (
@@ -623,7 +633,11 @@ export function Home({ locale }: { locale: Locale }) {
                     </div>
                 </section>
 
-                <section className="landing-section is-alt" aria-labelledby="sponsors-title">
+                <section
+                    id="sponsors"
+                    className="landing-section is-alt"
+                    aria-labelledby="sponsors-title"
+                >
                     <div className="landing-container">
                         <div className="flex flex-wrap items-end gap-x-16 gap-y-6">
                             <div className="flex-[1_1_420px]">
@@ -634,6 +648,7 @@ export function Home({ locale }: { locale: Locale }) {
                                 >
                                     {t.sponsors.title}
                                 </h2>
+                                <p className={`mt-4 max-w-[560px] ${muted}`}>{t.sponsors.body}</p>
                             </div>
                             <div className="flex flex-wrap gap-3">
                                 <a href={SPONSOR_CONTACT} className="landing-button is-primary">
@@ -668,14 +683,16 @@ export function Home({ locale }: { locale: Locale }) {
                                     />
                                 </a>
                             </li>
-                            <li>
-                                <a
-                                    href={SPONSOR_CONTACT}
-                                    className={`card-link flex h-28 items-center justify-center rounded-[14px] border border-dashed border-border-strong bg-surface text-sm ${subtle}`}
-                                >
-                                    {t.sponsors.placeholder}
-                                </a>
-                            </li>
+                            {[1, 2, 3].map((slot) => (
+                                <li key={slot}>
+                                    <a
+                                        href={SPONSOR_CONTACT}
+                                        className={`card-link flex h-28 items-center justify-center rounded-[14px] border border-dashed border-border-strong bg-surface text-sm ${subtle}`}
+                                    >
+                                        {t.sponsors.placeholder}
+                                    </a>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </section>
