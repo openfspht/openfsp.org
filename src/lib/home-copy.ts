@@ -173,7 +173,7 @@ export const homeCopy = {
             gateway: "Passerelle",
             nativeOperator: "Implémentation fournisseur",
             status: "État du projet",
-            registry: "Registre des opérateurs",
+            registry: "Registre des fournisseurs",
             decisions: "Décisions de conception",
             verify: "Vérification d’une attestation",
             governance: "Gouvernance",

@@ -5,7 +5,7 @@ description: Positionnement de l’interface marchande, architecture d’intégr
 
 OpenFSP définit l’interface entre le serveur d’une application marchande et un service de paiement. Dans une intégration native, le fournisseur expose le contrat HTTP commun dans son propre système. L’application utilise les identifiants du marchand et peut effectuer les échanges directement en HTTP ou au moyen d’une bibliothèque cliente.
 
-## Le segment application vers opérateur
+## Le segment application vers fournisseur
 
 L’interopérabilité définie ici concerne l’interface d’intégration marchande ; la [décision 0001](/docs/decisions#0001) en donne la justification. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur.
 
@@ -14,8 +14,8 @@ L’interopérabilité définie ici concerne l’interface d’intégration marc
 ```mermaid
 flowchart LR
     A["Application marchande"] --> S["SDK OpenFSP ou HTTP"]
-    S -- "contrat OpenFSP" --> P1["Opérateur natif A"]
-    S -- "même contrat OpenFSP" --> P2["Opérateur natif B"]
+    S -- "contrat OpenFSP" --> P1["Fournisseur natif A"]
+    S -- "même contrat OpenFSP" --> P2["Fournisseur natif B"]
 ```
 
 L’application sélectionne le service de paiement et utilise les identifiants et la configuration correspondants. La bibliothèque cliente prépare les échanges conformément au contrat d’interface. Elle n’ajoute aucun service central à l’architecture et ne se substitue pas au système du fournisseur.

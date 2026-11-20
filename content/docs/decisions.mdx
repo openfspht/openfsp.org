@@ -27,7 +27,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 ## 0003. Cycle de vie du paiement
 
-**Choix.** Je définis cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Seul l’opérateur établit une expiration, en la rapportant ou en la garantissant.
+**Choix.** Je définis cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Seul le fournisseur établit une expiration, en la rapportant ou en la garantissant.
 
 **Justification.** L’application marchande peut livrer un bien ou un service à partir de l’état du paiement. Des états terminaux stables donnent une base cohérente à cette décision. Une information contradictoire reçue plus tard suit les mécanismes prévus, sans réécrire l’état terminal.
 
@@ -97,7 +97,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 ## 0010. Relevé réduit à une liste de transactions
 
-**Choix.** Je réduis le relevé à la liste des transactions réussies d’un opérateur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la norme.
+**Choix.** Je réduis le relevé à la liste des transactions réussies d’un fournisseur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la norme.
 
 **Justification.** La norme définit une interface entre un client et un serveur. Ce que le client fait de la liste, dont le rapprochement avec ses propres enregistrements, relève de son architecture. Les obligations retirées portaient sur un comportement interne du serveur, qu’aucune suite ne peut observer.
 
@@ -119,7 +119,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Choix.** Je retire le point d’accès `POST /v1/payments/{id}/synchronize`. La lecture d’un paiement retourne l’état le plus récent que le serveur peut établir ; la manière de l’établir relève de l’implémentation. Le serveur peut limiter les consultations qu’une lecture provoque et retourne alors le dernier état connu.
 
-**Justification.** Séparer la lecture de l’état conservé et la synchronisation auprès de l’opérateur suppose un serveur intermédiaire distinct de l’opérateur. Pour un opérateur qui applique la norme lui-même, les deux opérations se confondent. La norme définit l’interface, non l’architecture de l’implémentation.
+**Justification.** Séparer la lecture de l’état conservé et la synchronisation auprès du fournisseur suppose un serveur intermédiaire distinct du fournisseur. Pour un fournisseur qui applique la norme lui-même, les deux opérations se confondent. La norme définit l’interface, non l’architecture de l’implémentation.
 
 **Alternatives écartées.** Synchronisation conservée et réservée aux intermédiaires ; paramètre de fraîcheur sur la lecture ; en-tête indiquant l’âge de l’état retourné.
 

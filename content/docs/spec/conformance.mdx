@@ -41,8 +41,8 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | Profil                     | Capacité                         | Spécification                                                                          |
 | -------------------------- | -------------------------------- | -------------------------------------------------------------------------------------- |
 | `payments.lookup`          | Consultation faisant foi         | [capacités 5](/docs/spec/capabilities#5)                                            |
-| `payments.statement`       | Relevé de l'opérateur            | [relevés](/docs/spec/lifecycle#10)                                                  |
-| `payments.fee`             | Frais rapportés par l'opérateur  | [modèle de données 8](/docs/spec/data-model#8)                                      |
+| `payments.statement`       | Relevé du fournisseur            | [relevés](/docs/spec/lifecycle#10)                                                  |
+| `payments.fee`             | Frais rapportés par le fournisseur  | [modèle de données 8](/docs/spec/data-model#8)                                      |
 | `webhooks.per_payment_url` | Événements livrés à `callback_url` | [API 5.1.8](/docs/spec/payments-api#5.1.8)                                        |
 | `webhooks.emit`            | Événements signés                | [webhooks](/docs/spec/webhooks)                                                     |
 
@@ -128,7 +128,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 | `LATE_CALLBACK`      | Événement livré très tard à `callback_url`.                           | [Webhooks 8.3](/docs/spec/webhooks#8.3)      |
 | `DUPLICATE_CALLBACK` | Même événement livré plusieurs fois à `callback_url`.                 | [Webhooks 8.4](/docs/spec/webhooks#8.4)      |
 | `UNKNOWN_STATUS`     | Valeur de `status` jamais vue, pour les tests client (4.9.6).         | [Cycle de vie 1.2](/docs/spec/lifecycle#1.2) |
-| `PROVIDER_ERROR`     | Erreur côté opérateur.                                                | [API 10.8.6](/docs/spec/payments-api#10.8.6) |
+| `PROVIDER_ERROR`     | Erreur côté fournisseur.                                                | [API 10.8.6](/docs/spec/payments-api#10.8.6) |
 
 **4.9.4.** Le choix du scénario est déterministe lors de la création du paiement. Aucun scénario ne survient sans sélection explicite.
 
@@ -156,7 +156,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 | Test                                                     | Attendu                                                           | Règle                                                    | Serveur simulé                                          |
 | -------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
-| Relevés d'un opérateur sans `payments.statement`         | `capability-not-supported`                                        | [cycle de vie 10.3.6](/docs/spec/lifecycle#10.3.6)    | opérateur de test de base (9.3.5)                       |
+| Relevés d'un fournisseur sans `payments.statement`         | `capability-not-supported`                                        | [cycle de vie 10.3.6](/docs/spec/lifecycle#10.3.6)    | fournisseur de test de base (9.3.5)                       |
 | `POST` sans `Idempotency-Key`                            | `idempotency-key-required`                                        | [idempotence 1.3](/docs/spec/idempotency#1.3)         | aucun                                                   |
 | `callback_url` en `http` hors bouclage                   | création rejetée                                                  | [API 5.1.8](/docs/spec/payments-api#5.1.8)            | `mock_openfsp`                                          |
 | Requête de l'API tentant de fixer l'état d'un paiement   | état inchangé                                                     | [cycle de vie 6.1](/docs/spec/lifecycle#6.1)          | `mock_openfsp`, `PENDING_FOREVER`                       |
@@ -172,11 +172,11 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 | Test                                              | Attendu                                                                                                                               | Règle                                                                                                 | Serveur simulé                                                          |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Refus de l'opérateur                              | lecture `200`, `failed`, `failure_reason` `declined`, `failure_detail` portant le code et le message de l'opérateur inaltérés | [cycle de vie 7.2, 7.4](/docs/spec/lifecycle#7.4), [API 10.2.2](/docs/spec/payments-api#10.2.2) | `mock_openfsp`, `DECLINE`                                               |
+| Refus du fournisseur                              | lecture `200`, `failed`, `failure_reason` `declined`, `failure_detail` portant le code et le message du fournisseur inaltérés | [cycle de vie 7.2, 7.4](/docs/spec/lifecycle#7.4), [API 10.2.2](/docs/spec/payments-api#10.2.2) | `mock_openfsp`, `DECLINE`                                               |
 | Fonds insuffisants                                | lecture `200`, `failed`, `failure_reason` `insufficient_funds`                                                                | [cycle de vie 7.2](/docs/spec/lifecycle#7.2)                                                       | `mock_openfsp`, `INSUFFICIENT`                                          |
-| Échéance atteinte chez l'opérateur                | `expired` à la lecture, `completed_at` présent                                                                               | [cycle de vie 4, 5.3](/docs/spec/lifecycle#5.3) (a)                                                | `mock_openfsp`, `EXPIRE`, lecture après l'échéance d'une minute |
-| Dénouement sans événement, opérateur avec consultation | état rapporté par la consultation, à la lecture                                                                                 | [capacités 5.2](/docs/spec/capabilities#5.2)                                                       | `mock_openfsp`, `NO_CALLBACK`                                           |
-| Erreur de l'opérateur à la création               | `502 provider-error`, `retryable` `true`, `effect` `unknown` ; renvoi de même clé sans `Idempotent-Replay`                            | [API 10.6.5, 10.8.6](/docs/spec/payments-api#10.8.6)                                               | `mock_openfsp`, `PROVIDER_ERROR`                                        |
+| Échéance atteinte chez le fournisseur                | `expired` à la lecture, `completed_at` présent                                                                               | [cycle de vie 4, 5.3](/docs/spec/lifecycle#5.3) (a)                                                | `mock_openfsp`, `EXPIRE`, lecture après l'échéance d'une minute |
+| Dénouement sans événement, fournisseur avec consultation | état rapporté par la consultation, à la lecture                                                                                 | [capacités 5.2](/docs/spec/capabilities#5.2)                                                       | `mock_openfsp`, `NO_CALLBACK`                                           |
+| Erreur du fournisseur à la création               | `502 provider-error`, `retryable` `true`, `effect` `unknown` ; renvoi de même clé sans `Idempotent-Replay`                            | [API 10.6.5, 10.8.6](/docs/spec/payments-api#10.8.6)                                               | `mock_openfsp`, `PROVIDER_ERROR`                                        |
 
 **5.9. Relevés.** Les tests suivants correspondent au [cycle de vie 10.4.1](/docs/spec/lifecycle#10.4.1) :
 
@@ -192,7 +192,7 @@ La conformité est définie selon la cible, la version du protocole et les capac
 
 | Test                                                                                                                | Attendu                                                               | Règle                                                  | Serveur simulé                                              |
 | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
-| Capacités annoncées pour chaque opérateur simulé                                                                    | aucun nom réservé ou retiré                                           | [capacités 2.2, 7.2](/docs/spec/capabilities#7.2)   | `mock_openfsp` et les opérateurs de test (9.3.5)            |
+| Capacités annoncées pour chaque fournisseur simulé                                                                    | aucun nom réservé ou retiré                                           | [capacités 2.2, 7.2](/docs/spec/capabilities#7.2)   | `mock_openfsp` et les fournisseurs de test (9.3.5)            |
 | Montant égal à `min_amount`, puis à `max_amount`                                                                    | paiement créé (`201`)                                                 | [capacités 6.7, 7.3](/docs/spec/capabilities#7.3)   | `mock_openfsp`, `SUCCESS` ; bornes déclarées (9.3.1)     |
 | Montant inférieur d'un centime à `min_amount`, supérieur d'un centime à `max_amount`, non multiple de `amount_step` | `amount-out-of-range` portant les bornes déclarées ; aucun paiement créé | [capacités 6.7, 7.3](/docs/spec/capabilities#7.3) | `mock_openfsp`, `SUCCESS` ; bornes déclarées (9.3.1)     |
 | Événement livré à `callback_url`                                                                                    | `payment.succeeded` signé, vérifié avec `webhook_keys`                | [API 5.1.8](/docs/spec/payments-api#5.1.8)          | `mock_openfsp`, `SUCCESS`                                   |
@@ -251,27 +251,27 @@ Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 ### 9.2. Règle directrice
 
-**9.2.1.** Aucune capacité supplémentaire n’est créée par le simulateur. Chaque capacité facultative est absente d’au moins un opérateur simulé, en incluant les opérateurs de test du 9.3.5.
+**9.2.1.** Aucune capacité supplémentaire n’est créée par le simulateur. Chaque capacité facultative est absente d’au moins un fournisseur simulé, en incluant les fournisseurs de test du 9.3.5.
 
-### 9.3. Opérateurs simulés
+### 9.3. Fournisseurs simulés
 
 **9.3.1.** L’implémentation simulée de référence est décrite ci-dessous :
 
-| Opérateur      | Capacités                                                                                                          | Cas exercé                                                                                                                  |
+| Fournisseur      | Capacités                                                                                                          | Cas exercé                                                                                                                  |
 | -------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `mock_openfsp` | `payments`, `payments.lookup`, `payments.statement`, `payments.fee`, `webhooks.emit`, `webhooks.per_payment_url` | Serveur de référence (9.3.2) : consultation, relevé, frais, événements signés, bornes `min_amount`, `max_amount` et `amount_step`. |
 
 **9.3.2.** Le service `mock_openfsp` expose directement l’API et signe ses livraisons selon les [webhooks](/docs/spec/webhooks), fondés sur la RFC 9421.
 
-**9.3.3.** Le paiement de proximité est reporté à une version ultérieure. Aucun opérateur simulé ne déclare les capacités correspondantes.
+**9.3.3.** Le paiement de proximité est reporté à une version ultérieure. Aucun fournisseur simulé ne déclare les capacités correspondantes.
 
 **9.3.4.** Les identifiants simulés portent le préfixe `mock_`, réservé dans le [registre](/docs/registry). Aucun service réel ne reçoit d’identifiant dans cet espace.
 
-**9.3.5.** Le serveur expose également des opérateurs simulés réservés aux tests et définis par leurs indicateurs de capacité. Ils permettent d’isoler les cas que `mock_openfsp` ne distingue pas :
+**9.3.5.** Le serveur expose également des fournisseurs simulés réservés aux tests et définis par leurs indicateurs de capacité. Ils permettent d’isoler les cas que `mock_openfsp` ne distingue pas :
 
-| Opérateur de test | Capacités                        | Cas exercé                                                                                         |
+| Fournisseur de test | Capacités                        | Cas exercé                                                                                         |
 | ----------------- | -------------------------------- | -------------------------------------------------------------------------------------------------- |
-| De base           | `payments`                       | Opération d'une capacité non annoncée ; relevés d'un opérateur sans `payments.statement`.          |
+| De base           | `payments`                       | Opération d'une capacité non annoncée ; relevés d'un fournisseur sans `payments.statement`.          |
 | Relevé seul       | `payments`, `payments.statement` | Lecture sans `payments.lookup`.                                                            |
 
 **9.3.6.** Le service `mock_openfsp` livre à `callback_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)) uniquement les événements de transition terminale, sans livrer `payment.created`. La valeur de `sequence` augmente par paiement et inclut la création non livrée ; la transition porte donc `2` ([webhooks 8.1](/docs/spec/webhooks#8.1)).
@@ -286,7 +286,7 @@ Les exigences de la section 9 s’appliquent au serveur simulé de référence.
 
 **9.4.3.** Les réponses du serveur simulé interviennent après un délai bref et fixe ; elles ne sont jamais instantanées.
 
-**9.4.4.** Le mode automatique s’active explicitement, opérateur par opérateur, par l’administration du serveur simulé ; cette activation vaut sélection explicite au sens du 4.9.4. Chaque nouveau paiement reçoit alors le scénario suivant d’une rotation des scénarios disponibles pour son opérateur. Une exécution de conformité ne l’active jamais.
+**9.4.4.** Le mode automatique s’active explicitement, fournisseur par fournisseur, par l’administration du serveur simulé ; cette activation vaut sélection explicite au sens du 4.9.4. Chaque nouveau paiement reçoit alors le scénario suivant d’une rotation des scénarios disponibles pour son fournisseur. Une exécution de conformité ne l’active jamais.
 
 Les numéros 9.4.5 à 9.4.8, retirés par la [décision 0011](/docs/decisions#0011), ne sont pas réattribués.
 
@@ -308,7 +308,7 @@ Les numéros 9.4.5 à 9.4.8, retirés par la [décision 0011](/docs/decisions#00
 
 **9.7.1.** Chaque paiement simulé porte un identifiant `mock_` selon le 9.3.4.
 
-**9.7.2.** Le serveur simulé ne retourne jamais d’identifiant d’opérateur réel et ne produit aucun artefact pouvant être interprété comme un règlement.
+**9.7.2.** Le serveur simulé ne retourne jamais d’identifiant de fournisseur réel et ne produit aucun artefact pouvant être interprété comme un règlement.
 
 ### 9.8. Limites
 

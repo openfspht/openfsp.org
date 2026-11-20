@@ -67,7 +67,7 @@ const copy = {
         scope: "Portée",
         scopeBody:
             "Une configuration à la date indiquée. Un changement d’implémentation ou de protocole demande une nouvelle exécution ; aucune expiration calendaire n’est définie.",
-        trust: "Choisissez un validateur de confiance. Une signature valide prouve ce que sa clé a signé, pas l’indépendance du validateur ni le soutien d’un opérateur à OpenFSP.",
+        trust: "Choisissez un validateur de confiance. Une signature valide prouve ce que sa clé a signé, pas l’indépendance du validateur ni le soutien d’un fournisseur à OpenFSP.",
         unauthenticated:
             "Données non authentifiées : les verdicts sont masqués car la signature, l’identité de l’émetteur, le statut de la clé ou la date d’émission n’a pas été vérifié.",
         key: "Clé",

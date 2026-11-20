@@ -111,7 +111,7 @@ Le contrat d’interface utilise des montants entiers, une devise explicite et d
 
 ## 8. `Fee`
 
-**8.1.** L’objet décrit les frais appliqués par l’opérateur à un paiement.
+**8.1.** L’objet décrit les frais appliqués par le fournisseur à un paiement.
 
 | Champ    | Type    | Présence    | Notes                  |
 | -------- | ------- | ----------- | ---------------------- |
@@ -120,11 +120,11 @@ Le contrat d’interface utilise des montants entiers, une devise explicite et d
 
 **8.2.** L’absence de `Fee` signifie que les frais sont inconnus ; des frais nuls sont représentés par un montant nul. Le client NE DOIT PAS afficher des frais absents comme nuls ni les calculer par soustraction.
 
-**8.3.** Le champ `bearer` indique la partie ayant supporté les frais selon l’opérateur. Le serveur NE DOIT PAS permettre au client de le fixer.
+**8.3.** Le champ `bearer` indique la partie ayant supporté les frais selon le fournisseur. Le serveur NE DOIT PAS permettre au client de le fixer.
 
 **8.4.** Le serveur NE DOIT PAS différer une transition terminale dans l’attente des frais ni attribuer aux frais une valeur non établie.
 
-**8.5.** Le serveur qui ne peut pas communiquer les frais d’un opérateur NE DOIT PAS déclarer `payments.fee` pour cet opérateur.
+**8.5.** Le serveur qui ne peut pas communiquer les frais d’un fournisseur NE DOIT PAS déclarer `payments.fee` pour ce fournisseur.
 
 ## 9. `Metadata`
 

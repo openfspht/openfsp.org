@@ -248,7 +248,7 @@ Signature: sig1=:bT8xVq2Lw0nR5cJ3kYpA7fHd…:
 
 **11.2.** Un abonné conforme applique les vérifications du 5.9, les rejets du 5.12, la déduplication du 8.4 et l’ordre du 8.3. Il respecte le 8.5 et dispose de l’accès défini au 10.2.
 
-**11.3.** La capacité `webhooks.emit` déclare l’émission vers les points d’accès configurés. Le serveur NE DOIT PAS y livrer les événements d’un opérateur pour lequel cette capacité n’est pas déclarée. Les livraisons à `callback_url` relèvent de `webhooks.per_payment_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)).
+**11.3.** La capacité `webhooks.emit` déclare l’émission vers les points d’accès configurés. Le serveur NE DOIT PAS y livrer les événements d’un fournisseur pour lequel cette capacité n’est pas déclarée. Les livraisons à `callback_url` relèvent de `webhooks.per_payment_url` ([API 5.1.8](/docs/spec/payments-api#5.1.8)).
 
 ## 12. Sécurité
 

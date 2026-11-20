@@ -7,11 +7,11 @@ La découverte expose les opérations prises en charge et les limites applicable
 
 ## 1. Capacité
 
-**1.1.** Une capacité désigne une fonction nommée dont la prise en charge est définie pour un opérateur donné.
+**1.1.** Une capacité désigne une fonction nommée dont la prise en charge est définie pour un fournisseur donné.
 
-**1.2.** Les capacités sont déclarées séparément pour chaque opérateur et non globalement pour le serveur.
+**1.2.** Les capacités sont déclarées séparément pour chaque fournisseur et non globalement pour le serveur.
 
-**1.3.** Le serveur DOIT déclarer une capacité pour un opérateur uniquement si cet opérateur réalise lui-même l’opération. Il NE DOIT PAS déclarer une capacité obtenue par émulation, approximation ou composition d’autres opérations.
+**1.3.** Le serveur DOIT déclarer une capacité pour un fournisseur uniquement si ce fournisseur réalise lui-même l’opération. Il NE DOIT PAS déclarer une capacité obtenue par émulation, approximation ou composition d’autres opérations.
 
 **1.4.** La capacité `payments` est définie dans l’[API 2.1](/docs/spec/payments-api#2.1).
 
@@ -24,9 +24,9 @@ La découverte expose les opérations prises en charge et les limites applicable
 | Nom                            | Statut                | Sens                                                                                                                       |
 | ------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `payments`                     | spécifié, obligatoire | Créer et lire un paiement ([API](/docs/spec/payments-api)).                                                             |
-| `payments.lookup`              | spécifié              | Consultation faisant foi de l'état chez l'opérateur (5).                                                                   |
-| `payments.statement`           | spécifié              | Liste des transactions réussies du compte marchand chez l'opérateur, lisible par le client ([cycle de vie 10](/docs/spec/lifecycle#10)). |
-| `payments.fee`                 | spécifié              | L'opérateur communique les frais ([modèle de données 8](/docs/spec/data-model#8)).                                      |
+| `payments.lookup`              | spécifié              | Consultation faisant foi de l'état chez le fournisseur (5).                                                                   |
+| `payments.statement`           | spécifié              | Liste des transactions réussies du compte marchand chez le fournisseur, lisible par le client ([cycle de vie 10](/docs/spec/lifecycle#10)). |
+| `payments.fee`                 | spécifié              | Le fournisseur communique les frais ([modèle de données 8](/docs/spec/data-model#8)).                                      |
 | `payments.refund`              | réservé               | Remboursement d'un paiement capturé.                                                                                       |
 | `payments.capture`             | réservé               | Autorisation et capture séparées.                                                                                          |
 | `payments.cancel`              | réservé               | Annulation avant achèvement.                                                                                               |
@@ -36,7 +36,7 @@ La découverte expose les opérations prises en charge et les limites applicable
 | `transfers`                    | réservé               | Envoi de fonds à un bénéficiaire.                                                                                          |
 | `webhooks.emit`                | spécifié              | Événements signés vers le client ([webhooks](/docs/spec/webhooks)).                                                     |
 | `webhooks.verify`              | retiré                | Aucun.                                                                                                                     |
-| `webhooks.per_payment_url`     | spécifié              | L'opérateur accepte une `callback_url` à la création et y livre les événements de ce paiement ([API 5.1.8](/docs/spec/payments-api#5.1.8)). |
+| `webhooks.per_payment_url`     | spécifié              | Le fournisseur accepte une `callback_url` à la création et y livre les événements de ce paiement ([API 5.1.8](/docs/spec/payments-api#5.1.8)). |
 
 **2.3.** L’ajout d’un nom nécessite une décision écrite. Cet ajout ne constitue pas une rupture de compatibilité (4.3).
 
@@ -44,11 +44,11 @@ La découverte expose les opérations prises en charge et les limites applicable
 
 **2.5.** Les capacités ne disposent pas de versions distinctes. Une modification de signification nécessite un nouveau nom.
 
-**2.6.** Pour chaque opérateur, le serveur DOIT utiliser l’identifiant inscrit au [registre](/docs/registry).
+**2.6.** Pour chaque fournisseur, le serveur DOIT utiliser l’identifiant inscrit au [registre](/docs/registry).
 
-**2.7.** L’attribution d’un identifiant d’opérateur s’effectue par pull request sur le registre et ne nécessite pas de décision écrite.
+**2.7.** L’attribution d’un identifiant de fournisseur s’effectue par pull request sur le registre et ne nécessite pas de décision écrite.
 
-**2.8.** Les identifiants attribués sont permanents. Un opérateur renommé reçoit un nouvel identifiant ; l’ancien est conservé avec la mention de son remplacement.
+**2.8.** Les identifiants attribués sont permanents. Un fournisseur renommé reçoit un nouvel identifiant ; l’ancien est conservé avec la mention de son remplacement.
 
 ## 3. Découverte
 
@@ -78,13 +78,13 @@ Ce point d’accès suit la RFC 8615 ; son accès relève de l’[authentificati
 }
 ```
 
-**3.1.1.** Le document NE DOIT PAS divulguer les opérateurs utilisés, des informations sur le marchand, la version du logiciel serveur ou l’interface d’administration.
+**3.1.1.** Le document NE DOIT PAS divulguer les fournisseurs utilisés, des informations sur le marchand, la version du logiciel serveur ou l’interface d’administration.
 
 **3.1.2.** Le champ `protocol_version` désigne la version de spécification visée. Le client NE DOIT PAS en déduire les capacités disponibles.
 
 **3.1.3.** Le champ `issuer` contient l’URL publique du serveur, sans barre oblique finale. Le client DEVRAIT utiliser les points d’accès publiés dans ce document plutôt que les reconstruire.
 
-**3.1.4.** Le champ `capabilities_supported` énumère les capacités du 2 que le logiciel serveur sait exposer. Cette liste NE DOIT PAS dépendre des opérateurs configurés. Les capacités effectivement déclarées par opérateur sont accessibles dans `/v1/capabilities` (3.2).
+**3.1.4.** Le champ `capabilities_supported` énumère les capacités du 2 que le logiciel serveur sait exposer. Cette liste NE DOIT PAS dépendre des fournisseurs configurés. Les capacités effectivement déclarées par fournisseur sont accessibles dans `/v1/capabilities` (3.2).
 
 **3.1.5.** Le champ `webhook_keys` contient les clés publiques de signature des webhooks ([webhooks 6.1](/docs/spec/webhooks#6.1)). Ce document constitue leur unique point de publication.
 
@@ -118,7 +118,7 @@ Ce point d’accès nécessite une authentification.
 }
 ```
 
-**3.2.1.** La description d’un opérateur comporte les champs suivants :
+**3.2.1.** La description d’un fournisseur comporte les champs suivants :
 
 | Champ          | Type               | Présence    | Notes                                                     |
 | -------------- | ------------------ | ----------- | --------------------------------------------------------- |
@@ -139,15 +139,15 @@ Ce point d’accès nécessite une authentification.
 | `limits`              | objet              | FACULTATIF. Bornes de montant (6.4).                                                          |
 | `locales`             | tableau de chaînes | Valeurs de `locale` prises en charge pour la page du payeur ([API 5.1.7](/docs/spec/payments-api#5.1.7)). |
 
-**3.2.3.** La valeur de `expiry_guaranteed` DOIT être `false`, sauf si l’opérateur donne la garantie du [cycle de vie 5.3](/docs/spec/lifecycle#5.3) (b).
+**3.2.3.** La valeur de `expiry_guaranteed` DOIT être `false`, sauf si le fournisseur donne la garantie du [cycle de vie 5.3](/docs/spec/lifecycle#5.3) (b).
 
 **3.2.4.** La réponse DEVRAIT contenir `Cache-Control` avec une valeur `max-age` n’excédant pas une heure.
 
-**3.2.5.** Par exception au 1.3, la capacité `webhooks.emit` est déclarée pour chaque opérateur dont les événements sont émis par le serveur.
+**3.2.5.** Par exception au 1.3, la capacité `webhooks.emit` est déclarée pour chaque fournisseur dont les événements sont émis par le serveur.
 
 ## 4. Obligations
 
-**4.1.** Le client NE DOIT PAS appeler une opération dont la capacité n’est pas déclarée pour l’opérateur sélectionné.
+**4.1.** Le client NE DOIT PAS appeler une opération dont la capacité n’est pas déclarée pour le fournisseur sélectionné.
 
 **4.2.** Le client DOIT pouvoir traiter `capability-not-supported` à tout moment et DEVRAIT alors actualiser les capacités.
 
@@ -155,13 +155,13 @@ Ce point d’accès nécessite une authentification.
 
 **4.4.** Le serveur DOIT retourner `capability-not-supported` pour une opération dont il ne déclare pas la capacité, même si son exécution est techniquement possible.
 
-**4.5.** Le serveur PEUT détecter la suspension d’une capacité par un opérateur. Lorsqu’il la détecte, il NE DOIT PAS continuer à déclarer cette capacité.
+**4.5.** Le serveur PEUT détecter la suspension d’une capacité par un fournisseur. Lorsqu’il la détecte, il NE DOIT PAS continuer à déclarer cette capacité.
 
 ## 5. `payments.lookup`
 
-**5.1.** La capacité `payments.lookup` indique qu’une consultation peut établir l’état courant faisant autorité auprès de l’opérateur.
+**5.1.** La capacité `payments.lookup` indique qu’une consultation peut établir l’état courant faisant autorité auprès du fournisseur.
 
-**5.2.** Lorsque cette capacité est déclarée, la lecture d’un paiement en attente ([API 5.2.4](/docs/spec/payments-api#5.2.4)) DOIT établir l’état auprès de l’opérateur, sous réserve de l’[API 5.2.6](/docs/spec/payments-api#5.2.6).
+**5.2.** Lorsque cette capacité est déclarée, la lecture d’un paiement en attente ([API 5.2.4](/docs/spec/payments-api#5.2.4)) DOIT établir l’état auprès du fournisseur, sous réserve de l’[API 5.2.6](/docs/spec/payments-api#5.2.6).
 
 **5.3.** En l’absence de cette capacité, la lecture retourne l’état connu du serveur.
 
@@ -169,13 +169,13 @@ Le numéro 5.3.1, retiré par la [décision 0012](/docs/decisions#0012), n’est
 
 ## 6. Bornes de montant
 
-**6.1.** Les bornes d’un opérateur représentent les montants minimal et maximal autorisés par transaction pour le compte marchand, tels que fixés par l’opérateur pour ce marchand.
+**6.1.** Les bornes d’un fournisseur représentent les montants minimal et maximal autorisés par transaction pour le compte marchand, tels que fixés par le fournisseur pour ce marchand.
 
 **6.2.** Le mécanisme d’acquisition des bornes par le serveur se situe hors du périmètre de la spécification. Aucun point d’accès d’administration n’est imposé.
 
 **6.3.** Le serveur NE DOIT PAS attribuer de borne non établie ni déduire une borne des échecs antérieurs.
 
-**6.4.** L’objet `payments` de l’opérateur (3.2.2) contient un membre FACULTATIF `limits` :
+**6.4.** L’objet `payments` du fournisseur (3.2.2) contient un membre FACULTATIF `limits` :
 
 ```json
 "limits": {
@@ -215,7 +215,7 @@ Le numéro 5.3.1, retiré par la [décision 0012](/docs/decisions#0012), n’est
 
 **6.8.** L’erreur `amount-out-of-range` résulte de la requête ; sa réponse est conservée selon l’[idempotence 5.1](/docs/spec/idempotency#5.1). Après modification des bornes, le client DOIT utiliser une nouvelle `Idempotency-Key` pour soumettre de nouveau la création.
 
-**6.9.** Un refus de l’opérateur dû à un plafond du payeur ou à une borne non déclarée fait passer le paiement à `failed` avec `limit_exceeded` ([cycle de vie 7.2](/docs/spec/lifecycle#7.2)). Le serveur NE DOIT PAS convertir ce refus en `amount-out-of-range`.
+**6.9.** Un refus du fournisseur dû à un plafond du payeur ou à une borne non déclarée fait passer le paiement à `failed` avec `limit_exceeded` ([cycle de vie 7.2](/docs/spec/lifecycle#7.2)). Le serveur NE DOIT PAS convertir ce refus en `amount-out-of-range`.
 
 ## 7. Conformité
 
