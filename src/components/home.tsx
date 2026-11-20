@@ -161,9 +161,8 @@ export function Home({ locale }: { locale: Locale }) {
             links={[
                 { text: t.footer.docs, url: href("/docs"), active: "none" },
                 { text: t.secondary, url: href("/docs/spec/payments-api"), active: "none" },
-                { text: "GitHub", url: CODE_REPO, active: "none" },
             ]}
-            githubUrl={undefined}
+            githubUrl={CODE_REPO}
         >
             <div>
                 <section className="landing-container py-14 sm:py-16 lg:py-24">
