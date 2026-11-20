@@ -131,10 +131,10 @@ function NativeRoute({ t }: { t: CopyText["native"] }) {
                     <strong className="text-sm font-semibold">{t.app}</strong>
                 </div>
                 <ArrowRight size={19} className={arrow} aria-hidden />
-                <div className={`${node} border-(--code-line) bg-(--code-bg) text-(--code-fg)`}>
+                <div className={`${node} border-brand-ink bg-brand-ink text-white`}>
                     <img src="/openfsp-mark-inverse.svg" width={25} height={25} alt="" />
                     <strong className="text-sm font-semibold">{t.contract}</strong>
-                    <span className="text-[13px] text-(--code-muted)">{t.contractDetail}</span>
+                    <span className="text-[13px] text-white/75">{t.contractDetail}</span>
                 </div>
                 <ArrowRight size={19} className={arrow} aria-hidden />
                 <div className={`${node} border-fd-border bg-fd-background`}>
