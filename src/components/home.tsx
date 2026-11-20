@@ -104,7 +104,7 @@ function LandingHeader() {
 
 function Brand() {
     return (
-        <span className="inline-flex items-center gap-2 text-[21px] font-bold tracking-[-0.03em] text-fd-foreground md:text-[23px]">
+        <span className="inline-flex items-center gap-2 text-[21px] font-bold tracking-[-0.03em] text-fd-primary md:text-[23px] dark:text-fd-foreground">
             <img src="/openfsp-mark.svg" alt="" width={27} height={27} className="dark:hidden" />
             <img
                 src="/openfsp-mark-inverse.svg"

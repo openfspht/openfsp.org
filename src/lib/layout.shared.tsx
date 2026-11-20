@@ -31,7 +31,9 @@ export function baseOptions(locale: Locale): BaseLayoutProps {
                         height={22}
                         className="hidden dark:block"
                     />
-                    <span className="text-[1.05rem] font-bold tracking-tight">OpenFSP</span>
+                    <span className="text-[1.05rem] font-bold tracking-tight text-fd-primary dark:text-fd-foreground">
+                        OpenFSP
+                    </span>
                 </>
             ),
             url: localePath(locale, "/"),
