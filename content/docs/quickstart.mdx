@@ -7,7 +7,7 @@ La démonstration en ligne permet d’expérimenter un paiement OpenFSP sans com
 
 Pour intégrer le serveur d’une application marchande, utilisez le [SDK Kotlin et Java](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) (`org.openfsp:openfsp-sdk`) ou le [SDK TypeScript](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) (`@openfsp/sdk`). Ces paquets sont publiés sur Maven Central et npm. Renseignez `OPENFSP_BASE_URL` et `OPENFSP_API_KEY`, et conservez la clé exclusivement côté serveur.
 
-Pour exposer l’API côté fournisseur, suivez le [guide d’implémentation](/docs/native-operator).
+Pour exposer l’API côté fournisseur, suivez le [guide d’implémentation](/docs/implement).
 
 ## 1. Démonstration en ligne
 
@@ -38,4 +38,4 @@ Les images `gateway`, `simulator` et `validator` sont publiées sur GHCR (`ghcr.
 curl -fsSL https://cdn.openfsp.org/validate.sh | sh -s -- https://operator.example
 ```
 
-La suite évalue une implémentation à partir de sa seule adresse : elle lui demande ses clés de test et son interface de contrôle ([conformité 4.8](/docs/spec/conformance#4.8) et [4.9](/docs/spec/conformance#4.9)). Le [guide d’implémentation](/docs/native-operator) décrit les options et la lecture du rapport.
+La suite évalue une implémentation à partir de sa seule adresse : elle lui demande ses clés de test et son interface de contrôle ([conformité 4.8](/docs/spec/conformance#4.8) et [4.9](/docs/spec/conformance#4.9)). Le [guide d’implémentation](/docs/implement) décrit les options et la lecture du rapport.

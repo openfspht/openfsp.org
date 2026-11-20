@@ -386,10 +386,7 @@ export function Home({ locale }: { locale: Locale }) {
                                 </li>
                             ))}
                         </ol>
-                        <Link
-                            to={href("/docs/native-operator")}
-                            className="arrow-link mt-10 text-[15px]"
-                        >
+                        <Link to={href("/docs/implement")} className="arrow-link mt-10 text-[15px]">
                             {t.native.action}
                             <ArrowRight size={14} aria-hidden />
                         </Link>
@@ -731,8 +728,8 @@ export function Home({ locale }: { locale: Locale }) {
                                 { label: t.footer.architecture, to: href("/docs/architecture") },
                                 { label: t.footer.gateway, to: href("/docs/gateway") },
                                 {
-                                    label: t.footer.nativeOperator,
-                                    to: href("/docs/native-operator"),
+                                    label: t.footer.implement,
+                                    to: href("/docs/implement"),
                                 },
                                 { label: t.footer.status, to: href("/docs/status") },
                             ]}
