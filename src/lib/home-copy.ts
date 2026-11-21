@@ -23,7 +23,7 @@ export const homeCopy = {
         secondary: "Lancer la démo",
         facts: [
             { before: "Licence ", strong: "Apache-2.0", after: "" },
-            { before: "", strong: "Ouverte", after: " à tous les implémenteurs" },
+            { before: "", strong: "Ouverte", after: " à tous" },
             { before: "Devise : ", strong: "HTG", after: "" },
         ],
         native: {
@@ -210,7 +210,7 @@ export const homeCopy = {
         secondary: "Run the demo",
         facts: [
             { before: "", strong: "Apache-2.0", after: " licence" },
-            { before: "", strong: "Open", after: " to all implementers" },
+            { before: "", strong: "Open", after: " to all" },
             { before: "Currency: ", strong: "HTG", after: "" },
         ],
         native: {
