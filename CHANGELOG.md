@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.4](https://github.com/openfspht/openfsp.org/compare/v0.7.3...v0.7.4) (2026-11-21)
+
+
+### Bug Fixes
+
+* align the demo service links to the right on small screens ([1b1ec11](https://github.com/openfspht/openfsp.org/commit/1b1ec1160a58b177e9141af561c625422200f302))
+* say what the validator reports in one plain sentence ([ca05041](https://github.com/openfspht/openfsp.org/commit/ca050416f183409419532943a6e89838df7c2e8a))
+
 ## [0.7.3](https://github.com/openfspht/openfsp.org/compare/v0.7.2...v0.7.3) (2026-11-21)
 
 
