@@ -11,7 +11,7 @@ export const homeCopy = {
             sponsors: "Sponsors",
         },
         version: "Spécification 0.1.0",
-        phase: "Phase 1 en développement",
+        phase: "Phase 1 : intégration marchande",
         headline: {
             before: "Une interface entre marchands et fournisseurs de paiement en ",
             highlight: "Haïti",
@@ -193,7 +193,7 @@ export const homeCopy = {
             sponsors: "Sponsors",
         },
         version: "Specification 0.1.0",
-        phase: "Phase 1 in development",
+        phase: "Phase 1: merchant integration",
         headline: {
             before: "One interface between merchants and payment providers in ",
             highlight: "Haiti",
