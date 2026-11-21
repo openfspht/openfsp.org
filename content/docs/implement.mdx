@@ -1,17 +1,17 @@
 ---
 title: Implémenter OpenFSP
-description: Points d’attention d’une implémentation native de l’API OpenFSP et exécution de la suite de conformité.
+description: Ce qu’une implémentation native doit réussir de l’API OpenFSP et exécution de la suite de conformité.
 ---
 
-Une implémentation native expose l’API OpenFSP dans le système du fournisseur de services de paiement. Les exigences sont celles de la [spécification](/docs/spec) ; cette page indique les points d’attention et la façon d’exécuter la suite.
+Une implémentation native expose l’API OpenFSP dans le système du fournisseur de services de paiement. Les exigences sont celles de la [spécification](/docs/spec) ; cette page indique ce qu’il faut réussir et comment exécuter la suite.
 
 ## Surface HTTP
 
 | Surface                                                   | Rôle                                                                                        | Point d'attention pour la cible native                                                                                                    |
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `/.well-known/openfsp-configuration`                      | Découverte publique de l'émetteur, des points d'accès, des méthodes et des clés de webhook. | Lisez la [structure de configuration](/docs/spec/capabilities#3.1) et les [clés de signature](/docs/spec/webhooks#6.1).           |
-| `GET /v1/capabilities`                                    | Capacités et limites effectivement exposées.                                                | Annoncez chaque fournisseur servi sous son identifiant enregistré ([2.6](/docs/spec/capabilities#2.6)).     |
-| `POST /v1/payments`                                       | Création selon le contrat, avec clé d'idempotence.                                          | Respecter le format, les refus, les rejeux et les effets inconnus ; ne pas traiter une création sans réponse comme un échec certain. |
+| `GET /v1/capabilities`                                    | Capacités et limites exposées.                                                | Annoncez chaque fournisseur servi sous son identifiant enregistré ([2.6](/docs/spec/capabilities#2.6)).     |
+| `POST /v1/payments`                                       | Création selon le contrat, avec clé d'idempotence.                                          | Respectez le format, les refus, les rejeux et les effets inconnus ; ne traitez pas une création sans réponse comme un échec certain. |
 | `GET /v1/payments/{id}` et `GET /v1/payments?reference=…` | Lecture du paiement et récupération après perte d'une réponse.                              | Le marchand connaît sa référence avant l'appel ; il ne doit pas avoir besoin de reconstruire un identifiant opaque.                       |
 | Relevés et notifications                                  | Fonctions conditionnées par les capacités correspondantes.                                  | Une fonction réservée ou non prise en charge ne doit pas être présentée comme disponible.                                                 |
 
@@ -59,7 +59,7 @@ Les [sources de l’implémentation native simulée](https://github.com/openfsph
 
 Le code de sortie ne suffit pas : l’évaluation repose sur les verdicts du rapport ([conformité 7](/docs/spec/conformance#7)). Un test dont une entrée manque est assisté ([conformité 4.7](/docs/spec/conformance#4.7)) et laisse Core incomplet.
 
-Une déclaration de conformité publiée précise le périmètre évalué et s’accompagne du rapport, de la configuration expurgée des secrets et des versions utilisées. Une [attestation signée](/docs/verify) permet d’en vérifier l’origine et l’intégrité.
+Une déclaration de conformité publiée précise le périmètre évalué et s’accompagne du rapport, de la configuration expurgée des secrets et des versions utilisées. Une [attestation signée](/docs/verify) en prouve l’origine.
 
 ## Pour continuer
 

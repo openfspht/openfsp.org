@@ -7,7 +7,7 @@ OpenFSP définit l’interface entre le serveur d’une application marchande et
 
 ## Le segment application vers fournisseur
 
-L’interopérabilité définie ici concerne l’interface d’intégration marchande ; la [décision 0001](/docs/decisions#0001) en donne la justification. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur.
+OpenFSP couvre l’échange entre le serveur d’une application marchande et un fournisseur, et rien en amont ni en aval ; la [décision 0001](/docs/decisions#0001) en donne la justification. Chaque marchand conserve son compte et son contrat auprès de chaque fournisseur.
 
 ## Architecture native
 
@@ -18,7 +18,7 @@ flowchart LR
     S -- "même contrat OpenFSP" --> P2["Fournisseur natif B"]
 ```
 
-L’application sélectionne le service de paiement et utilise les identifiants et la configuration correspondants. La bibliothèque cliente prépare les échanges conformément au contrat d’interface. Elle n’ajoute aucun service central à l’architecture et ne se substitue pas au système du fournisseur.
+L’application sélectionne le service de paiement et utilise les identifiants et la configuration correspondants. La bibliothèque cliente prépare les échanges conformément au contrat d’interface. Elle parle directement au fournisseur, sans service central.
 
 ## Contrat et invariants
 
@@ -33,11 +33,11 @@ L’application sélectionne le service de paiement et utilise les identifiants 
 | Les notifications possèdent une signature vérifiable, des règles d'ordre et de déduplication.                | [Webhooks](/docs/spec/webhooks)                    |
 | L'accès au contrat est authentifié et limité par des portées.                                                | [Authentification](/docs/spec/authentication)      |
 
-Les [décisions de conception](/docs/decisions) documentent les choix retenus, leurs justifications et les alternatives examinées. Les exigences numérotées sont définies dans les chapitres normatifs correspondants.
+Les [décisions de conception](/docs/decisions) documentent les choix retenus, leurs justifications et les alternatives examinées.
 
 ## Découverte des capacités
 
-Une interface commune peut être implémentée par des services offrant des fonctions différentes. Chaque serveur déclare les capacités effectivement prises en charge. L’application les découvre pour déterminer les parcours applicables ; une fonction non prise en charge n’est pas émulée.
+Chaque serveur déclare les capacités qu’il prend en charge. L’application les découvre pour déterminer les parcours applicables ; une fonction non prise en charge n’est pas émulée.
 
 La [découverte des capacités](/docs/spec/capabilities) définit les points d’accès, les limites annoncées et les refus applicables. Les opérations disponibles dépendent de la version de la spécification et des capacités de l’implémentation visée. Le remboursement reste une extension réservée et n’est pas spécifié dans la version actuelle.
 
@@ -53,7 +53,7 @@ Le projet utilise un versionnement sémantique. Le chemin de l’API contient la
 
 ## Normes
 
-La spécification s’appuie notamment sur les RFC 2119 et 8174 pour les mots-clés normatifs, la RFC 9457 pour les erreurs, la RFC 3339 pour les horodatages UTC, ISO 4217 pour la devise HTG et la recommandation UIT-T E.164 pour les numéros de téléphone. Les autres références comprennent la RFC 9562 pour les UUID version 7, la RFC 9421 pour les signatures de messages HTTP, le projet IETF `Idempotency-Key`, OpenAPI 3.1, le schéma `Bearer` de la RFC 9110 ([authentification 3](/docs/spec/authentication#3)) et la RFC 8615 pour les points d’accès de découverte. Les mécanismes de commutation, tels que ceux associés à Mojaloop ou à PRONAP dans le contexte étudié, traitent une couche distincte : l’échange de paiements entre services. Leur articulation avec OpenFSP relève d’une architecture plus large que l’interface marchande.
+La spécification s’appuie notamment sur les RFC 2119 et 8174 pour les mots-clés normatifs, la RFC 9457 pour les erreurs, la RFC 3339 pour les horodatages UTC, ISO 4217 pour la devise HTG et la recommandation UIT-T E.164 pour les numéros de téléphone. Les autres références comprennent la RFC 9562 pour les UUID version 7, la RFC 9421 pour les signatures de messages HTTP, le projet IETF `Idempotency-Key`, OpenAPI 3.1, le schéma `Bearer` de la RFC 9110 ([authentification 3](/docs/spec/authentication#3)) et la RFC 8615 pour les points d’accès de découverte. Les mécanismes de commutation, tels que Mojaloop ou PRONAP en Haïti, traitent une couche distincte : l’échange de paiements entre services.
 
 ## Sécurité
 
@@ -66,14 +66,14 @@ La spécification s’appuie notamment sur les RFC 2119 et 8174 pour les mots-cl
 Le périmètre est justifié dans la [décision 0001](/docs/decisions#0001). Toute extension de ce périmètre nécessite une nouvelle décision de conception.
 
 - La spécification ne prévoit ni détention, ni transfert, ni conservation de fonds par le projet.
-- Le projet n’exploite pas de service de paiement hébergé. Toute offre hébergée fondée sur OpenFSP relève de son exploitant et des obligations réglementaires qui lui sont applicables.
-- OpenFSP ne constitue pas un établissement de paiement agréé et ne se substitue ni aux agréments requis ni aux contrats avec les fournisseurs.
+- Je n’exploite pas de service de paiement hébergé. Toute offre hébergée fondée sur OpenFSP relève de son exploitant et des obligations réglementaires qui lui sont applicables.
+- OpenFSP n’est pas un établissement de paiement agréé et ne se substitue ni aux agréments requis ni aux contrats avec les fournisseurs.
 - La commutation, la compensation et le règlement sont extérieurs au périmètre défini.
-- Le projet ne délivre pas de certification aux fournisseurs.
+- Je ne délivre pas de certification aux fournisseurs.
 - La spécification ne prescrit pas d’interface utilisateur.
 
 L’extension au paiement de proximité appartient à une [phase ultérieure](/docs#phases).
 
 ## Implémentations de référence
 
-La spécification est indépendante des langages de programmation et des choix d’infrastructure. Le serveur simulé de référence permet d’expérimenter les échanges ; la suite de conformité évalue les exigences observables dans les scénarios exécutés. Le [guide d’implémentation](/docs/implement) décrit la réalisation d’un serveur OpenFSP.
+Le serveur simulé de référence répond comme un fournisseur ; la suite de conformité évalue les exigences observables dans les scénarios exécutés. Le [guide d’implémentation](/docs/implement) décrit la réalisation d’un serveur OpenFSP.

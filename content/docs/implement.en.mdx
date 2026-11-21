@@ -1,16 +1,16 @@
 ---
 title: Implement OpenFSP
-description: Points of attention for a native implementation of the OpenFSP API and running the conformance suite.
+description: What a native implementation must get right of the OpenFSP API and running the conformance suite.
 ---
 
-A native implementation exposes the OpenFSP API within the payment service provider’s system. The requirements are those of the [specification](/en/docs/spec); this page lists the points of attention and how to run the suite.
+A native implementation exposes the OpenFSP API within the payment service provider’s system. The requirements are those of the [specification](/en/docs/spec); this page lists what to get right and how to run the suite.
 
 ## HTTP surface
 
 | Surface                                                    | Role                                                                 | Native-target consideration                                                                                                      |
 | ---------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `/.well-known/openfsp-configuration`                       | Public discovery of the issuer, endpoints, methods and webhook keys. | Read the [configuration structure](/en/docs/spec/capabilities#3.1) and [signing keys](/en/docs/spec/webhooks#6.1).                   |
-| `GET /v1/capabilities`                                     | Actual capabilities and limits.                                      | Announce each provider you serve under its registered identifier ([2.6](/en/docs/spec/capabilities#2.6)). |
+| `GET /v1/capabilities`                                     | Capabilities and limits.                                      | Announce each provider you serve under its registered identifier ([2.6](/en/docs/spec/capabilities#2.6)). |
 | `POST /v1/payments`                                        | Contract-defined creation, with an idempotency key.                  | Follow formats, refusals, replay and unknown-effect rules; a creation without a response is not a certain failure.               |
 | `GET /v1/payments/{id}` and `GET /v1/payments?reference=…` | Retrieve a payment and recover after a lost response.                | The merchant knows its reference before the call; it must not need to reconstruct an opaque identifier.                          |
 | Statements and notifications                               | Functions conditional on corresponding capabilities.                 | A reserved or unsupported function must not be presented as available.                                                           |
@@ -59,7 +59,7 @@ The [simulated native implementation sources](https://github.com/openfspht/openf
 
 The exit code is not enough: the assessment rests on the report’s verdicts ([conformance 7](/en/docs/spec/conformance#7)). A test whose input is missing is assisted ([conformance 4.7](/en/docs/spec/conformance#4.7)) and leaves Core incomplete.
 
-A published conformance claim identifies the assessed scope and comes with the report, the configuration with secrets removed and the versions used. A [signed attestation](/en/docs/verify) allows its origin and integrity to be verified.
+A published conformance claim identifies the assessed scope and comes with the report, the configuration with secrets removed and the versions used. A [signed attestation](/en/docs/verify) proves its origin.
 
 ## Next
 

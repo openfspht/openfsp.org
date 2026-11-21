@@ -11,7 +11,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Justification.** Sans contrat commun, chacune des `L` applications intègre chacun des `O` services, soit `O × L` intégrations spécifiques. Avec un contrat commun, le travail se répartit en `O + L` implémentations : une par service et une par application. Ce raisonnement suppose l’adoption du contrat et des capacités compatibles ; il ne mesure ni les coûts de configuration et de validation de chaque déploiement, ni l’absence d’adaptation.
 
-**Alternatives écartées.** Bibliothèques propres à chaque langage sans contrat serveur commun ; spécification sans implémentation de référence ; service central hébergé ; adoption directe de GSMA Mobile Money API ; utilisation de Mojaloop. Je privilégie la définition et l’implémentation distribuée de l’interface marchande ; la comparaison porte sur ce périmètre et ne juge pas ces solutions en général.
+**Alternatives écartées.** Bibliothèques propres à chaque langage sans contrat serveur commun ; spécification sans implémentation de référence ; service central hébergé ; adoption directe de GSMA Mobile Money API ; utilisation de Mojaloop. Je veux une interface marchande que chaque fournisseur implémente dans son propre système, et je compare ces solutions sur ce seul point.
 
 **Référence.** [Architecture](/docs/architecture).
 
@@ -19,7 +19,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Choix.** Je représente les montants par un nombre entier de centimes de gourde, borné à ±(2⁵³ - 1), avec une devise explicite fixée à `"HTG"`. L’exactitude est conservée pendant le stockage et les calculs, sans arrondi ; le type binary64 reste admis pour les centimes entiers selon les conditions du modèle de données. Les numéros de téléphone suivent E.164, les horodatages RFC 3339 en UTC avec `Z`, et les identifiants sont opaques, avec UUIDv7 recommandé. Les champs inconnus sont ignorés dans les réponses et rejetés dans les requêtes.
 
-**Justification.** Ces représentations fixent les primitives des autres chapitres. La borne des montants garantit leur représentation exacte en centimes entiers dans les environnements JSON en double précision. Je traite différemment requêtes et réponses pour refuser les erreurs de saisie tout en laissant évoluer les formats de réponse.
+**Justification.** La borne des montants garantit leur représentation exacte en centimes entiers dans les environnements JSON en double précision. Je traite différemment requêtes et réponses pour refuser les erreurs de saisie tout en laissant évoluer les formats de réponse.
 
 **Alternatives écartées.** Montants en chaînes décimales, montants fractionnaires en virgule flottante, chaîne combinant devise et montant (`"HTG 1250.00"`), prise en charge multidevise dans cette version, conversion des formats téléphoniques nationaux par le serveur, horodatages epoch et noms de champs en `camelCase`.
 
@@ -29,7 +29,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Choix.** Je définis cinq états : `pending`, seul état non terminal, et `succeeded`, `failed`, `expired`, `canceled`. Une transition terminale repose sur des éléments faisant autorité et ne peut être inversée. L’état `pending` comprend les résultats encore indéterminés. Seul le fournisseur établit une expiration, en la rapportant ou en la garantissant.
 
-**Justification.** L’application marchande peut livrer un bien ou un service à partir de l’état du paiement. Des états terminaux stables donnent une base cohérente à cette décision. Une information contradictoire reçue plus tard suit les mécanismes prévus, sans réécrire l’état terminal.
+**Justification.** L’application marchande peut livrer un bien ou un service à partir de l’état du paiement. Un état terminal stable lui évite de livrer puis de devoir revenir en arrière. Une information contradictoire reçue plus tard suit les mécanismes prévus, sans réécrire l’état terminal.
 
 **Alternatives écartées.** États terminaux révisables ; états supplémentaires `unknown` et `processing` ; machine à états reproduisant les particularités de chaque service ; expiration fondée sur l’horloge du serveur ; état `refunded` pour le paiement ; état terminal unique `closed`.
 
@@ -69,7 +69,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Choix.** J’authentifie le client par une clé `ofsp_<env>_<secret>` d’au moins 128 bits d’entropie, transmise exclusivement dans `Authorization: Bearer`. Le serveur conserve un condensé SHA-256, compare en temps constant et renvoie l’erreur unique `unauthenticated` pour tout échec d’authentification. Je définis quatre portées indépendantes. Un principal peut avoir plusieurs clés ; une révocation prend effet en 60 secondes au plus.
 
-**Justification.** Des exigences communes encadrent le stockage des clés, les comparaisons et les réponses d’authentification. Elles excluent le stockage en clair et toute différence observable entre une clé inconnue et une clé révoquée.
+**Justification.** Sans règles communes, une implémentation pourrait stocker les clés en clair ou laisser distinguer une clé inconnue d’une clé révoquée. Les exigences sur le stockage, les comparaisons et les réponses d’authentification l’excluent.
 
 **Alternatives écartées.** OAuth 2.0 client credentials ; JWT autoémis ; signature HMAC des requêtes ; TLS mutuel comme mécanisme principal d’identification ; clé unique sans portée ; hachage lent des clés ; portées propres à chaque service.
 
@@ -97,9 +97,9 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 ## 0010. Relevé réduit à une liste de transactions
 
-**Choix.** Je réduis le relevé à la liste des transactions réussies d’un fournisseur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la norme.
+**Choix.** Je réduis le relevé à la liste des transactions réussies d’un fournisseur pour une journée comptable ou un intervalle, lue par un seul point d’accès. Le rapprochement avec les paiements, ses verdicts, la clôture de journée, la liste des paiements manquants et la consultation des lignes non rapprochées sortent de la spécification.
 
-**Justification.** La norme définit une interface entre un client et un serveur. Ce que le client fait de la liste, dont le rapprochement avec ses propres enregistrements, relève de son architecture. Les obligations retirées portaient sur un comportement interne du serveur, qu’aucune suite ne peut observer.
+**Justification.** La spécification définit une interface entre un client et un serveur. Ce que le client fait de la liste, dont le rapprochement avec ses propres enregistrements, relève de son architecture. Les obligations retirées portaient sur un comportement interne du serveur, qu’aucune suite ne peut observer.
 
 **Alternatives écartées.** Rapprochement normalisé avec verdict par ligne ; clôture de journée déclarée par le serveur ; second point d’accès réservé aux lignes non rapprochées.
 
@@ -109,7 +109,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Choix.** J’exige de l’implémentation, en environnement de test, une interface de contrôle par laquelle la suite fixe l’issue d’un paiement avant de le créer, résout un paiement en attente et déclenche un événement retenu. L’implémentation produit elle-même l’issue demandée. L’interface est annoncée dans la réponse de préparation et ne vaut que pour les clés de l’exécution. Sans elle, les tests qui choisissent une issue échouent.
 
-**Justification.** La conformité porte sur l’implémentation de la norme, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation, et les tests jusque-là assistés deviennent exécutables à partir de la seule adresse du serveur. Une interface facultative aurait laissé une seconde façon d’exécuter la suite, par des tests assistés dont le résultat dépend de l’exploitant.
+**Justification.** La conformité porte sur l’implémentation de la spécification, non sur les services de paiement qu’elle utilise. Une seule façon d’exécuter la suite vaut alors pour toute implémentation. Une interface facultative aurait laissé une seconde façon d’exécuter la suite, par des tests assistés dont le résultat dépend de l’exploitant.
 
 **Alternatives écartées.** Interface de contrôle réservée au serveur simulé de référence ; issue désignée par une valeur réservée du montant ou du numéro du payeur ; en-tête de requête propre aux essais.
 
@@ -119,7 +119,7 @@ Chaque décision donne mon choix, sa justification et les alternatives que j’a
 
 **Choix.** Je retire le point d’accès `POST /v1/payments/{id}/synchronize`. La lecture d’un paiement retourne l’état le plus récent que le serveur peut établir ; la manière de l’établir relève de l’implémentation. Le serveur peut limiter les consultations qu’une lecture provoque et retourne alors le dernier état connu.
 
-**Justification.** Séparer la lecture de l’état conservé et la synchronisation auprès du fournisseur suppose un serveur intermédiaire distinct du fournisseur. Pour un fournisseur qui applique la norme lui-même, les deux opérations se confondent. La norme définit l’interface, non l’architecture de l’implémentation.
+**Justification.** Séparer la lecture de l’état conservé et la synchronisation auprès du fournisseur suppose un serveur intermédiaire distinct du fournisseur. Pour un fournisseur qui applique la spécification lui-même, les deux opérations se confondent.
 
 **Alternatives écartées.** Synchronisation conservée et réservée aux intermédiaires ; paramètre de fraîcheur sur la lecture ; en-tête indiquant l’âge de l’état retourné.
 

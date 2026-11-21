@@ -1,17 +1,17 @@
 ---
 title: État du projet
-description: Disponibilité des composants, environnements de test et limites des résultats documentés pour la version 0.1.0.
+description: Disponibilité des composants et environnements dans lesquels ils ont été testés, pour la version 0.1.0.
 ---
 
-Le tableau décrit la disponibilité des composants et les environnements dans lesquels ils ont été évalués. Les résultats de simulation caractérisent les scénarios exécutés. Les essais en bac à sable apportent des observations sur cet environnement ; ils ne suffisent pas à établir le comportement d’un déploiement en production.
+Le tableau décrit la disponibilité des composants et les environnements dans lesquels ils ont été évalués. Un résultat obtenu en simulation ne vaut que pour les scénarios exécutés, et un essai en bac à sable ne dit rien du comportement en production.
 
 | Composant | État documenté | Référence |
 | --- | --- | --- |
 | Spécification `0.1.0` | Disponible en français et en anglais ; version de développement antérieure à 1.0.0 | [Règles](/docs/spec) |
-| Contrat OpenAPI | Disponible pour décrire l’interface | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
+| Contrat OpenAPI | Disponible | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
 | SDK Kotlin et Java | Implémentés avec `openfsp-sdk-testing` ; publiés sur Maven Central sous `org.openfsp:openfsp-sdk` | [Sources et utilisation](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) |
 | SDK TypeScript | Implémenté avec `@openfsp/sdk/testing` ; publié sur npm sous `@openfsp/sdk` | [Sources et utilisation](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) |
-| Schémas et scénarios de conformité | Disponibles ; périmètre de vérification défini par la suite | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
+| Schémas et scénarios de conformité | Disponibles | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
 | Validateur public | Accessible en ligne | [validator.openfsp.org](https://validator.openfsp.org) |
 | Serveur simulé de référence `mock_openfsp` | Exécutable localement pour les tests d’implémentation | [Tests d’implémentation](/docs/implement) |
 | [Passerelle](/docs/gateway) pour MonCash et NatCash | Disponible ; simulations et opérations de création et de consultation en bac à sable documentées | [Points à vérifier](/docs/gateway#sandbox-checks) |
@@ -19,4 +19,4 @@ Le tableau décrit la disponibilité des composants et les environnements dans l
 | Attestations signées | Disponibles pour consigner les résultats d’une exécution | [Vérification](/docs/verify) |
 | Remboursement, capture, annulation et paiement de proximité | Noms de capacités réservés ; opérations non spécifiées dans la version actuelle | [Capacités](/docs/spec/capabilities#2) |
 
-L’état documenté du projet ne fait état d’aucune adoption native par un fournisseur ni d’aucun examen par un régulateur. Les [phases](/docs#phases) distinguent le périmètre de la version actuelle des extensions envisagées.
+Aucun fournisseur n’implémente OpenFSP nativement et aucun régulateur ne l’a examiné. Les [phases](/docs#phases) distinguent le périmètre de la version actuelle des extensions envisagées.

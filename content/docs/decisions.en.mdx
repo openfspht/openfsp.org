@@ -11,7 +11,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 **Rationale.** Without a common contract, each of `L` applications integrates each of `O` services, which makes `O × L` service-specific integrations. With a common contract, the work splits into `O + L` implementations: one per service and one per application. This reasoning assumes adoption of the contract and compatible capabilities; it measures neither the configuration and validation costs of each deployment nor the absence of adaptation.
 
-**Alternatives rejected.** Language-specific libraries without a shared server contract; a specification without a reference implementation; a central hosted service; direct adoption of the GSMA Mobile Money API; use of Mojaloop. I favour the definition and distributed implementation of the merchant interface; the comparison concerns this scope and does not judge these solutions in general.
+**Alternatives rejected.** Language-specific libraries without a shared server contract; a specification without a reference implementation; a central hosted service; direct adoption of the GSMA Mobile Money API; use of Mojaloop. I want a merchant interface that each provider implements in its own system, and I compare these solutions on that point only.
 
 **Reference.** [Architecture](/en/docs/architecture).
 
@@ -19,7 +19,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 **Decision.** I represent amounts as integer HTG cents, bounded to ±(2⁵³ - 1), with an explicit currency fixed to `"HTG"`. Storage and calculations preserve exactness without rounding; binary64 remains permitted for integer cents under the data model’s conditions. Phone numbers follow E.164, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque, with UUIDv7 recommended. Unknown fields are ignored in responses and rejected in requests.
 
-**Rationale.** These representations set the primitives of the other chapters. The amount bound guarantees exact representation of integer cents in JSON environments using double precision. I treat requests and responses differently to refuse input errors while letting response formats evolve.
+**Rationale.** The amount bound guarantees exact representation of integer cents in JSON environments using double precision. I treat requests and responses differently to refuse input errors while letting response formats evolve.
 
 **Alternatives rejected.** Decimal-string amounts, fractional floating-point amounts, combined currency-and-amount strings (`"HTG 1250.00"`), multi-currency support in this version, server-side conversion of national phone formats, epoch timestamps and `camelCase` field names.
 
@@ -29,7 +29,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 **Decision.** I define five states: `pending`, the only non-terminal state, and `succeeded`, `failed`, `expired`, `canceled`. A terminal transition relies on authoritative evidence and cannot be reversed. The `pending` state includes indeterminate outcomes. Only the provider establishes expiry, by reporting or guaranteeing it.
 
-**Rationale.** A merchant application may deliver goods or services based on payment state. Stable terminal states give that decision a consistent basis. Contradictory information received later follows the specified mechanisms without rewriting the terminal state.
+**Rationale.** A merchant application may deliver goods or services based on payment state. A stable terminal state spares it from delivering and then having to undo. Contradictory information received later follows the specified mechanisms without rewriting the terminal state.
 
 **Alternatives rejected.** Revisable terminal states; additional `unknown` and `processing` states; state machines reproducing each service’s specific behaviour; expiry based on the server clock; a `refunded` payment state; a single terminal `closed` state.
 
@@ -69,7 +69,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 **Decision.** I authenticate clients with an `ofsp_<env>_<secret>` key of at least 128 bits of entropy, transmitted exclusively in `Authorization: Bearer`. The server stores a SHA-256 digest, compares in constant time and returns the single `unauthenticated` error for every authentication failure. I define four independent scopes. A principal may hold several keys; revocation takes effect within 60 seconds.
 
-**Rationale.** Shared requirements govern key storage, comparisons and authentication responses. They rule out cleartext storage and any observable difference between an unknown and a revoked key.
+**Rationale.** Without shared rules, an implementation could store keys in cleartext or let an unknown key be told apart from a revoked one. The requirements on storage, comparisons and authentication responses rule this out.
 
 **Alternatives rejected.** OAuth 2.0 client credentials; self-issued JWTs; HMAC request signing; mutual TLS as the primary identity mechanism; a single unscoped key; slow key hashing; per-service scopes.
 
@@ -109,7 +109,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 **Decision.** I require an implementation, in the test environment, to provide a control interface through which the suite sets the outcome of a payment before creating it, resolves a pending payment and triggers a held event. The implementation produces the requested outcome itself. The interface is announced in the preparation response and holds only for the keys of the run. Without it, the tests that choose an outcome fail.
 
-**Rationale.** Conformance concerns the implementation of the specification, not the payment services it uses. A single way of running the suite then holds for every implementation, and the tests assisted until now become executable from the address of the server alone. An optional interface would have left a second way of running the suite, through assisted tests whose result depends on the operator.
+**Rationale.** Conformance concerns the implementation of the specification, not the payment services it uses. A single way of running the suite then holds for every implementation. An optional interface would have left a second way of running the suite, through assisted tests whose result depends on the operator.
 
 **Alternatives rejected.** A control interface reserved for the reference mock server; an outcome designated by a reserved value of the amount or of the payer number; a request header specific to tests.
 
@@ -119,7 +119,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 **Decision.** I remove the `POST /v1/payments/{id}/synchronize` endpoint. Retrieving a payment returns the most recent state the server can establish; how it establishes it is up to the implementation. The server may limit the lookups a retrieval triggers and then returns the last known state.
 
-**Rationale.** Separating retrieval of stored state from synchronisation with the provider presumes an intermediary server distinct from the provider. For a provider that applies the specification itself, the two operations are the same. The specification defines the interface, not the architecture of the implementation.
+**Rationale.** Separating retrieval of stored state from synchronisation with the provider presumes an intermediary server distinct from the provider. For a provider that applies the specification itself, the two operations are the same.
 
 **Alternatives rejected.** Synchronisation kept and reserved for intermediaries; a freshness parameter on retrieval; a header stating the age of the returned state.
 

@@ -7,7 +7,7 @@ OpenFSP defines the interface between a merchant application server and a paymen
 
 ## The application-to-provider layer
 
-The interoperability defined here concerns the merchant integration interface; [decision 0001](/en/docs/decisions#0001) gives the rationale. Each merchant retains its account and agreement with each provider.
+OpenFSP covers the exchange between a merchant application server and a provider, and nothing upstream or downstream; [decision 0001](/en/docs/decisions#0001) gives the rationale. Each merchant retains its account and agreement with each provider.
 
 ## Native architecture
 
@@ -18,7 +18,7 @@ flowchart LR
     S -- "same OpenFSP contract" --> P2["Native provider B"]
 ```
 
-The application selects the payment service and uses the corresponding credentials and configuration. The client library prepares exchanges according to the interface contract. It introduces no central service and does not replace the provider’s system.
+The application selects the payment service and uses the corresponding credentials and configuration. The client library prepares exchanges according to the interface contract. It talks to the provider directly, with no central service.
 
 ## Contract and invariants
 
@@ -33,11 +33,11 @@ The application selects the payment service and uses the corresponding credentia
 | Notifications have verifiable signatures, ordering and deduplication rules.                       | [Webhooks](/en/docs/spec/webhooks)                 |
 | Access to the contract is authenticated and restricted by scopes.                                 | [Authentication](/en/docs/spec/authentication)     |
 
-The [design decisions](/en/docs/decisions) document the selected approaches, their rationale and the alternatives considered. Numbered requirements are defined in the corresponding normative chapters.
+The [design decisions](/en/docs/decisions) document the selected approaches, their rationale and the alternatives considered.
 
 ## Capability discovery
 
-A common interface can be implemented by services offering different functions. Each server declares the capabilities it actually supports. The application discovers these capabilities to determine applicable flows; unsupported functions are not emulated.
+Each server declares the capabilities it supports. The application discovers these capabilities to determine applicable flows; unsupported functions are not emulated.
 
 [Capability discovery](/en/docs/spec/capabilities) defines endpoints, declared limits and applicable rejection behaviour. Available operations depend on the specification version and the target implementation’s capabilities. Refunds remain a reserved extension and are not specified in the current version.
 
@@ -53,7 +53,7 @@ The project uses semantic versioning. The API path includes the major version (`
 
 ## Standards
 
-The specification draws on RFCs 2119 and 8174 for normative keywords, RFC 9457 for errors, RFC 3339 for UTC timestamps, ISO 4217 for the HTG currency and ITU-T E.164 for phone numbers. Other references include RFC 9562 for version 7 UUIDs, RFC 9421 for HTTP message signatures, the IETF `Idempotency-Key` draft, OpenAPI 3.1, the RFC 9110 `Bearer` scheme ([authentication 3](/en/docs/spec/authentication#3)) and RFC 8615 for discovery endpoints. Switching mechanisms, such as those associated with Mojaloop or PRONAP in the context studied, address a separate layer: payment exchange between services. Their integration with OpenFSP requires an architecture broader than the merchant interface.
+The specification draws on RFCs 2119 and 8174 for normative keywords, RFC 9457 for errors, RFC 3339 for UTC timestamps, ISO 4217 for the HTG currency and ITU-T E.164 for phone numbers. Other references include RFC 9562 for version 7 UUIDs, RFC 9421 for HTTP message signatures, the IETF `Idempotency-Key` draft, OpenAPI 3.1, the RFC 9110 `Bearer` scheme ([authentication 3](/en/docs/spec/authentication#3)) and RFC 8615 for discovery endpoints. Switching mechanisms, such as Mojaloop or PRONAP in Haiti, address a separate layer: payment exchange between services. Their integration with OpenFSP requires an architecture broader than the merchant interface.
 
 ## Security
 
@@ -66,14 +66,14 @@ The specification draws on RFCs 2119 and 8174 for normative keywords, RFC 9457 f
 The scope is justified in [decision 0001](/en/docs/decisions#0001). Extending this scope requires a new design decision.
 
 - The specification provides for no holding, transfer or custody of funds by the project.
-- The project does not operate a hosted payment service. Any hosted offering based on OpenFSP is the responsibility of its operator under the applicable regulatory obligations.
+- I do not operate a hosted payment service. Any hosted offering based on OpenFSP is the responsibility of its operator under the applicable regulatory obligations.
 - OpenFSP is not a licensed payment institution and does not replace required licences or agreements with providers.
 - Switching, clearing and settlement are outside the defined scope.
-- The project does not issue provider certifications.
+- I do not issue provider certifications.
 - The specification does not prescribe a user interface.
 
 The extension to proximity payments belongs to a [later phase](/en/docs#phases).
 
 ## Reference implementations
 
-The specification is independent of programming languages and infrastructure choices. The reference mock server supports experimentation with exchanges; the conformance suite assesses observable requirements in the scenarios executed. The [implementation guide](/en/docs/implement) describes how to build an OpenFSP server.
+The reference mock server answers like a provider; the conformance suite assesses observable requirements in the scenarios executed. The [implementation guide](/en/docs/implement) describes how to build an OpenFSP server.

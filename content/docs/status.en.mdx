@@ -1,17 +1,17 @@
 ---
 title: Project status
-description: Component availability, test environments and limits of documented results for version 0.1.0.
+description: Component availability and the environments in which they were tested, for version 0.1.0.
 ---
 
-The table describes component availability and the environments in which they have been assessed. Simulation results characterise the scenarios executed. Sandbox tests provide observations about that environment; they do not establish production deployment behaviour.
+The table describes component availability and the environments in which they have been assessed. A result obtained in simulation holds only for the scenarios executed, and a sandbox test says nothing about production behaviour.
 
 | Component | Documented status | Reference |
 | --- | --- | --- |
 | Specification `0.1.0` | Available in French and English; development version preceding 1.0.0 | [Rules](/en/docs/spec) |
-| OpenAPI contract | Available to describe the interface | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
+| OpenAPI contract | Available | [`openapi`](https://github.com/openfspht/openfsp/tree/main/openapi) |
 | Kotlin and Java SDK | Implemented with `openfsp-sdk-testing`; published on Maven Central as `org.openfsp:openfsp-sdk` | [Source and usage](https://github.com/openfspht/openfsp/tree/main/sdks/kotlin) |
 | TypeScript SDK | Implemented with `@openfsp/sdk/testing`; published on npm as `@openfsp/sdk` | [Source and usage](https://github.com/openfspht/openfsp/tree/main/sdks/typescript) |
-| Conformance schemas and scenarios | Available; verification scope defined by the suite | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
+| Conformance schemas and scenarios | Available | [`conformance`](https://github.com/openfspht/openfsp/tree/main/conformance) |
 | Public validator | Accessible online | [validator.openfsp.org](https://validator.openfsp.org) |
 | Reference mock server `mock_openfsp` | Runnable locally for implementation tests | [Implementation tests](/en/docs/implement) |
 | [Gateway](/en/docs/gateway) for MonCash and NatCash | Available; simulations and sandbox creation and retrieval operations documented | [Open checks](/en/docs/gateway#sandbox-checks) |
@@ -19,4 +19,4 @@ The table describes component availability and the environments in which they ha
 | Signed attestations | Available to record execution results | [Verification](/en/docs/verify) |
 | Refunds, capture, cancellation and proximity payments | Reserved capability names; operations not specified in the current version | [Capabilities](/en/docs/spec/capabilities#2) |
 
-The documented project status records no native provider adoption or regulatory review. The [development phases](/en/docs#phases) distinguish the current version’s scope from proposed extensions.
+No provider implements OpenFSP natively and no regulator has reviewed it. The [development phases](/en/docs#phases) distinguish the current version’s scope from proposed extensions.
