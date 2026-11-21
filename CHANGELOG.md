@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.3](https://github.com/openfspht/openfsp.org/compare/v0.7.2...v0.7.3) (2026-11-21)
+
+
+### Bug Fixes
+
+* say the specification is open to all ([f87e667](https://github.com/openfspht/openfsp.org/commit/f87e667b01cebe3ee13578e15a7e73d1d6053660))
+
 ## [0.7.2](https://github.com/openfspht/openfsp.org/compare/v0.7.1...v0.7.2) (2026-11-21)
 
 
