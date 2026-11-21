@@ -32,7 +32,7 @@ type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
     "curl -fsSL https://cdn.openfsp.org/validate.sh \\",
-    "  | sh -s -- https://simulator-api.openfsp.org/mock_openfsp",
+    "  | sh -s -- https://simulator.openfsp.org/mock_openfsp",
 ];
 
 const EVENT_BODY = `{
