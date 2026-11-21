@@ -12,6 +12,7 @@ export const homeCopy = {
         },
         version: "Spécification 0.1.0",
         phase: "Phase 1 : intégration marchande",
+        phaseShort: "Phase 1",
         headline: {
             before: "Une interface entre marchands et fournisseurs de paiement en ",
             highlight: "Haïti",
@@ -198,6 +199,7 @@ export const homeCopy = {
         },
         version: "Specification 0.1.0",
         phase: "Phase 1: merchant integration",
+        phaseShort: "Phase 1",
         headline: {
             before: "One interface between merchants and payment providers in ",
             highlight: "Haiti",

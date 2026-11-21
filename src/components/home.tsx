@@ -327,7 +327,8 @@ export function Home({ locale }: { locale: Locale }) {
                         >
                             <span className="font-medium text-fd-foreground">{t.version}</span>
                             <span aria-hidden>·</span>
-                            <span>{t.phase}</span>
+                            <span className="sm:hidden">{t.phaseShort}</span>
+                            <span className="hidden sm:inline">{t.phase}</span>
                             <ChevronRight size={14} aria-hidden />
                         </a>
                         <h1 className="hero-title mt-7 max-w-[720px]">
