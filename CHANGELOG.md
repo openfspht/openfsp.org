@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.2](https://github.com/openfspht/openfsp.org/compare/v0.7.1...v0.7.2) (2026-11-21)
+
+
+### Bug Fixes
+
+* shorten the hero version line on small screens ([f1cff8f](https://github.com/openfspht/openfsp.org/commit/f1cff8f7b5b0625b09472a412b76e601af08c4c9))
+
 ## [0.7.1](https://github.com/openfspht/openfsp.org/compare/v0.7.0...v0.7.1) (2026-11-21)
 
 
