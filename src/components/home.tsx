@@ -553,6 +553,29 @@ export function Home({ locale }: { locale: Locale }) {
                     </div>
                 </section>
 
+                <section className="landing-section" aria-labelledby="provider-title">
+                    <div className="landing-container">
+                        <div className="flex flex-wrap items-center justify-between gap-x-12 gap-y-6 rounded-2xl bg-brand-ink p-8 text-brand-chalk sm:p-10">
+                            <div className="flex-[1_1_420px]">
+                                <h2
+                                    id="provider-title"
+                                    className="text-[28px] leading-tight font-bold tracking-[-0.02em] text-white"
+                                >
+                                    {t.provider.title}
+                                </h2>
+                                <p className="mt-2.5 text-brand-chalk/80">{t.provider.body}</p>
+                            </div>
+                            <a
+                                href={VALIDATOR_URL}
+                                className="landing-button is-large bg-brand-chalk text-brand-ink hover:bg-white"
+                            >
+                                {t.provider.action}
+                                <ArrowUpRight size={14} aria-hidden />
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="status" className="landing-section" aria-labelledby="status-title">
                     <div className="landing-container">
                         <div className="flex flex-wrap items-baseline gap-x-16 gap-y-4">

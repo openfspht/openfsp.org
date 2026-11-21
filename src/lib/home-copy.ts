@@ -118,6 +118,11 @@ export const homeCopy = {
                 },
             ],
         },
+        provider: {
+            title: "Vous implémentez OpenFSP comme fournisseur ?",
+            body: "Pointez le validateur vers votre serveur : le rapport indique ce qui passe, ce qui échoue et ce qui n’a pas pu être vérifié.",
+            action: "Ouvrir le validateur",
+        },
         status: {
             title: "État et périmètre.",
             body: {
@@ -297,6 +302,11 @@ export const homeCopy = {
                     host: "gateway.openfsp.org",
                 },
             ],
+        },
+        provider: {
+            title: "Implementing OpenFSP as a provider?",
+            body: "Point the validator at your server: the report shows what passes, what fails and what could not be checked.",
+            action: "Open the validator",
         },
         status: {
             title: "Status and scope.",
