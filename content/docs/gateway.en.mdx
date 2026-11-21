@@ -3,9 +3,9 @@ title: Transition gateway
 description: Role, architecture and limitations of the reference gateway for the existing MonCash and NatCash APIs.
 ---
 
-The reference gateway is an OpenFSP server that adapts exchanges to the existing MonCash and NatCash APIs. It is the transitional option while these services do not implement OpenFSP. The [project status](/en/docs/status) shows where it has been tested.
+MonCash and NatCash do not implement OpenFSP yet. To use them now, the project provides a reference gateway: a server hosted by the merchant that exposes the OpenFSP API to the application and translates each request into the service’s existing API. The [project status](/en/docs/status) shows where it has been tested.
 
-The client-facing interface follows the [specification](/en/docs/spec). The rest of this page describes its internal operation: translating each service’s formats belongs to the gateway, not to OpenFSP.
+It is a transitional solution. A provider that implements OpenFSP natively does not need it, and other gateways can be written from the [specification](/en/docs/spec). The rest of this page describes the internal operation of the reference gateway: translating each service’s formats belongs to it, not to OpenFSP.
 
 ## Components
 
@@ -96,7 +96,7 @@ The gateway records a terminal state only from one of the following sources, lis
 - **Conflicts.** Information contradicting a terminal state or reporting a different amount does not modify the payment. The conflict is stored durably and reported to the operator for human resolution. A payment with a mismatched amount remains `pending`.
 - **Background reconciliation.** The gateway periodically queries pending payments without a prior client request.
 - **Expiry.** The `expired` state is recorded when the service reports expiry, when the service guarantees expiry and the retained `expires_at` has passed, or on attestation ([lifecycle 5](/en/docs/spec/lifecycle#5)).
-- **Operator attestation.** Source (d) uses the gateway’s administration API, separate from the OpenFSP API. It records the attester’s identity, time, state and evidence reference. A shared administration token may protect access; the attester’s identity is then supplied in the request. I recommend a second approval above a threshold set by the deployment.
+- **Operator attestation.** Source (d) uses the gateway’s administration API, separate from the OpenFSP API. It records the attester’s identity, time, state and evidence reference. A shared administration token may protect access; the attester’s identity is then supplied in the request. A second approval is recommended above a threshold set by the deployment.
 
 ## Return relay [#return-relay]
 
@@ -123,7 +123,7 @@ Each time credentials are stored, a revision is created, encrypted with AES-256-
 
 ## Observed profiles [#profiles]
 
-These profiles draw on the service documentation (MonCash REST API and NatCash Merchant Online Integration 2.0) and on integrations I carried out. Items requiring confirmation are listed under [To check in the sandbox](#sandbox-checks).
+These profiles draw on the service documentation (MonCash REST API and NatCash Merchant Online Integration 2.0) and on integrations carried out by the maintainers. Items requiring confirmation are listed under [To check in the sandbox](#sandbox-checks).
 
 ### Mapping [#mapping]
 

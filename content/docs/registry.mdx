@@ -26,8 +26,8 @@ L’inscription au registre ne vaut pas déclaration d’adoption ou de conformi
 
 ## Enregistrer un identifiant
 
-Pour demander un identifiant, ajoutez une ligne au registre au moyen d’une pull request sur [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx). Je relis la demande. L’attribution seule ne nécessite pas de décision de conception, car elle n’introduit aucun comportement normatif ([découverte des capacités 2.7](/docs/spec/capabilities#2.7)).
+Pour demander un identifiant, ajoutez une ligne au registre au moyen d’une pull request sur [openfspht/openfsp.org](https://github.com/openfspht/openfsp.org/blob/main/content/docs/registry.mdx). Les mainteneurs relisent la demande. L’attribution seule ne nécessite pas de décision de conception, car elle n’introduit aucun comportement normatif ([découverte des capacités 2.7](/docs/spec/capabilities#2.7)).
 
 L’identifiant respecte `^[a-z0-9_]{1,32}$` ([API 3.2](/docs/spec/payments-api#3.2)). Il désigne le service tel que ses utilisateurs le connaissent, plutôt que l’entreprise qui l’exploite, et n’emporte aucune revendication de marque. Son inscription n’établit ni relation contractuelle ni approbation entre le service et le projet.
 
-Les identifiants attribués sont permanents. Lorsqu’un service change de nom, je lui attribue un nouvel identifiant et l’ancienne ligne est conservée avec un renvoi dans la colonne _Remplacé par_. Les déploiements et les données existantes peuvent ainsi continuer à référencer l’ancienne valeur.
+Les identifiants attribués sont permanents. Lorsqu’un service change de nom, les mainteneurs lui attribuent un nouvel identifiant et l’ancienne ligne est conservée avec un renvoi dans la colonne _Remplacé par_. Les déploiements et les données existantes peuvent ainsi continuer à référencer l’ancienne valeur.

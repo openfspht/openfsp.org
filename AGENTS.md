@@ -15,7 +15,7 @@ TanStack Start, React 19, Fumadocs, MDX and Tailwind 4 on Vite+ (`vp`), with Bun
 ## Content
 
 - French is canonical: `x.mdx` is French, served at `/`; `x.en.mdx` is English, served at `/en`. Edit both together, with the same rule numbers and line structure. French is written natively, not translated word for word.
-- The docs speak in the author's first person, to payment engineers: no pedagogy, no filler. Decisions are the author's proposals, numbered in sequence, with no accepted or rejected status.
+- The docs speak in the project's voice, never the first person, to payment engineers: no pedagogy, no filler. Introduce a component with an indefinite article ("a reference gateway") before referring to it as "the". Decisions are the project's proposals, numbered in sequence, with no accepted or rejected status.
 - Rule bodies in `content/docs/spec` (from the first `## 1.` heading) change only on purpose. Keep rule and decision identifiers stable.
 - Distinguish simulated, sandbox and production evidence. Do not imply provider or regulator endorsement.
 - Never use the em dash, the typographic minus or the section sign.

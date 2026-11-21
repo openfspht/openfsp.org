@@ -3,9 +3,9 @@ title: Passerelle de transition
 description: Rôle, architecture et limites de la passerelle de référence pour les API existantes de MonCash et NatCash.
 ---
 
-La passerelle de référence est un serveur OpenFSP qui adapte les échanges aux API existantes de MonCash et NatCash. C’est l’option de transition tant que ces services n’implémentent pas OpenFSP. [L’état du projet](/docs/status) indique où elle a été testée.
+MonCash et NatCash n’implémentent pas encore OpenFSP. Pour les utiliser dès maintenant, le projet fournit une passerelle de référence : un serveur hébergé par le marchand, qui expose l’API OpenFSP à l’application et traduit chaque requête vers l’API existante du service. [L’état du projet](/docs/status) indique où elle a été testée.
 
-L’interface exposée aux clients suit la [spécification](/docs/spec). Le reste de cette page décrit son fonctionnement interne : la traduction des formats propres à chaque service relève de la passerelle, pas d’OpenFSP.
+C’est une solution de transition. Un fournisseur qui implémente OpenFSP nativement n’en a pas besoin, et d’autres passerelles peuvent être écrites à partir de la [spécification](/docs/spec). Le reste de cette page décrit le fonctionnement interne de la passerelle de référence : la traduction des formats propres à chaque service relève d’elle, pas d’OpenFSP.
 
 ## Composants
 
@@ -96,7 +96,7 @@ La passerelle enregistre un état terminal uniquement à partir de l’une des s
 - **Conflits.** Une information contredisant un état terminal, ou signalant un montant différent, ne modifie pas le paiement. Le conflit est conservé durablement et signalé à l’exploitant pour résolution humaine. Un paiement dont le montant est discordant reste `pending`.
 - **Rapprochement en arrière-plan.** La passerelle consulte périodiquement les paiements en attente sans requête préalable du client.
 - **Expiration.** L’état `expired` est enregistré lorsque le service rapporte l’expiration, lorsque le service garantit l’expiration et que l’`expires_at` retenu est dépassé, ou sur attestation ([cycle de vie 5](/docs/spec/lifecycle#5)).
-- **Attestation de l’exploitant.** La source (d) utilise l’API d’administration de la passerelle, distincte de l’API OpenFSP. Elle consigne l’identité de l’attestant, l’instant, l’état et la référence de la preuve. Un jeton d’administration partagé peut protéger cet accès ; l’identité de l’attestant est alors fournie dans la requête. Je recommande une seconde validation au-delà d’un seuil fixé par le déploiement.
+- **Attestation de l’exploitant.** La source (d) utilise l’API d’administration de la passerelle, distincte de l’API OpenFSP. Elle consigne l’identité de l’attestant, l’instant, l’état et la référence de la preuve. Un jeton d’administration partagé peut protéger cet accès ; l’identité de l’attestant est alors fournie dans la requête. Une seconde validation est recommandée au-delà d’un seuil fixé par le déploiement.
 
 ## Relais de retour [#return-relay]
 
@@ -123,7 +123,7 @@ Chaque enregistrement d’identifiants crée une révision, chiffrée en AES-256
 
 ## Profils observés [#profiles]
 
-Ces profils reposent sur la documentation des services (MonCash REST API et NatCash Merchant Online Integration 2.0) ainsi que sur les intégrations que j’ai menées. Les points restant à confirmer figurent dans la liste [À vérifier en bac à sable](#sandbox-checks).
+Ces profils reposent sur la documentation des services (MonCash REST API et NatCash Merchant Online Integration 2.0) ainsi que sur les intégrations menées par les mainteneurs. Les points restant à confirmer figurent dans la liste [À vérifier en bac à sable](#sandbox-checks).
 
 ### Correspondance [#mapping]
 

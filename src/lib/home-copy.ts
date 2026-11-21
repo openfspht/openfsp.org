@@ -77,7 +77,7 @@ export const homeCopy = {
         },
         gateway: {
             title: "Déjà sur MonCash ou NatCash ?",
-            body: "La passerelle de référence traduit les requêtes OpenFSP vers les API existantes de MonCash et NatCash. C’est une option de transition, testée en simulation et dans les bacs à sable des fournisseurs, pas encore en production.",
+            body: "Une passerelle de référence traduit les requêtes OpenFSP vers les API existantes de MonCash et NatCash. C’est une option de transition, testée en simulation et dans les bacs à sable des fournisseurs, pas encore en production.",
             link: "À propos de la passerelle",
         },
         demo: {
@@ -263,7 +263,7 @@ export const homeCopy = {
         },
         gateway: {
             title: "Already on MonCash or NatCash?",
-            body: "The reference gateway translates OpenFSP requests into the existing MonCash and NatCash APIs. It is a transitional option, tested in simulation and in the providers’ sandboxes, not yet in production.",
+            body: "A reference gateway translates OpenFSP requests into the existing MonCash and NatCash APIs. It is a transitional option, tested in simulation and in the providers’ sandboxes, not yet in production.",
             link: "About the gateway",
         },
         demo: {

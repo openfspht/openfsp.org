@@ -3,23 +3,23 @@ title: Decisions
 description: OpenFSP design choices, rationale, rejected alternatives and implementation consequences.
 ---
 
-Each decision gives my choice, its rationale and the alternatives I rejected, then links to the relevant chapters. Numbered requirements remain the normative reference.
+Each decision gives the choice made, its rationale and the rejected alternatives, then links to the relevant chapters. Numbered requirements remain the normative reference.
 
 ## 0001. Architecture and scope
 
-**Decision.** I define a common interface contract that each provider can expose within its payment system. Merchant applications use it directly or through client libraries. A reference mock server and a conformance suite accompany the specification.
+**Decision.** OpenFSP defines a common interface contract that each provider can expose within its payment system. Merchant applications use it directly or through client libraries. A reference mock server and a conformance suite accompany the specification.
 
 **Rationale.** Without a common contract, each of `L` applications integrates each of `O` services, which makes `O × L` service-specific integrations. With a common contract, the work splits into `O + L` implementations: one per service and one per application. This reasoning assumes adoption of the contract and compatible capabilities; it measures neither the configuration and validation costs of each deployment nor the absence of adaptation.
 
-**Alternatives rejected.** Language-specific libraries without a shared server contract; a specification without a reference implementation; a central hosted service; direct adoption of the GSMA Mobile Money API; use of Mojaloop. I want a merchant interface that each provider implements in its own system, and I compare these solutions on that point only.
+**Alternatives rejected.** Language-specific libraries without a shared server contract; a specification without a reference implementation; a central hosted service; direct adoption of the GSMA Mobile Money API; use of Mojaloop. The goal is a merchant interface that each provider implements in its own system, and these solutions are compared on that point only.
 
 **Reference.** [Architecture](/en/docs/architecture).
 
 ## 0002. Data model
 
-**Decision.** I represent amounts as integer HTG cents, bounded to ±(2⁵³ - 1), with an explicit currency fixed to `"HTG"`. Storage and calculations preserve exactness without rounding; binary64 remains permitted for integer cents under the data model’s conditions. Phone numbers follow E.164, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque, with UUIDv7 recommended. Unknown fields are ignored in responses and rejected in requests.
+**Decision.** Amounts are represented as integer HTG cents, bounded to ±(2⁵³ - 1), with an explicit currency fixed to `"HTG"`. Storage and calculations preserve exactness without rounding; binary64 remains permitted for integer cents under the data model’s conditions. Phone numbers follow E.164, timestamps RFC 3339 in UTC with `Z`, and identifiers are opaque, with UUIDv7 recommended. Unknown fields are ignored in responses and rejected in requests.
 
-**Rationale.** The amount bound guarantees exact representation of integer cents in JSON environments using double precision. I treat requests and responses differently to refuse input errors while letting response formats evolve.
+**Rationale.** The amount bound guarantees exact representation of integer cents in JSON environments using double precision. Requests and responses are treated differently to refuse input errors while letting response formats evolve.
 
 **Alternatives rejected.** Decimal-string amounts, fractional floating-point amounts, combined currency-and-amount strings (`"HTG 1250.00"`), multi-currency support in this version, server-side conversion of national phone formats, epoch timestamps and `camelCase` field names.
 
@@ -27,7 +27,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0003. Payment lifecycle
 
-**Decision.** I define five states: `pending`, the only non-terminal state, and `succeeded`, `failed`, `expired`, `canceled`. A terminal transition relies on authoritative evidence and cannot be reversed. The `pending` state includes indeterminate outcomes. Only the provider establishes expiry, by reporting or guaranteeing it.
+**Decision.** The lifecycle has five states: `pending`, the only non-terminal state, and `succeeded`, `failed`, `expired`, `canceled`. A terminal transition relies on authoritative evidence and cannot be reversed. The `pending` state includes indeterminate outcomes. Only the provider establishes expiry, by reporting or guaranteeing it.
 
 **Rationale.** A merchant application may deliver goods or services based on payment state. A stable terminal state spares it from delivering and then having to undo. Contradictory information received later follows the specified mechanisms without rewriting the terminal state.
 
@@ -37,7 +37,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0004. Payments API
 
-**Decision.** I expose the API over HTTPS under `/v1`, using JSON representations and a closed RFC 9457 error catalogue extended with `retryable` and `effect`. The base `payments` capability covers creation and retrieval by `id` or `reference`. The client selects the payment service. `Idempotency-Key` is required for operations subject to idempotency.
+**Decision.** The API is exposed over HTTPS under `/v1`, using JSON representations and a closed RFC 9457 error catalogue extended with `retryable` and `effect`. The base `payments` capability covers creation and retrieval by `id` or `reference`. The client selects the payment service. `Idempotency-Key` is required for operations subject to idempotency.
 
 **Rationale.** These operations cover payment creation, recovery through a reference already known to the merchant after a lost response, and state retrieval when a notification is missing. The `retryable` and `effect` properties separate whether another attempt is appropriate from uncertainty about the initial operation’s effects.
 
@@ -47,7 +47,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0005. Capability discovery
 
-**Decision.** I require the server to declare only capabilities the service supports and to reject unannounced operations. Discovery uses two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per service. Service-specific behaviour and merchant account limits (`limits`) are machine-readable fields.
+**Decision.** The server must declare only capabilities the service supports and reject unannounced operations. Discovery uses two endpoints: the public `/.well-known/openfsp-configuration`, modelled on OpenID Connect discovery, and the authenticated `/v1/capabilities`, detailed per service. Service-specific behaviour and merchant account limits (`limits`) are machine-readable fields.
 
 **Rationale.** With explicit declarations, the application knows which operations are available before creating a payment. Emulating an unsupported function would conceal a behavioural difference; testing availability by attempting a payment could have financial effects.
 
@@ -57,7 +57,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0006. Webhooks and event delivery
 
-**Decision.** I choose at-least-once delivery without guaranteed arrival order, with a per-resource `sequence` and an `id` for deduplication. Events are signed under RFC 9421 using Ed25519, a 300-second freshness window and a nonce. The body contains a complete resource snapshot. Five event types are defined; retries follow a minimum schedule with jitter. Periodic retrieval recovers missed changes.
+**Decision.** Events are delivered at least once, without guaranteed arrival order, with a per-resource `sequence` and an `id` for deduplication. They are signed under RFC 9421 using Ed25519, a 300-second freshness window and a nonce. The body contains a complete resource snapshot. Five event types are defined; retries follow a minimum schedule with jitter. Periodic retrieval recovers missed changes.
 
 **Rationale.** With public-key signatures, anyone holding the published keys checks the integrity and cryptographic origin of an event, including a third party. This verification concerns the signed message; it does not by itself establish the financial accuracy of its contents. Sequence numbers and identifiers handle out-of-order arrival and duplicates.
 
@@ -67,7 +67,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0007. Authentication and credentials
 
-**Decision.** I authenticate clients with an `ofsp_<env>_<secret>` key of at least 128 bits of entropy, transmitted exclusively in `Authorization: Bearer`. The server stores a SHA-256 digest, compares in constant time and returns the single `unauthenticated` error for every authentication failure. I define four independent scopes. A principal may hold several keys; revocation takes effect within 60 seconds.
+**Decision.** Clients authenticate with an `ofsp_<env>_<secret>` key of at least 128 bits of entropy, transmitted exclusively in `Authorization: Bearer`. The server stores a SHA-256 digest, compares in constant time and returns the single `unauthenticated` error for every authentication failure. The specification defines four independent scopes. A principal may hold several keys; revocation takes effect within 60 seconds.
 
 **Rationale.** Without shared rules, an implementation could store keys in cleartext or let an unknown key be told apart from a revoked one. The requirements on storage, comparisons and authentication responses rule this out.
 
@@ -77,7 +77,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0008. Conformance
 
-**Decision.** I define conformance by a target (`client` or `server`), a level and a protocol version. Core is mandatory; a profile applies to each announced capability. Scores and rankings do not replace satisfaction of the requirements. The suite runs locally and offline; it requires of the implementation only the preparation and the control interface of the test environment (0009, 0011). The `mock_openfsp` reference server reproduces declared scenarios; the report is machine-readable and explicitly states verification limits.
+**Decision.** Conformance is defined by a target (`client` or `server`), a level and a protocol version. Core is mandatory; a profile applies to each announced capability. Scores and rankings do not replace satisfaction of the requirements. The suite runs locally and offline; it requires of the implementation only the preparation and the control interface of the test environment (0009, 0011). The `mock_openfsp` reference server reproduces declared scenarios; the report is machine-readable and explicitly states verification limits.
 
 **Rationale.** Black-box scenarios compare declared capabilities with observable behaviour in the assessed environment. The report keeps the list of unverified obligations, so that a test result does not pass for a general claim about the implementation.
 
@@ -87,9 +87,9 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0009. Preparation of conformance runs
 
-**Decision.** I require a server, in the test environment, to announce a `conformance_endpoint` in its configuration document. The suite sends it the address of its webhook receiver and receives an isolated, short-lived set of test items: a full test key, a key without `statements:read`, a revoked key, an expired key and the identifiers needed by tests that require a particular configuration. The endpoint exists only in a test environment, issues only `ofsp_test_` keys and may require an access code issued by the operator.
+**Decision.** In the test environment, a server must announce a `conformance_endpoint` in its configuration document. The suite sends it the address of its webhook receiver and receives an isolated, short-lived set of test items: a full test key, a key without `statements:read`, a revoked key, an expired key and the identifiers needed by tests that require a particular configuration. The endpoint exists only in a test environment, issues only `ofsp_test_` keys and may require an access code issued by the operator.
 
-**Rationale.** A validation started from the server address alone removes manual copies and makes the tests that were assisted until now runnable. I make preparation mandatory so that every implementation is assessed the same way, together with the control interface of decision 0011.
+**Rationale.** A validation started from the server address alone removes manual copies and makes the tests that were assisted until now runnable. Preparation is mandatory so that every implementation is assessed the same way, together with the control interface of decision 0011.
 
 **Alternatives rejected.** Fixed test keys published in the specification; manual entry as the only mode; optional preparation, with manual entry without it; preparation through an interface specific to each server; access of the suite to the server administration.
 
@@ -97,7 +97,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0010. Statement reduced to a list of transactions
 
-**Decision.** I reduce the statement to the list of the successful transactions of a provider for a business day or a range, read from a single endpoint. Reconciliation with payments, its verdicts, day closure, the list of missing payments and the reading of unreconciled entries leave the specification.
+**Decision.** The statement is reduced to the list of the successful transactions of a provider for a business day or a range, read from a single endpoint. Reconciliation with payments, its verdicts, day closure, the list of missing payments and the reading of unreconciled entries leave the specification.
 
 **Rationale.** The specification defines an interface between a client and a server. What the client does with the list, including reconciling it with its own records, belongs to its architecture. The removed obligations concerned an internal behaviour of the server, which no suite can observe.
 
@@ -107,7 +107,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0011. Outcomes chosen by the suite
 
-**Decision.** I require an implementation, in the test environment, to provide a control interface through which the suite sets the outcome of a payment before creating it, resolves a pending payment and triggers a held event. The implementation produces the requested outcome itself. The interface is announced in the preparation response and holds only for the keys of the run. Without it, the tests that choose an outcome fail.
+**Decision.** In the test environment, an implementation must provide a control interface through which the suite sets the outcome of a payment before creating it, resolves a pending payment and triggers a held event. The implementation produces the requested outcome itself. The interface is announced in the preparation response and holds only for the keys of the run. Without it, the tests that choose an outcome fail.
 
 **Rationale.** Conformance concerns the implementation of the specification, not the payment services it uses. A single way of running the suite then holds for every implementation. An optional interface would have left a second way of running the suite, through assisted tests whose result depends on the operator.
 
@@ -117,7 +117,7 @@ Each decision gives my choice, its rationale and the alternatives I rejected, th
 
 ## 0012. Retrieval without synchronisation
 
-**Decision.** I remove the `POST /v1/payments/{id}/synchronize` endpoint. Retrieving a payment returns the most recent state the server can establish; how it establishes it is up to the implementation. The server may limit the lookups a retrieval triggers and then returns the last known state.
+**Decision.** The `POST /v1/payments/{id}/synchronize` endpoint is removed. Retrieving a payment returns the most recent state the server can establish; how it establishes it is up to the implementation. The server may limit the lookups a retrieval triggers and then returns the last known state.
 
 **Rationale.** Separating retrieval of stored state from synchronisation with the provider presumes an intermediary server distinct from the provider. For a provider that applies the specification itself, the two operations are the same.
 
