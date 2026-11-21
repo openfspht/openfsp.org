@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.6.0](https://github.com/openfspht/openfsp.org/compare/v0.5.0...v0.6.0) (2026-11-21)
+
+
+### Features
+
+* invite providers to run the validator from the home page ([0bd2137](https://github.com/openfspht/openfsp.org/commit/0bd21377c9563d7305aecc262d8fa41d510fc521))
+* use the brand card as the home page share image ([dda62ed](https://github.com/openfspht/openfsp.org/commit/dda62ed14b1888ed5efb1610e9e4f50f654decda))
+
+
+### Bug Fixes
+
+* drop payment synchronisation from the home page and state what was tested instead of limits ([d855c7a](https://github.com/openfspht/openfsp.org/commit/d855c7a6d36664440fcb1c8dd29308dbe04c4b36))
+
 ## [0.5.0](https://github.com/openfspht/openfsp.org/compare/v0.4.0...v0.5.0) (2026-11-21)
 
 
