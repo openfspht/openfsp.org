@@ -1,4 +1,5 @@
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readdir, readFile, rename, writeFile } from "node:fs/promises";
 import { resolve, relative, join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { SITE_URL } from "../src/lib/seo";
@@ -182,12 +183,19 @@ await Promise.all(
             },
             file,
         );
-        files.push(file);
+        const fingerprint = createHash("sha256")
+            .update(await readFile(file))
+            .digest("hex")
+            .slice(0, 12);
+        const versioned = image.replace(/\.png$/, `.${fingerprint}.png`);
+        await rename(file, join(root, new URL(versioned).pathname));
+        const page = pages.get(path);
+        if (page) {
+            await writeFile(page, (await readFile(page, "utf8")).replaceAll(image, versioned));
+        }
     }),
 );
 for (const asset of [
-    "og/index.png",
-    "og/en.png",
     "404.html",
     "robots.txt",
     "sitemap.xml",
