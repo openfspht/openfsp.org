@@ -121,7 +121,7 @@ export const homeCopy = {
         },
         provider: {
             title: "Vous implémentez OpenFSP comme fournisseur ?",
-            body: "Pointez le validateur vers votre serveur : le rapport indique ce qui passe, ce qui échoue et ce qui n’a pas pu être vérifié.",
+            body: "Le validateur exécute la suite de conformité contre votre serveur et indique, exigence par exigence, ce qui est satisfait, ce qui échoue et ce qui n’a pas pu être vérifié.",
             action: "Ouvrir le validateur",
         },
         status: {
@@ -307,7 +307,7 @@ export const homeCopy = {
         },
         provider: {
             title: "Implementing OpenFSP as a provider?",
-            body: "Point the validator at your server: the report shows what passes, what fails and what could not be checked.",
+            body: "The validator runs the conformance suite against your server and reports, requirement by requirement, what passes, what fails and what could not be checked.",
             action: "Open the validator",
         },
         status: {
