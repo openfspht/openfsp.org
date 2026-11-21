@@ -27,7 +27,7 @@ export const homeCopy = {
         ],
         native: {
             eyebrow: "Fonctionnement",
-            title: "Une interface commune, implémentée par chaque fournisseur.",
+            title: "L’application parle directement à chaque fournisseur.",
             caption: "Architecture d’intégration native",
             app: "Application marchande",
             appDetail: "Votre boutique, application ou ERP",
@@ -39,11 +39,11 @@ export const homeCopy = {
             steps: [
                 {
                     title: "Les fournisseurs implémentent une fois",
-                    body: "Chaque fournisseur expose l’interface OpenFSP et déclare les capacités qu’il prend réellement en charge.",
+                    body: "Chaque fournisseur expose l’interface OpenFSP et déclare les capacités qu’il prend en charge.",
                 },
                 {
                     title: "Les marchands intègrent une fois",
-                    body: "Le même contrat et les mêmes parcours de paiement valent pour chaque fournisseur, adaptés à ses capacités déclarées.",
+                    body: "Le même contrat et les mêmes parcours de paiement servent pour tous les fournisseurs, selon ce que chacun déclare.",
                 },
                 {
                     title: "Aucun intermédiaire",
@@ -54,11 +54,11 @@ export const homeCopy = {
         contract: {
             eyebrow: "Spécification",
             title: "Un contrat pour les paiements et les notifications.",
-            body: "Création, lecture et synchronisation des paiements, et vérification des événements signés.",
+            body: "Création et lecture des paiements, notifications signées et vérification de leur signature.",
             links: [
                 {
                     title: "API des paiements",
-                    body: "Créer, lire et synchroniser les paiements.",
+                    body: "Créer un paiement et lire son état.",
                     href: "/docs/spec/payments-api",
                 },
                 {
@@ -68,7 +68,7 @@ export const homeCopy = {
                 },
                 {
                     title: "Suite de conformité",
-                    body: "Vérifier les exigences, avec les limites de vérification indiquées.",
+                    body: "Le rapport indique ce qui passe, ce qui échoue et ce qui n’a pas pu être vérifié.",
                     href: "/docs/spec/conformance",
                 },
             ],
@@ -77,7 +77,7 @@ export const homeCopy = {
         },
         gateway: {
             title: "Déjà sur MonCash ou NatCash ?",
-            body: "La passerelle de référence traduit les requêtes OpenFSP vers les API existantes de MonCash et NatCash. C’est une option de transition, dont l’état de vérification et les limites sont documentés.",
+            body: "La passerelle de référence traduit les requêtes OpenFSP vers les API existantes de MonCash et NatCash. C’est une option de transition, testée en simulation et dans les bacs à sable des fournisseurs, pas encore en production.",
             link: "À propos de la passerelle",
         },
         demo: {
@@ -131,7 +131,7 @@ export const homeCopy = {
                 {
                     state: "En cours",
                     title: "Phase 1 : intégration marchande",
-                    body: "L’interface d’intégration marchande, les implémentations de référence et des vérifications de conformité reproductibles.",
+                    body: "La spécification fixe l’interface marchande, les implémentations de référence la mettent en œuvre et la suite de conformité la vérifie.",
                 },
                 {
                     state: "Disponible",
@@ -148,7 +148,7 @@ export const homeCopy = {
         },
         sponsors: {
             eyebrow: "Sponsors",
-            title: "Garder OpenFSP ouvert et indépendant.",
+            title: "Financer une norme ouverte.",
             body: "OpenFSP est libre d’implémentation. Les sponsors financent le travail sur la spécification, la suite de conformité et les implémentations de référence.",
             cta: "Devenir sponsor",
             contribute: "Contribuer au code",
@@ -209,7 +209,7 @@ export const homeCopy = {
         ],
         native: {
             eyebrow: "How it works",
-            title: "A common interface, implemented by each provider.",
+            title: "The application talks to each provider directly.",
             caption: "Native integration architecture",
             app: "Merchant application",
             appDetail: "Your shop, app or ERP",
@@ -221,11 +221,11 @@ export const homeCopy = {
             steps: [
                 {
                     title: "Providers implement once",
-                    body: "Each provider exposes the OpenFSP interface and declares the capabilities it actually supports.",
+                    body: "Each provider exposes the OpenFSP interface and declares the capabilities it supports.",
                 },
                 {
                     title: "Merchants integrate once",
-                    body: "The same contract and payment flows work for every provider, adapted to its declared capabilities.",
+                    body: "The same contract and payment flows serve every provider, according to what each one declares.",
                 },
                 {
                     title: "No intermediary",
@@ -236,11 +236,11 @@ export const homeCopy = {
         contract: {
             eyebrow: "Specification",
             title: "A contract for payments and notifications.",
-            body: "Payment creation, retrieval and synchronisation, plus verification of signed events.",
+            body: "Payment creation and retrieval, signed notifications and their verification.",
             links: [
                 {
                     title: "Payments API",
-                    body: "Create, retrieve and synchronise payments.",
+                    body: "Create a payment and read its status.",
                     href: "/docs/spec/payments-api",
                 },
                 {
@@ -250,7 +250,7 @@ export const homeCopy = {
                 },
                 {
                     title: "Conformance suite",
-                    body: "Check requirements, with verification limits disclosed.",
+                    body: "The report shows what passes, what fails and what could not be checked.",
                     href: "/docs/spec/conformance",
                 },
             ],
@@ -259,7 +259,7 @@ export const homeCopy = {
         },
         gateway: {
             title: "Already on MonCash or NatCash?",
-            body: "The reference gateway translates OpenFSP requests into the existing MonCash and NatCash APIs. It is a transitional option, with its verification status and limits documented.",
+            body: "The reference gateway translates OpenFSP requests into the existing MonCash and NatCash APIs. It is a transitional option, tested in simulation and in the providers’ sandboxes, not yet in production.",
             link: "About the gateway",
         },
         demo: {
@@ -312,7 +312,7 @@ export const homeCopy = {
                 {
                     state: "In progress",
                     title: "Phase 1: merchant integration",
-                    body: "The merchant integration interface, reference implementations and reproducible conformance checks.",
+                    body: "The specification sets the merchant interface, the reference implementations put it to work and the conformance suite checks it.",
                 },
                 {
                     state: "Available",
@@ -329,7 +329,7 @@ export const homeCopy = {
         },
         sponsors: {
             eyebrow: "Sponsors",
-            title: "Keep OpenFSP open and independent.",
+            title: "Fund an open standard.",
             body: "OpenFSP is free to implement. Sponsors fund the specification work, the conformance suite and the reference implementations.",
             cta: "Become a sponsor",
             contribute: "Contribute code",
