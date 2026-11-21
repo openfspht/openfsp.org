@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/openfspht/openfsp.org/compare/v0.6.0...v0.7.0) (2026-11-21)
+
+
+### Features
+
+* fingerprint share image URLs so link previews refresh when an image changes ([bf612b3](https://github.com/openfspht/openfsp.org/commit/bf612b39b89321fff491f8330352674584f7db59))
+
 ## [0.6.0](https://github.com/openfspht/openfsp.org/compare/v0.5.0...v0.6.0) (2026-11-21)
 
 
