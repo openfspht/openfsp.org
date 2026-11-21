@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/openfspht/openfsp.org/compare/v0.7.0...v0.7.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* quote the share image cache rule so nginx accepts the config ([7a7e68b](https://github.com/openfspht/openfsp.org/commit/7a7e68ba3ecfd48b10e8f217d25868369c7dc662))
+
 ## [0.7.0](https://github.com/openfspht/openfsp.org/compare/v0.6.0...v0.7.0) (2026-11-21)
 
 
