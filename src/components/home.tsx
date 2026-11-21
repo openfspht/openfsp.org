@@ -542,7 +542,7 @@ export function Home({ locale }: { locale: Locale }) {
                                                     {service.body}
                                                 </span>
                                             </span>
-                                            <span className="inline-flex h-10 shrink-0 items-center justify-between gap-2 rounded-[10px] sm:w-60 border border-border-strong px-4 font-mono text-[13px] font-medium">
+                                            <span className="ml-auto inline-flex h-10 shrink-0 items-center justify-between gap-2 rounded-[10px] sm:w-60 border border-border-strong px-4 font-mono text-[13px] font-medium">
                                                 {service.host}
                                                 <ArrowUpRight size={13} aria-hidden />
                                             </span>
