@@ -82,11 +82,11 @@ export const homeCopy = {
         },
         demo: {
             eyebrow: "Environnement de démonstration",
-            title: "Essayez en ligne, ou sur votre machine.",
+            title: "Essayez en ligne, ou depuis votre terminal.",
             body: "Une boutique de démonstration, la console de la passerelle, un simulateur de paiement et le validateur, reliés à des services de paiement simulés. Aucun argent réel ne circule.",
             shop: "Ouvrir la boutique de démo",
             all: "Tous les services de démo",
-            requirements: "Sur votre machine : Docker",
+            requirements: "Lister les fournisseurs de la passerelle de démonstration",
             copy: "Copier la commande",
             copied: "Commande copiée",
             copyError:
@@ -126,7 +126,7 @@ export const homeCopy = {
                 validator: "validator.openfsp.org",
                 middle: ", et l’",
                 demo: "environnement de démonstration",
-                after: " complet s’exécute en ligne ou en local avec des services simulés.",
+                after: " complet s’exécute en ligne avec des services simulés.",
             },
             phases: [
                 {
@@ -265,11 +265,11 @@ export const homeCopy = {
         },
         demo: {
             eyebrow: "Demo environment",
-            title: "Try it online, or run it on your machine.",
+            title: "Try it online, or from your terminal.",
             body: "A demo shop, the gateway console, a payment simulator and the validator, all wired together with simulated payment services. No real money moves.",
             shop: "Open the demo shop",
             all: "All demo services",
-            requirements: "Run it on your machine: Docker",
+            requirements: "List the providers of the demo gateway",
             copy: "Copy the command",
             copied: "Command copied",
             copyError: "Automatic copying is unavailable. Select the command to copy it.",
@@ -308,7 +308,7 @@ export const homeCopy = {
                 validator: "validator.openfsp.org",
                 middle: ", and the full ",
                 demo: "demo environment",
-                after: " runs online or locally with simulated services.",
+                after: " runs online with simulated services.",
             },
             phases: [
                 {

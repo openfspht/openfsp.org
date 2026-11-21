@@ -31,8 +31,8 @@ import { homeCopy } from "@/lib/home-copy";
 type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
-    "curl -fsSL https://cdn.openfsp.org/validate.sh \\",
-    "  | sh -s -- https://simulator.openfsp.org/mock_openfsp",
+    "curl https://gateway.openfsp.org/v1/capabilities \\", // gitleaks:allow
+    '  -H "Authorization: Bearer ofsp_test_DemoShopKeyPublishedForTheSimulator01"',
 ];
 
 const EVENT_BODY = `{
