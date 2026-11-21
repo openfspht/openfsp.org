@@ -31,8 +31,8 @@ import { homeCopy } from "@/lib/home-copy";
 type CopyText = (typeof homeCopy)[Locale];
 
 const DEMO_COMMANDS = [
-    "curl https://gateway.openfsp.org/v1/capabilities \\", // gitleaks:allow
-    '  -H "Authorization: Bearer ofsp_test_DemoShopKeyPublishedForTheSimulator01"',
+    "curl https://gateway.openfsp.org/v1/capabilities \\",
+    "  --oauth2-bearer ofsp_test_DemoShopKeyPublishedForTheSimulator01",
 ];
 
 const EVENT_BODY = `{
@@ -473,7 +473,7 @@ export function Home({ locale }: { locale: Locale }) {
 
                 <section id="demo" className="landing-section is-alt" aria-labelledby="demo-title">
                     <div className="landing-container">
-                        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.15fr]">
+                        <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.3fr]">
                             <div className="min-w-0">
                                 <Eyebrow>{t.demo.eyebrow}</Eyebrow>
                                 <h2 id="demo-title" className="section-title mt-3">
@@ -484,12 +484,6 @@ export function Home({ locale }: { locale: Locale }) {
                                     <a href={DEMO_SHOP} className="landing-button is-primary">
                                         {t.demo.shop}
                                         <ArrowUpRight size={14} aria-hidden />
-                                    </a>
-                                    <a
-                                        href={`${href("/docs/quickstart")}#1`}
-                                        className="landing-button is-secondary"
-                                    >
-                                        {t.demo.all}
                                     </a>
                                 </div>
                             </div>
@@ -506,7 +500,7 @@ export function Home({ locale }: { locale: Locale }) {
                                     />
                                 </div>
                                 <pre
-                                    className="overflow-x-auto px-5 py-6 font-mono text-sm/[2]"
+                                    className="overflow-x-auto px-5 py-6 font-mono text-[13px]/[2]"
                                     role="region"
                                     tabIndex={0}
                                     aria-label={t.demo.copy}
@@ -527,33 +521,31 @@ export function Home({ locale }: { locale: Locale }) {
                                 </pre>
                             </div>
                         </div>
-                        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                        <ul className="mt-12 divide-y divide-border-soft overflow-hidden rounded-2xl border border-fd-border bg-surface">
                             {t.demo.services.map((service, index) => {
                                 const Icon = SERVICE_ICONS[index] ?? Landmark;
                                 return (
                                     <li key={service.host}>
                                         <a
                                             href={`https://${service.host}`}
-                                            className="card-link flex h-full flex-col gap-2.5 rounded-[14px] border border-fd-border bg-surface p-5"
+                                            className="row-link flex flex-wrap items-start gap-x-5 gap-y-3 px-5 py-5 sm:flex-nowrap sm:items-center sm:gap-x-6 sm:px-7"
                                         >
-                                            <span className="flex items-center gap-2.5">
-                                                <span className="flex size-8 items-center justify-center rounded-lg border border-border-soft bg-bg-alt text-fd-primary">
-                                                    <Icon size={16} aria-hidden />
-                                                </span>
-                                                <span className="font-semibold">
+                                            <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] border border-border-soft bg-bg-alt text-fd-primary">
+                                                <Icon size={18} aria-hidden />
+                                            </span>
+                                            <span className="min-w-0 flex-1 basis-60">
+                                                <span className="row-title block font-semibold">
                                                     {service.name}
                                                 </span>
-                                                <ArrowUpRight
-                                                    size={13}
-                                                    className="ml-auto text-icon-muted"
-                                                    aria-hidden
-                                                />
+                                                <span
+                                                    className={`mt-1 block text-sm/[1.5] ${muted}`}
+                                                >
+                                                    {service.body}
+                                                </span>
                                             </span>
-                                            <span className={`text-sm/[1.5] ${muted}`}>
-                                                {service.body}
-                                            </span>
-                                            <span className="mt-auto font-mono text-xs text-link">
+                                            <span className="inline-flex h-10 shrink-0 items-center justify-between gap-2 rounded-[10px] sm:w-60 border border-border-strong px-4 font-mono text-[13px] font-medium">
                                                 {service.host}
+                                                <ArrowUpRight size={13} aria-hidden />
                                             </span>
                                         </a>
                                     </li>
