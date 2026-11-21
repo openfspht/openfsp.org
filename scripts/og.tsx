@@ -1,5 +1,5 @@
 import { Resvg } from "@resvg/resvg-js";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import satori, { type Font } from "satori";
 import { OG_HEIGHT, OG_WIDTH } from "../src/lib/og";
@@ -103,8 +103,7 @@ const isHome = (path: string) => path === "/" || path === "/en";
 const isEnglish = (path: string) => path === "/en" || path.startsWith("/en/");
 
 function Title({ page }: { page: OgPage }) {
-    const title = shorten(page.title, 80);
-    const words = (isHome(page.path) && !/[.!?]$/.test(title) ? `${title}.` : title).split(" ");
+    const words = shorten(page.title, 80).split(" ");
     const underline = isHome(page.path) ? words.length - 1 : -1;
     return (
         <div
@@ -199,9 +198,15 @@ function Card({ page }: { page: OgPage }) {
     );
 }
 
+const homeCard = resolve(import.meta.dir, "assets/og-home.png");
+
 export async function renderOgImage(page: OgPage, file: string): Promise<void> {
+    await mkdir(dirname(file), { recursive: true });
+    if (isHome(page.path)) {
+        await copyFile(homeCard, file);
+        return;
+    }
     const svg = await satori(<Card page={page} />, { width: OG_WIDTH, height: OG_HEIGHT, fonts });
     const png = new Resvg(svg, { fitTo: { mode: "width", value: OG_WIDTH } }).render().asPng();
-    await mkdir(dirname(file), { recursive: true });
     await writeFile(file, png);
 }
