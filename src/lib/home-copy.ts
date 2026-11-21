@@ -152,7 +152,6 @@ export const homeCopy = {
             body: "OpenFSP est libre d’implémentation. Les sponsors financent le travail sur la spécification, la suite de conformité et les implémentations de référence.",
             cta: "Devenir sponsor",
             contribute: "Contribuer au code",
-            placeholder: "Votre logo ici",
         },
         footer: {
             description:
@@ -333,7 +332,6 @@ export const homeCopy = {
             body: "OpenFSP is free to implement. Sponsors fund the specification work, the conformance suite and the reference implementations.",
             cta: "Become a sponsor",
             contribute: "Contribute code",
-            placeholder: "Your logo here",
         },
         footer: {
             description:

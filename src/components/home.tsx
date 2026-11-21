@@ -323,14 +323,12 @@ export function Home({ locale }: { locale: Locale }) {
                     <section className="landing-container relative pt-12 pb-16 md:pt-28 md:pb-24">
                         <a
                             href="#status"
-                            className={`inline-flex items-center gap-2 rounded-full border border-fd-border py-1 pr-3 pl-1.5 text-[13px] ${muted}`}
+                            className={`inline-flex items-center gap-1.5 text-sm transition-colors hover:text-fd-foreground ${muted}`}
                         >
-                            <span className="rounded-full bg-fd-primary px-2 py-px text-xs font-semibold text-fd-primary-foreground">
-                                {t.version}
-                            </span>
-                            <span className="size-1.5 rounded-full bg-brand-accent" aria-hidden />
+                            <span className="font-medium text-fd-foreground">{t.version}</span>
+                            <span aria-hidden>·</span>
                             <span>{t.phase}</span>
-                            <ChevronRight size={12} aria-hidden />
+                            <ChevronRight size={14} aria-hidden />
                         </a>
                         <h1 className="hero-title mt-7 max-w-[720px]">
                             {t.headline.before}
@@ -573,7 +571,7 @@ export function Home({ locale }: { locale: Locale }) {
                                 {t.status.body.after}
                             </p>
                         </div>
-                        <ul className="mt-12 grid gap-4 md:grid-cols-3">
+                        <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
                             {t.status.phases.map((phase, index) => (
                                 <li
                                     key={phase.title}
@@ -672,16 +670,15 @@ export function Home({ locale }: { locale: Locale }) {
                                     />
                                 </a>
                             </li>
-                            {[1, 2, 3].map((slot) => (
-                                <li key={slot}>
-                                    <a
-                                        href={SPONSOR_CONTACT}
-                                        className={`card-link flex h-28 items-center justify-center rounded-[14px] border border-dashed border-border-strong bg-surface text-sm ${subtle}`}
-                                    >
-                                        {t.sponsors.placeholder}
-                                    </a>
-                                </li>
-                            ))}
+                            <li>
+                                <a
+                                    href={SPONSOR_CONTACT}
+                                    className={`card-link flex h-28 items-center justify-center gap-2 rounded-[14px] border border-dashed border-border-strong bg-surface text-sm ${subtle}`}
+                                >
+                                    <Heart size={16} aria-hidden />
+                                    {t.sponsors.cta}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </section>
