@@ -4,7 +4,7 @@ import { i18nProvider } from "fumadocs-ui/i18n";
 import { useEffect, type ReactNode } from "react";
 import appCss from "@/styles/app.css?url";
 import { asLocale } from "@/lib/i18n";
-import { startMonitoring } from "@/lib/monitoring";
+import { startAnalytics, startMonitoring } from "@/lib/monitoring";
 import { translations } from "@/lib/translations";
 
 export const Route = createRootRoute({
@@ -34,6 +34,7 @@ export const Route = createRootRoute({
 function Root() {
     useEffect(() => {
         void startMonitoring("site");
+        void startAnalytics();
     }, []);
     return (
         <Document>

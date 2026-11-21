@@ -3,17 +3,31 @@ type Settings = {
     environment?: string;
     release?: string;
     tracesSampleRate?: string;
+    analyticsHost?: string;
+    analyticsWebsiteId?: string;
 };
 
 const SETTINGS_PATH = "/monitoring.json";
 
-async function settings(): Promise<Settings | undefined> {
-    try {
-        const response = await fetch(SETTINGS_PATH, { cache: "no-store" });
-        return response.ok ? ((await response.json()) as Settings) : undefined;
-    } catch {
-        return undefined;
+let loaded: Promise<Settings | undefined> | undefined;
+
+function settings(): Promise<Settings | undefined> {
+    loaded ??= fetch(SETTINGS_PATH, { cache: "no-store" })
+        .then((response) => (response.ok ? (response.json() as Promise<Settings>) : undefined))
+        .catch(() => undefined);
+    return loaded;
+}
+
+export async function startAnalytics(): Promise<void> {
+    const found = await settings();
+    if (!found?.analyticsHost || !found.analyticsWebsiteId) {
+        return;
     }
+    const script = document.createElement("script");
+    script.defer = true;
+    script.src = new URL("/script.js", found.analyticsHost).href;
+    script.dataset.websiteId = found.analyticsWebsiteId;
+    document.head.append(script);
 }
 
 export async function startMonitoring(service: string): Promise<void> {

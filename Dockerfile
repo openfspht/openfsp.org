@@ -17,11 +17,11 @@ RUN bun run build
 
 FROM nginxinc/nginx-unprivileged:1.31-alpine
 
-ENV SENTRY_DSN="" SENTRY_ENVIRONMENT="" SENTRY_RELEASE="" SENTRY_TRACES_SAMPLE_RATE=""
+ENV SENTRY_DSN="" SENTRY_ENVIRONMENT="" SENTRY_RELEASE="" SENTRY_TRACES_SAMPLE_RATE="" ANALYTICS_HOST="" ANALYTICS_WEBSITE_ID=""
 
 COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 
-COPY docker/security-headers.conf /etc/nginx/security-headers.conf
+COPY docker/security-headers.conf /etc/nginx/templates/security-headers.inc.template
 
 COPY --from=build /site/dist/client /usr/share/nginx/html
 
