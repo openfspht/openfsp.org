@@ -103,7 +103,8 @@ const isHome = (path: string) => path === "/" || path === "/en";
 const isEnglish = (path: string) => path === "/en" || path.startsWith("/en/");
 
 function Title({ page }: { page: OgPage }) {
-    const words = shorten(page.title, 80).split(" ");
+    const title = shorten(page.title, 80);
+    const words = (isHome(page.path) && !/[.!?]$/.test(title) ? `${title}.` : title).split(" ");
     const underline = isHome(page.path) ? words.length - 1 : -1;
     return (
         <div
