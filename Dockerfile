@@ -1,6 +1,6 @@
 FROM --platform=$BUILDPLATFORM oven/bun:1.4.4-alpine AS bun
 
-FROM --platform=$BUILDPLATFORM node:24.12-alpine AS build
+FROM --platform=$BUILDPLATFORM node:26.13-alpine AS build
 
 COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
