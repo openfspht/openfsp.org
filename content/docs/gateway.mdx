@@ -51,7 +51,7 @@ La passerelle exige PostgreSQL 18. Sa configuration passe par l’environnement 
 | `OPENFSP_ADMIN_TOKEN` | Empreinte Argon2id du jeton d’administration, produite par la commande `hash` |
 | `OPENFSP_PUBLIC_BASE_URL` | Adresse HTTPS publique de l’API |
 | `OPENFSP_ADMIN_HOST` | Seul nom d’hôte servant la console et l’API d’administration |
-| `OPENFSP_TLS_TERMINATED_BY_PROXY`, `OPENFSP_TRUSTED_PROXIES` | TLS terminé par un mandataire, et ses adresses IP |
+| `OPENFSP_TLS_TERMINATED_BY_PROXY`, `OPENFSP_TRUSTED_PROXIES` | TLS terminé par un mandataire, et ses adresses IP ou plages CIDR |
 | `SPRING_CONFIG_ADDITIONAL_LOCATION` | Fichier YAML déclarant les services de paiement |
 
 ```bash

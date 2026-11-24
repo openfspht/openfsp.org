@@ -51,7 +51,7 @@ The gateway requires PostgreSQL 18. It is configured through the environment:
 | `OPENFSP_ADMIN_TOKEN` | Argon2id hash of the admin token, produced by the `hash` command |
 | `OPENFSP_PUBLIC_BASE_URL` | Public HTTPS address of the API |
 | `OPENFSP_ADMIN_HOST` | The only host name serving the console and the admin API |
-| `OPENFSP_TLS_TERMINATED_BY_PROXY`, `OPENFSP_TRUSTED_PROXIES` | TLS terminated by a proxy, and its IP addresses |
+| `OPENFSP_TLS_TERMINATED_BY_PROXY`, `OPENFSP_TRUSTED_PROXIES` | TLS terminated by a proxy, and its IP addresses or CIDR blocks |
 | `SPRING_CONFIG_ADDITIONAL_LOCATION` | YAML file declaring the payment services |
 
 ```bash
